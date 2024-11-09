@@ -12,6 +12,9 @@ export default defineNuxtConfig({
         },
       },
     },
+    session: {
+      password: "",
+    },
   },
 
   future: {

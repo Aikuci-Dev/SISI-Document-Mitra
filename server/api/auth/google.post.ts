@@ -28,5 +28,7 @@ export default defineEventHandler(async (event) => {
       .returning()
       .get();
 
-  return user;
+  await setUserSession(event, { user });
+
+  return sendRedirect(event, "/document");
 });
