@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+
 export default defineEventHandler(async (event) => {
   const cookies = parseCookies(event);
   const payload = await readBody(event);
@@ -6,5 +8,25 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
   const googleJWT = await verifyCredential(payload.credential);
-  return googleJWT!.sub;
+  const googleId = parseInt(googleJWT!.sub);
+
+  let user = await useDB()
+    .select()
+    .from(tables.userGoogle)
+    .where(eq(tables.userGoogle.googleId, googleId))
+    .then(takeFirst);
+
+  if (!user)
+    user = await useDB()
+      .insert(tables.userGoogle)
+      .values({
+        googleId,
+        email: googleJWT?.email!,
+        googleName: googleJWT?.name!,
+        createdAt: new Date(),
+      })
+      .returning()
+      .get();
+
+  return user;
 });

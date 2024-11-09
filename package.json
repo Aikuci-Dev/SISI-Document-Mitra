@@ -7,12 +7,16 @@
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@libsql/client": "^0.14.0",
     "@nuxtjs/tailwindcss": "^6.12.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.36.1",
     "google-auth-library": "^9.14.2",
     "lucide-vue-next": "^0.454.0",
     "nuxt": "^3.14.159",
@@ -26,6 +30,7 @@
     "@nuxtjs/color-mode": "^3.5.1"
   },
   "devDependencies": {
+    "drizzle-kit": "^0.28.0",
     "typescript": "^5.6.3"
   }
 }
