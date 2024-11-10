@@ -20,6 +20,7 @@
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.36.1",
     "google-auth-library": "^9.14.2",
+    "h3-zod": "^0.5.3",
     "lucide-vue-next": "^0.454.0",
     "nuxt": "^3.14.159",
     "radix-vue": "^1.9.8",

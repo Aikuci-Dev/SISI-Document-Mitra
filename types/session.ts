@@ -1,5 +1,12 @@
+interface UserOauth {
+  id: string | number;
+  email?: string;
+  name?: string;
+}
+
 export interface User {
-  prefilled_name?: string;
+  oauth?: UserOauth;
+  name?: string;
 }
 
 export interface UserSession {

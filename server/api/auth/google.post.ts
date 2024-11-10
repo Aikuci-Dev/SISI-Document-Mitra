@@ -6,31 +6,27 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
 
   const googleJWT = await verifyCredential(payload.credential);
-  const googleId = parseInt(googleJWT!.sub);
+  const { sub: id, email, name } = googleJWT!;
+  const googleId = parseInt(id);
 
-  const selectField = {
-    prefilled_name: aliasedColumn(tables.userGoogle.googleName, "google_name"),
-  };
-
-  let user = await useDB()
-    .select(selectField)
+  const user = await useDB()
+    .select({ name: tables.userGoogle.name })
     .from(tables.userGoogle)
-    .where(eq(tables.userGoogle.googleId, googleId))
+    .where(
+      or(
+        eq(tables.userGoogle.googleId, googleId),
+        email ? eq(tables.userGoogle.email, email) : undefined
+      )
+    )
     .get();
 
-  if (!user)
-    user = await useDB()
-      .insert(tables.userGoogle)
-      .values({
-        googleId,
-        email: googleJWT?.email!,
-        googleName: googleJWT?.name!,
-        createdAt: new Date(),
-      })
-      .returning(selectField)
-      .get();
+  await setUserSession(event, {
+    user: {
+      oauth: { id: googleId, email, name },
+      name: user ? user.name : undefined,
+    },
+  });
 
-  await setUserSession(event, { user });
-
+  if (!user) return sendRedirect(event, "/onboarding");
   return sendRedirect(event, "/document");
 });

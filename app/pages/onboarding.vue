@@ -7,7 +7,9 @@ import * as z from "zod";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 
-const { user } = useUserSession();
+const loading = ref(false);
+
+const { user, fetch: refetchUserSession } = useUserSession();
 
 const schema = z.object({
   name: z
@@ -17,11 +19,32 @@ const schema = z.object({
 
 const form = useForm({
   validationSchema: toTypedSchema(schema),
-  initialValues: { name: user.value?.prefilled_name },
+  initialValues: { name: user.value?.oauth?.name },
 });
 
-function onSubmit(values: Record<string, any>) {
-  console.log("values", values);
+async function onSubmit(values: Record<string, any>) {
+  loading.value = true;
+
+  try {
+    if (user.value?.oauth) {
+      const { id, email } = user.value.oauth;
+      await $fetch("/api/user/google", {
+        method: "POST",
+        body: {
+          id,
+          email,
+          name: values.name,
+        },
+      });
+
+      await refetchUserSession();
+      navigateTo("/document");
+    }
+  } catch (error) {
+    // TODO: Error Handling
+  }
+
+  loading.value = false;
 }
 </script>
 
@@ -40,7 +63,7 @@ function onSubmit(values: Record<string, any>) {
       @submit="onSubmit"
     >
       <div class="tw-text-right">
-        <ShadcnButton type="submit"> Submit </ShadcnButton>
+        <ShadcnButton type="submit" :disabled="loading"> Submit </ShadcnButton>
       </div>
     </ShadcnAutoForm>
   </div>
