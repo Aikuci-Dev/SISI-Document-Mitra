@@ -1,5 +1,3 @@
-import { eq } from "drizzle-orm";
-
 export default defineEventHandler(async (event) => {
   const cookies = parseCookies(event);
   const payload = await readBody(event);
@@ -10,11 +8,15 @@ export default defineEventHandler(async (event) => {
   const googleJWT = await verifyCredential(payload.credential);
   const googleId = parseInt(googleJWT!.sub);
 
+  const selectField = {
+    prefilled_name: aliasedColumn(tables.userGoogle.googleName, "google_name"),
+  };
+
   let user = await useDB()
-    .select()
+    .select(selectField)
     .from(tables.userGoogle)
     .where(eq(tables.userGoogle.googleId, googleId))
-    .then(takeFirst);
+    .get();
 
   if (!user)
     user = await useDB()
@@ -25,7 +27,7 @@ export default defineEventHandler(async (event) => {
         googleName: googleJWT?.name!,
         createdAt: new Date(),
       })
-      .returning()
+      .returning(selectField)
       .get();
 
   await setUserSession(event, { user });

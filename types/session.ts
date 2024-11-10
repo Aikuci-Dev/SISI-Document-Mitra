@@ -1,4 +1,6 @@
-export interface User {}
+export interface User {
+  prefilled_name?: string;
+}
 
 export interface UserSession {
   user?: User;
