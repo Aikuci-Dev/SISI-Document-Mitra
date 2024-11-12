@@ -1,15 +1,15 @@
 <script setup lang="ts">
 definePageMeta({
-  middleware: "auth",
+  middleware: ["auth", "onboarding"],
 });
 
 import * as z from "zod";
 import { useForm } from "vee-validate";
 import { toTypedSchema } from "@vee-validate/zod";
 
-const loading = ref(false);
-
+// `user` is guaranteed to exist, as it's handled by middleware.
 const { user, fetch: refetchUserSession } = useUserSession();
+const loading = ref(false);
 
 const schema = z.object({
   name: z
@@ -19,29 +19,24 @@ const schema = z.object({
 
 const form = useForm({
   validationSchema: toTypedSchema(schema),
-  initialValues: { name: user.value?.oauth?.name },
+  initialValues: { name: user.value!.oauth!.name },
 });
 
 async function onSubmit(values: Record<string, any>) {
   loading.value = true;
 
   try {
-    if (user.value?.oauth) {
-      const { id, email } = user.value.oauth;
-      await $fetch("/api/user/google", {
-        method: "POST",
-        body: {
-          id,
-          email,
-          name: values.name,
-        },
-      });
+    const { id, email } = user.value!.oauth!;
+    await $fetch("/api/user/google", {
+      method: "POST",
+      body: { id, email, name: values.name },
+    });
 
-      await refetchUserSession();
-      navigateTo("/document");
-    }
+    await refetchUserSession();
+    navigateTo("/documents");
   } catch (error) {
     // TODO: Error Handling
+    console.error(error);
   }
 
   loading.value = false;

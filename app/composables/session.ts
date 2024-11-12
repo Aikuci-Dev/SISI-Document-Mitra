@@ -6,7 +6,7 @@ export function useUserSession(): UserSessionComposable {
   const sessionState = useSessionState();
   return {
     loggedIn: computed(() => Boolean(sessionState.value.user)),
-    user: computed(() => sessionState.value.user || null),
+    user: computed(() => sessionState.value.user),
     session: sessionState,
     fetch,
     clear,
@@ -14,6 +14,7 @@ export function useUserSession(): UserSessionComposable {
 }
 
 async function fetch() {
+  // Ref: https://www.youtube.com/watch?v=7vfwYaHtv3U
   useSessionState().value = await useRequestFetch()("/api/auth/session").catch(
     () => ({})
   );

@@ -14,9 +14,13 @@ export interface UserSession {
   [key: string]: unknown;
 }
 
+export interface UserSessionRequired extends UserSession {
+  user: User;
+}
+
 export interface UserSessionComposable {
   loggedIn: ComputedRef<boolean>;
-  user: ComputedRef<User | null>;
+  user: ComputedRef<User | undefined>;
   session: Ref<UserSession>;
   fetch: () => Promise<void>;
   clear: () => Promise<void>;
