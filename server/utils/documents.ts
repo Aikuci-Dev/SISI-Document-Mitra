@@ -36,7 +36,12 @@ export const getSpreadsheetDataByName = defineCachedFunction(
 
     return {
       headers,
-      values: values.filter((mitra) => mitra[0] == name), // `freelancer` column
+      values: values
+        .filter((mitra) => mitra[0] == name) // `freelancer` column
+        .sort(
+          (prev, curr) =>
+            new Date(curr[8]).getTime() - new Date(prev[8]).getTime() // `Tgl. Invoice/BAPP` column
+        ),
     } as SheetValues;
   },
   {
