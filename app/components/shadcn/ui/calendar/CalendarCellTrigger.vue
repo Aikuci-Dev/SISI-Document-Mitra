@@ -20,15 +20,15 @@ const forwardedProps = useForwardProps(delegatedProps)
     :class="cn(
       buttonVariants({ variant: 'ghost' }),
       'tw-h-9 tw-w-9 tw-p-0 tw-font-normal',
-      '[&[data-today]:not([data-selected])]:tw-bg-accent [&[data-today]:not([data-selected])]:tw-text-accent-foreground',
+      '[&[data-today]:not([data-selected])]:tw-bg-slate-100 [&[data-today]:not([data-selected])]:tw-text-slate-900 dark:[&[data-today]:not([data-selected])]:tw-bg-slate-800 dark:[&[data-today]:not([data-selected])]:tw-text-slate-50',
       // Selected
-      'data-[selected]:tw-bg-primary data-[selected]:tw-text-primary-foreground data-[selected]:tw-opacity-100 data-[selected]:hover:tw-bg-primary data-[selected]:hover:tw-text-primary-foreground data-[selected]:focus:tw-bg-primary data-[selected]:focus:tw-text-primary-foreground',
+      'data-[selected]:tw-bg-slate-900 data-[selected]:tw-text-slate-50 data-[selected]:tw-opacity-100 data-[selected]:hover:tw-bg-slate-900 data-[selected]:hover:tw-text-slate-50 data-[selected]:focus:tw-bg-slate-900 data-[selected]:focus:tw-text-slate-50 dark:data-[selected]:tw-bg-slate-50 dark:data-[selected]:tw-text-slate-900 dark:data-[selected]:hover:tw-bg-slate-50 dark:data-[selected]:hover:tw-text-slate-900 dark:data-[selected]:focus:tw-bg-slate-50 dark:data-[selected]:focus:tw-text-slate-900',
       // Disabled
-      'data-[disabled]:tw-text-muted-foreground data-[disabled]:tw-opacity-50',
+      'data-[disabled]:tw-text-slate-500 data-[disabled]:tw-opacity-50 dark:data-[disabled]:tw-text-slate-400',
       // Unavailable
-      'data-[unavailable]:tw-text-destructive-foreground data-[unavailable]:tw-line-through',
+      'data-[unavailable]:tw-text-slate-50 data-[unavailable]:tw-line-through dark:data-[unavailable]:tw-text-slate-50',
       // Outside months
-      'data-[outside-view]:tw-text-muted-foreground data-[outside-view]:tw-opacity-50 [&[data-outside-view][data-selected]]:tw-bg-accent/50 [&[data-outside-view][data-selected]]:tw-text-muted-foreground [&[data-outside-view][data-selected]]:tw-opacity-30',
+      'data-[outside-view]:tw-text-slate-500 data-[outside-view]:tw-opacity-50 [&[data-outside-view][data-selected]]:tw-bg-slate-100/50 [&[data-outside-view][data-selected]]:tw-text-slate-500 [&[data-outside-view][data-selected]]:tw-opacity-30 dark:data-[outside-view]:tw-text-slate-400 dark:[&[data-outside-view][data-selected]]:tw-bg-slate-800/50 dark:[&[data-outside-view][data-selected]]:tw-text-slate-400',
       props.class,
     )"
     v-bind="forwardedProps"

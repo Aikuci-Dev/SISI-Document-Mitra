@@ -13,5 +13,5 @@ const delegatedProps = computed(() => {
 </script>
 
 <template>
-  <SelectSeparator v-bind="delegatedProps" :class="cn('tw--mx-1 tw-my-1 tw-h-px tw-bg-muted', props.class)" />
+  <SelectSeparator v-bind="delegatedProps" :class="cn('tw--mx-1 tw-my-1 tw-h-px tw-bg-slate-100 dark:tw-bg-slate-800', props.class)" />
 </template>
