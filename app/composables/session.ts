@@ -14,7 +14,6 @@ export function useUserSession(): UserSessionComposable {
 }
 
 async function fetch() {
-  // Ref: https://www.youtube.com/watch?v=7vfwYaHtv3U
   useSessionState().value = await useRequestFetch()("/api/auth/session").catch(
     () => ({})
   );

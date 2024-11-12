@@ -9,6 +9,5 @@ export default defineEventHandler(async (event) => {
         "Forbidden: The name you provided does not match the name in your account.",
     });
 
-  // REF: https://www.youtube.com/watch?v=Zli-u9kxw0w
   return getSpreadsheetDataByName(event, name);
 });
