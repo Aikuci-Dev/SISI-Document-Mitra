@@ -22,26 +22,24 @@ useHead({
 
 <template>
   <BasePageA4 class="tw-font-montserrat">
-    <BasePageContent>
-      <div
-        v-if="$slots.header"
-        class="header"
-      >
-        <slot name="header" />
-      </div>
-      <div
-        v-if="$slots.default"
-        class="body"
-      >
-        <slot />
-      </div>
-      <div
-        v-if="$slots.footer"
-        class="footer"
-      >
-        <slot name="footer" />
-      </div>
-    </BasePageContent>
+    <div
+      v-if="$slots.header"
+      class="header"
+    >
+      <slot name="header" />
+    </div>
+    <div
+      v-if="$slots.default"
+      class="body"
+    >
+      <slot />
+    </div>
+    <div
+      v-if="$slots.footer"
+      class="footer"
+    >
+      <slot name="footer" />
+    </div>
   </BasePageA4>
 </template>
 

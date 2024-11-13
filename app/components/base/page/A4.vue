@@ -1,6 +1,8 @@
 <template>
   <div class="page">
-    <slot />
+    <BasePageContent>
+      <slot />
+    </BasePageContent>
   </div>
 </template>
 

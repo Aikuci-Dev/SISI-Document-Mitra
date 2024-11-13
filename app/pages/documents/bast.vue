@@ -1,22 +1,22 @@
 <template>
   <div class="tw-flex tw-max-h-screen tw-flex-col">
     <h1 class="tw-p-8 tw-text-4xl tw-font-bold tw-tracking-tight">
-      BAPP Document
+      BAST Document
     </h1>
     <div class="tw-flex tw-justify-center tw-overflow-auto tw-bg-slate-100">
       <Documents>
         <template #header>
-          <h1>BERITA ACARA PEMERIKSAAN PEKERJAAN</h1>
+          <h1>BERITA ACARA SERAH TERIMA PEKERJAAN</h1>
           <h1>DETAILS.TITLE</h1>
           <h1 class="tw-text-[11pt] tw-font-normal">
-            No: BAPP.NUMBER
+            No: BAST.NUMBER
           </h1>
         </template>
 
         <div>
           <p>
-            Pada hari ini, DETAILS.DAYS.END tanggal DETAILS.DATES.END, telah
-            diselesaikan pekerjaan oleh pihak-pihak berikut:
+            Pada hari ini, DETAILS.DAYS.END tanggal DETAILS.DATES.END, yang
+            bertanda tangan di bawah ini:
           </p>
         </div>
         <div class="tw-px-12">
@@ -78,52 +78,27 @@
             <ul class="tw-indent-4">
               <li>
                 Surat Perintah Kerja No. PO.NUMBER perihal Pengadaan
-                "DETAILS.TITLE"
+                "DETAILS.TITLE" Berita Acara Pemeriksaan Pekerjaan No.
+                BAPP.NUMBER tanggal DETAILS.DAYS.END
               </li>
             </ul>
           </div>
         </div>
         <div>
-          <div>
-            <p>
-              Dengan ini menyatakan bahwa <strong>PIHAK KEDUA</strong> telah
-              melaksanakan pekerjaan kepada
-              <strong>PIHAK PERTAMA</strong> berupa layanan Jasa Developer atas
-              DETAILS.TITLE dari tanggal DETAILS.DATES.START - DETAILS.DATES.END
-              dengan detail sebagai berikut:
-            </p>
-          </div>
-          <div class="tw-px-12">
-            <table class="tw-w-full">
-              <tbody>
-                <tr>
-                  <td class="tw-w-[150px]">
-                    Nomor PO
-                  </td>
-                  <td>:</td>
-                  <td>PO.NUMBER</td>
-                </tr>
-                <tr>
-                  <td class="tw-w-[150px]">
-                    Nomor Invoice
-                  </td>
-                  <td>:</td>
-                  <td>INVOICE.NUMBER</td>
-                </tr>
-                <tr>
-                  <td class="tw-w-[150px]">
-                    Nominal Invoice
-                  </td>
-                  <td>:</td>
-                  <td>INVOICE.NOMINAL</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <p>Kedua belah Pihak secara bersama-sama sepakat bahwa:</p>
+          <p>
+            <strong>PIHAK KEDUA</strong> telah menyelesaikan pekerjaan
+            "DETAILS.TITLE" dan menyerahkan kepada
+            <strong>PIHAK PERTAMA</strong>.
+          </p>
+          <p>
+            <strong>PIHAK PERTAMA</strong> menerima baik penyerahan dari
+            <strong>PIHAK KEDUA</strong> berupa pekerjaan tersebut diatas.
+          </p>
         </div>
         <div>
           <p>
-            Demikian Berita Acara Pemeriksaan Pekerjaan ini dibuat untuk
+            Demikian Berita Acara Serah Terima Pekerjaan ini dibuat untuk
             dipergunakan sebagaimana mestinya.
           </p>
         </div>
