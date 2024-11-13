@@ -1,4 +1,4 @@
-import { useValidatedBody, z } from "h3-zod";
+import { useValidatedBody, z } from 'h3-zod';
 
 export default defineEventHandler(async (event) => {
   const { id, email, name } = await useValidatedBody(event, {

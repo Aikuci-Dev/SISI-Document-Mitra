@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const payload = await readBody(event);
 
   if (payload.g_csrf_token !== cookies.g_csrf_token)
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
+    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
 
   const googleJWT = await verifyCredential(payload.credential);
   const { sub: id, email, name } = googleJWT!;
@@ -15,8 +15,8 @@ export default defineEventHandler(async (event) => {
     .where(
       or(
         eq(tables.userGoogle.googleId, googleId),
-        email ? eq(tables.userGoogle.email, email) : undefined
-      )
+        email ? eq(tables.userGoogle.email, email) : undefined,
+      ),
     )
     .get();
 
@@ -27,6 +27,6 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  if (!user) return sendRedirect(event, "/onboarding");
-  return sendRedirect(event, "/documents");
+  if (!user) return sendRedirect(event, '/onboarding');
+  return sendRedirect(event, '/documents');
 });

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { FormLabel } from '@/components/shadcn/ui/form'
+import { FormLabel } from "@/components/shadcn/ui/form";
 
 defineProps<{
-  required?: boolean
-}>()
+  required?: boolean;
+}>();
 </script>
 
 <template>

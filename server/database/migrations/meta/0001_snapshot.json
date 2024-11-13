@@ -60,9 +60,7 @@
       "indexes": {
         "user_google_email_unique": {
           "name": "user_google_email_unique",
-          "columns": [
-            "email"
-          ],
+          "columns": ["email"],
           "isUnique": true
         }
       },

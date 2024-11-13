@@ -1,37 +1,43 @@
 <script setup lang="ts">
-import { cn } from '@/lib/utils'
-import { Circle } from 'lucide-vue-next'
+import { cn } from "@/lib/utils";
+import { Circle } from "lucide-vue-next";
 import {
   DropdownMenuItemIndicator,
   DropdownMenuRadioItem,
   type DropdownMenuRadioItemEmits,
   type DropdownMenuRadioItemProps,
   useForwardPropsEmits,
-} from 'radix-vue'
-import { computed, type HTMLAttributes } from 'vue'
+} from "radix-vue";
+import { computed, type HTMLAttributes } from "vue";
 
-const props = defineProps<DropdownMenuRadioItemProps & { class?: HTMLAttributes['class'] }>()
+const props = defineProps<
+  DropdownMenuRadioItemProps & { class?: HTMLAttributes["class"] }
+>();
 
-const emits = defineEmits<DropdownMenuRadioItemEmits>()
+const emits = defineEmits<DropdownMenuRadioItemEmits>();
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props
+  const { class: _, ...delegated } = props;
 
-  return delegated
-})
+  return delegated;
+});
 
-const forwarded = useForwardPropsEmits(delegatedProps, emits)
+const forwarded = useForwardPropsEmits(delegatedProps, emits);
 </script>
 
 <template>
   <DropdownMenuRadioItem
     v-bind="forwarded"
-    :class="cn(
-      'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-rounded-sm tw-py-1.5 tw-pl-8 tw-pr-2 tw-text-sm tw-outline-none tw-transition-colors focus:tw-bg-slate-100 focus:tw-text-slate-900 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-opacity-50 dark:focus:tw-bg-slate-800 dark:focus:tw-text-slate-50',
-      props.class,
-    )"
+    :class="
+      cn(
+        'tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-rounded-sm tw-py-1.5 tw-pl-8 tw-pr-2 tw-text-sm tw-outline-none tw-transition-colors focus:tw-bg-slate-100 focus:tw-text-slate-900 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-opacity-50 dark:focus:tw-bg-slate-800 dark:focus:tw-text-slate-50',
+        props.class,
+      )
+    "
   >
-    <span class="tw-absolute tw-left-2 tw-flex tw-h-3.5 tw-w-3.5 tw-items-center tw-justify-center">
+    <span
+      class="tw-absolute tw-left-2 tw-flex tw-h-3.5 tw-w-3.5 tw-items-center tw-justify-center"
+    >
       <DropdownMenuItemIndicator>
         <Circle class="tw-h-2 tw-w-2 tw-fill-current" />
       </DropdownMenuItemIndicator>

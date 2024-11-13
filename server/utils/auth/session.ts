@@ -1,7 +1,7 @@
-import type { H3Event } from "h3";
-import { useSession } from "h3";
-import { defu } from "defu";
-import { UserSession, UserSessionRequired } from "~~/types/session";
+import type { H3Event } from 'h3';
+import { useSession } from 'h3';
+import { defu } from 'defu';
+import type { UserSession, UserSessionRequired } from '~~/types/session';
 
 const config = useRuntimeConfig();
 const sessionConfig = config.session;
@@ -25,14 +25,14 @@ export async function clearUserSession(event: H3Event) {
 
 export async function requireUserSession(
   event: H3Event,
-  opts: { statusCode?: number; message?: string } = {}
+  opts: { statusCode?: number; message?: string } = {},
 ): Promise<UserSessionRequired> {
   const userSession = await getUserSession(event);
 
   if (!userSession.user) {
     throw createError({
       statusCode: opts.statusCode || 401,
-      message: opts.message || "Unauthorized",
+      message: opts.message || 'Unauthorized',
     });
   }
 

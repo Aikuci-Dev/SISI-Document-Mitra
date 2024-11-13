@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { MoreVertical } from "lucide-vue-next";
+import { MoreVertical } from 'lucide-vue-next';
 
 definePageMeta({
-  middleware: ["auth", "dashboard"],
+  middleware: ['auth', 'dashboard'],
 });
 
 // `user` is guaranteed to exist, as it's handled by middleware.
@@ -10,43 +10,46 @@ const { user } = useUserSession();
 
 const { data: mitraTableData } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
-  { watch: [user], immediate: true }
+  { watch: [user], immediate: true },
 );
 
 function handleCreateBAPP(data: string[]) {
-  console.log("handleCreateBAPP", data);
+  console.log('handleCreateBAPP', data);
 }
 function handleViewBAPP(data: string[]) {
-  console.log("handleViewBAPP", data);
+  console.log('handleViewBAPP', data);
 }
 
 function handleCreateBAST(data: string[]) {
-  console.log("handleCreateBAST", data);
+  console.log('handleCreateBAST', data);
 }
 function handleViewBAST(data: string[]) {
-  console.log("handleViewBAST", data);
+  console.log('handleViewBAST', data);
 }
 
 function handleMessageSpv(data: string[]) {
-  console.log("handleMessageSpv", data);
+  console.log('handleMessageSpv', data);
 }
 function handleFillForm(data: string[]) {
-  console.log("handleFillForm", data);
+  console.log('handleFillForm', data);
 }
 </script>
 
 <template>
   <div class="tw-container">
-    <h1 class="tw-text-4xl tw-font-bold tw-tracking-tight tw-p-8">Documents</h1>
+    <h1 class="tw-p-8 tw-text-4xl tw-font-bold tw-tracking-tight">
+      Documents
+    </h1>
     <div class="tw-overflow-auto tw-shadow-xl">
       <ShadcnTable v-if="mitraTableData">
         <ShadcnTableHeader>
           <ShadcnTableRow>
             <template v-if="mitraTableData.headers.length">
-              <ShadcnTableHead class="tw-border-y"> </ShadcnTableHead>
+              <ShadcnTableHead class="tw-border-y" />
             </template>
             <ShadcnTableHead
               v-for="header in mitraTableData.headers"
+              :key="header"
               class="tw-text-nowrap tw-border"
             >
               {{ header }}
@@ -55,11 +58,17 @@ function handleFillForm(data: string[]) {
         </ShadcnTableHeader>
         <ShadcnTableBody>
           <template v-if="mitraTableData.values.length">
-            <ShadcnTableRow v-for="row in mitraTableData.values" :key="row[10]">
+            <ShadcnTableRow
+              v-for="row in mitraTableData.values"
+              :key="row[10]"
+            >
               <ShadcnTableCell class="tw-border-y">
                 <ShadcnDropdownMenu>
                   <ShadcnDropdownMenuTrigger as-child>
-                    <ShadcnButton variant="ghost" class="tw-size-8 tw-p-0">
+                    <ShadcnButton
+                      variant="ghost"
+                      class="tw-size-8 tw-p-0"
+                    >
                       <MoreVertical class="tw-size-4" />
                     </ShadcnButton>
                   </ShadcnDropdownMenuTrigger>
@@ -98,6 +107,7 @@ function handleFillForm(data: string[]) {
               </ShadcnTableCell>
               <ShadcnTableCell
                 v-for="value in row"
+                :key="value"
                 class="tw-text-nowrap tw-border"
               >
                 {{ value }}

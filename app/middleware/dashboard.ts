@@ -3,5 +3,5 @@ export default defineNuxtRouteMiddleware(() => {
 
   if (!user.value) return abortNavigation();
 
-  if (!user.value.name) return navigateTo("/onboarding");
+  if (!user.value.name) return navigateTo('/onboarding');
 });

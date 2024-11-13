@@ -1,5 +1,5 @@
-import type { H3Event } from "h3";
-import { SheetValues, ValueRange } from "~~/types/google";
+import type { H3Event } from 'h3';
+import type { SheetValues, ValueRange } from '~~/types/google';
 
 export const getSpreadsheetData = defineCachedFunction(
   async (_event: H3Event) => {
@@ -13,9 +13,9 @@ export const getSpreadsheetData = defineCachedFunction(
   },
   {
     maxAge: 5 * 60,
-    group: "sheetData",
-    getKey: () => "all",
-  }
+    group: 'sheetData',
+    getKey: () => 'all',
+  },
 );
 
 export const getSpreadsheetDataColumns = defineCachedFunction(
@@ -25,9 +25,9 @@ export const getSpreadsheetDataColumns = defineCachedFunction(
   },
   {
     maxAge: 5 * 60,
-    group: "sheetData",
-    getKey: () => "columns",
-  }
+    group: 'sheetData',
+    getKey: () => 'columns',
+  },
 );
 
 export const getSpreadsheetDataByName = defineCachedFunction(
@@ -37,16 +37,16 @@ export const getSpreadsheetDataByName = defineCachedFunction(
     return {
       headers,
       values: values
-        .filter((mitra) => mitra[0] == name) // `freelancer` column
+        .filter(mitra => mitra[0] == name) // `freelancer` column
         .sort(
           (prev, curr) =>
-            new Date(curr[8]).getTime() - new Date(prev[8]).getTime() // `Tgl. Invoice/BAPP` column
+            new Date(curr[8]).getTime() - new Date(prev[8]).getTime(), // `Tgl. Invoice/BAPP` column
         ),
     } as SheetValues;
   },
   {
     maxAge: 1 * 60,
-    group: "sheetData",
+    group: 'sheetData',
     getKey: (_event: H3Event, name: string) => name.trim(),
-  }
+  },
 );

@@ -1,6 +1,6 @@
-import type { UserSession, UserSessionComposable } from "~~/types/session";
+import type { UserSession, UserSessionComposable } from '~~/types/session';
 
-const useSessionState = () => useState<UserSession>("nuxt-session", () => ({}));
+const useSessionState = () => useState<UserSession>('nuxt-session', () => ({}));
 
 export function useUserSession(): UserSessionComposable {
   const sessionState = useSessionState();
@@ -14,12 +14,12 @@ export function useUserSession(): UserSessionComposable {
 }
 
 async function fetch() {
-  useSessionState().value = await useRequestFetch()("/api/auth/session").catch(
-    () => ({})
+  useSessionState().value = await useRequestFetch()('/api/auth/session').catch(
+    () => ({}),
   );
 }
 
 async function clear() {
-  await $fetch("/api/auth/session", { method: "DELETE" });
+  await $fetch('/api/auth/session', { method: 'DELETE' });
   useSessionState().value = {};
 }
