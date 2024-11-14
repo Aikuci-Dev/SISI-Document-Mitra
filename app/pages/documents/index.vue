@@ -5,6 +5,8 @@ definePageMeta({
   middleware: ['auth', 'dashboard'],
 });
 
+const router = useRouter();
+
 // `user` is guaranteed to exist, as it's handled by middleware.
 const { user } = useUserSession();
 
@@ -15,6 +17,7 @@ const { data: mitraTableData } = await useFetch(
 
 function handleCreateBAPP(data: string[]) {
   console.log('handleCreateBAPP', data);
+  router.push('/documents/bapp');
 }
 function handleViewBAPP(data: string[]) {
   console.log('handleViewBAPP', data);
@@ -22,6 +25,7 @@ function handleViewBAPP(data: string[]) {
 
 function handleCreateBAST(data: string[]) {
   console.log('handleCreateBAST', data);
+  router.push('/documents/bast');
 }
 function handleViewBAST(data: string[]) {
   console.log('handleViewBAST', data);
@@ -40,6 +44,13 @@ function handleFillForm(data: string[]) {
     <h1 class="tw-p-8 tw-text-4xl tw-font-bold tw-tracking-tight">
       Documents
     </h1>
+    <ShadcnButton
+      variant="ghost"
+      size="icon"
+      @click="$router.back()"
+    >
+      BACK
+    </ShadcnButton>
     <div class="tw-overflow-auto tw-shadow-xl">
       <ShadcnTable v-if="mitraTableData">
         <ShadcnTableHeader>

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// https://nuxt.com/docs/getting-started/seo-meta#external-css
 useHead({
   link: [
     {
@@ -29,10 +28,10 @@ useHead({
       <slot name="header" />
     </div>
     <div
-      v-if="$slots.default"
+      v-if="$slots.body"
       class="body"
     >
-      <slot />
+      <slot name="body" />
     </div>
     <div
       v-if="$slots.footer"
