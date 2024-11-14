@@ -1,11 +1,21 @@
 <script setup lang="ts">
 const page = 'BAST';
 
-function handleEdit() {
-  console.log('handleEdit');
-}
+const form = ref<unknown>({});
+
 function handleGenerate() {
   console.log('handleGenerate');
+}
+function handleExport() {
+  // TODO: Implement export functionality
+  // Similar to handleGenerate, but process it on server-side.
+  console.log('handleExport');
+}
+function handleViewBAPP() {
+  console.log('handleViewBAPP');
+}
+function handleViewBAST() {
+  console.log('handleViewBAST');
 }
 </script>
 
@@ -18,17 +28,30 @@ function handleGenerate() {
 
       <template #left>
         <DocumentBreadcrumb :page />
-        <div class="tw-flex tw-gap-4 tw-p-4">
-          <ShadcnButton @click="handleEdit">
-            Edit
-          </ShadcnButton>
-          <ShadcnButton @click="handleGenerate">
-            Generate
-          </ShadcnButton>
-        </div>
+
+        <ShadcnCard>
+          <ShadcnCardContent>
+            <div class="tw-min-h-[720px]">
+              <div class="tw-flex tw-gap-4 tw-p-4">
+                <ShadcnButton @click="handleExport">
+                  Export
+                </ShadcnButton>
+                <ShadcnButton @click="handleViewBAPP">
+                  View BAPP
+                </ShadcnButton>
+                <ShadcnButton @click="handleViewBAST">
+                  View BAST
+                </ShadcnButton>
+              </div>
+            </div>
+          </ShadcnCardContent>
+        </ShadcnCard>
       </template>
       <template #right>
-        <div>Input Fields</div>
+        <DocumentForm
+          v-model="form"
+          @generate="handleGenerate"
+        />
       </template>
 
       <Document>
@@ -106,8 +129,8 @@ function handleGenerate() {
               <ul class="tw-indent-4">
                 <li>
                   Surat Perintah Kerja No. PO.NUMBER perihal Pengadaan
-                  "DETAILS.TITLE" Berita Acara Pemeriksaan Pekerjaan No. BAPP.NUMBER
-                  tanggal DETAILS.DAYS.END
+                  "DETAILS.TITLE" Berita Acara Pemeriksaan Pekerjaan No.
+                  BAPP.NUMBER tanggal DETAILS.DAYS.END
                 </li>
               </ul>
             </div>
@@ -116,7 +139,8 @@ function handleGenerate() {
             <p>Kedua belah Pihak secara bersama-sama sepakat bahwa:</p>
             <p>
               <strong>PIHAK KEDUA</strong> telah menyelesaikan pekerjaan
-              "DETAILS.TITLE" dan menyerahkan kepada <strong>PIHAK PERTAMA</strong>.
+              "DETAILS.TITLE" dan menyerahkan kepada
+              <strong>PIHAK PERTAMA</strong>.
             </p>
             <p>
               <strong>PIHAK PERTAMA</strong> menerima baik penyerahan dari
@@ -131,7 +155,9 @@ function handleGenerate() {
           </div>
           <div />
           <div />
-          <div class="tw-flex-justify-around tw-flex tw-text-center tw-font-bold">
+          <div
+            class="tw-flex-justify-around tw-flex tw-text-center tw-font-bold"
+          >
             <div class="tw-basis-1/2">
               <div>PIHAK PERTAMA</div>
               <div>PT. Sinergi Informatika Semen Indonesia</div>
