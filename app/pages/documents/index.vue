@@ -1,10 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical } from 'lucide-vue-next';
 
-definePageMeta({
-  middleware: ['auth', 'dashboard'],
-});
-
 const page = 'Documents';
 
 const { user } = useUserSession();

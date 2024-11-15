@@ -3,11 +3,6 @@ import * as z from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 
-definePageMeta({
-  middleware: ['auth', 'onboarding'],
-});
-
-// `user` is guaranteed to exist, as it's handled by middleware.
 const { user, fetch: refetchUserSession } = useUserSession();
 const loading = ref(false);
 

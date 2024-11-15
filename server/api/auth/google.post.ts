@@ -27,6 +27,5 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  if (!user) return sendRedirect(event, '/onboarding');
   return sendRedirect(event, '/documents');
 });
