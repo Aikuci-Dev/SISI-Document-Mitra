@@ -1,9 +1,10 @@
 <script setup lang="ts">
-interface Item {
+export interface Item {
   id?: string;
   label: string;
   href: string;
 }
+
 interface Props {
   items: Item[];
 }
@@ -19,14 +20,18 @@ defineProps<Props>();
         :key="id || label"
       >
         <ShadcnBreadcrumbItem>
-          <ShadcnBreadcrumbLink :href="href">
-            {{ label }}
+          <ShadcnBreadcrumbLink as-child>
+            <NuxtLink :to="href">
+              {{ label }}
+            </NuxtLink>
           </ShadcnBreadcrumbLink>
         </ShadcnBreadcrumbItem>
         <ShadcnBreadcrumbSeparator />
       </template>
       <ShadcnBreadcrumbItem>
-        <ShadcnBreadcrumbPage><slot /></ShadcnBreadcrumbPage>
+        <ShadcnBreadcrumbPage>
+          <slot />
+        </ShadcnBreadcrumbPage>
       </ShadcnBreadcrumbItem>
     </ShadcnBreadcrumbList>
   </ShadcnBreadcrumb>

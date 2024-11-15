@@ -1,31 +1,28 @@
 <script setup lang="ts">
-import { ChevronLeft, Home } from 'lucide-vue-next';
-
-const breadcrumbItems = [{ label: 'Documents', href: '/documents' }];
+import { Home } from 'lucide-vue-next';
+import type { Item } from '@/components/base/Breadcrumb.vue';
 
 interface Props {
   page: string;
+  items?: Item[];
 }
 
-defineProps<Props>();
+withDefaults(defineProps<Props>(), {
+  items: () => [{ label: 'Documents', href: '/documents' }],
+});
 </script>
 
 <template>
-  <div class="tw-flex tw-items-center tw-gap-4">
-    <div class="tw-flex tw-items-center">
-      <ShadcnButton
-        variant="ghost"
-        size="icon"
-        @click="$router.back()"
-      >
-        <ChevronLeft />
-      </ShadcnButton>
-      <NuxtLink to="/">
-        <Home class="tw-size-4" />
-      </NuxtLink>
-    </div>
-    <BaseBreadcrumb :items="breadcrumbItems">
-      {{ page }}
-    </BaseBreadcrumb>
-  </div>
+  <ShadcnCard>
+    <ShadcnCardContent class="tw-flex tw-items-center tw-gap-4 tw-p-0">
+      <div class="tw-flex tw-items-center">
+        <NuxtLink to="/">
+          <Home class="tw-size-4" />
+        </NuxtLink>
+      </div>
+      <BaseBreadcrumb :items>
+        {{ page }}
+      </BaseBreadcrumb>
+    </ShadcnCardContent>
+  </ShadcnCard>
 </template>
