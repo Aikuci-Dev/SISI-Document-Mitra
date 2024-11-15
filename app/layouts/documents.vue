@@ -3,7 +3,7 @@
     <h1 class="tw-p-8 tw-text-4xl tw-font-bold tw-tracking-tight">
       <slot name="header" />
     </h1>
-    <div class="tw-flex tw-w-full tw-bg-slate-100">
+    <div class="tw-flex tw-min-h-screen tw-w-full tw-bg-slate-100">
       <div
         v-if="$slots.left"
         class="tw-flex-grow"
