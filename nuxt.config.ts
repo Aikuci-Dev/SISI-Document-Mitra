@@ -1,7 +1,6 @@
 export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss', 'shadcn-nuxt', '@nuxt/eslint'],
   devtools: { enabled: false },
-
   runtimeConfig: {
     public: {
       auth: {
@@ -22,7 +21,6 @@ export default defineNuxtConfig({
       password: '',
     },
   },
-
   future: {
     compatibilityVersion: 4,
   },
