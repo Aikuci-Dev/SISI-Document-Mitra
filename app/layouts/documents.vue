@@ -1,24 +1,71 @@
+<script setup lang="ts">
+const header = ref<HTMLElement>();
+const bodyHeader = ref<HTMLElement>();
+const getHeaderOffsetHeight = computed(() => header.value?.offsetHeight || 0);
+const getBodyHeaderOffsetHeight = computed(() => bodyHeader.value?.offsetHeight || 0);
+</script>
+
 <template>
-  <div class="tw-flex tw-max-h-screen tw-flex-col">
-    <h1 class="tw-p-8 tw-text-4xl tw-font-bold tw-tracking-tight">
-      <slot name="header" />
-    </h1>
-    <div class="tw-flex tw-min-h-screen tw-w-full tw-bg-slate-100">
+  <div>
+    <div
+      ref="header"
+      class="tw-sticky tw-top-0 tw-p-8 tw-bg-white"
+    >
+      <h1 class="tw-text-4xl tw-font-bold tw-tracking-tight ">
+        <slot name="header" />
+      </h1>
+    </div>
+    <div>
       <div
-        v-if="$slots.left"
-        class="tw-flex-grow"
+        v-if="$slots.bodyHeader"
+        ref="bodyHeader"
+        class="tw-sticky"
+        :class="{ 'tw-hidden': !getHeaderOffsetHeight }"
+        :style="{ top: `${getHeaderOffsetHeight}px` }"
       >
-        <slot name="left" />
-      </div>
-      <div class="tw-overflow-auto">
-        <slot />
+        <slot name="bodyHeader" />
       </div>
       <div
-        v-if="$slots.right"
-        class="tw-flex-grow"
+        class="tw-grid tw-grid-cols-1 tw-overflow-auto tw-scroll- tw-bg-slate-100"
+        :style="{ height: `calc(100vh - ${getBodyHeaderOffsetHeight}px - ${getHeaderOffsetHeight}px)` }"
       >
-        <slot name="right" />
+        <div
+          class="tw-flex tw-justify-center"
+        >
+          <div
+            v-if="$slots.bodyLeft"
+            class="tw-flex-grow"
+          >
+            <slot name="bodyLeft" />
+          </div>
+          <div
+            v-if="$slots.bodyContent"
+            class="tw-max-w-full"
+          >
+            <slot name="bodyContent" />
+          </div>
+          <template v-else>
+            <slot />
+          </template>
+          <div
+            v-if="$slots.bodyRight"
+            class="tw-flex-grow"
+          >
+            <slot name="bodyRight" />
+          </div>
+        </div>
       </div>
+      <template
+        v-if="$slots.bodyFooter"
+      >
+        <slot name="bodyFooter" />
+      </template>
+    </div>
+    <div
+      v-if="$slots.footer"
+      class="tw-sticky tw-bottom-0 tw-bg-white"
+    >
+      <slot name="footer" />
     </div>
   </div>
 </template>
