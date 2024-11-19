@@ -9,7 +9,7 @@ const getBodyHeaderOffsetHeight = computed(() => bodyHeader.value?.offsetHeight 
   <div>
     <div
       ref="header"
-      class="tw-sticky tw-top-0 tw-p-8 tw-bg-white"
+      class="tw-p-8 tw-bg-white"
     >
       <h1 class="tw-text-4xl tw-font-bold tw-tracking-tight ">
         <slot name="header" />
@@ -19,9 +19,6 @@ const getBodyHeaderOffsetHeight = computed(() => bodyHeader.value?.offsetHeight 
       <div
         v-if="$slots.bodyHeader"
         ref="bodyHeader"
-        class="tw-sticky"
-        :class="{ 'tw-hidden': !getHeaderOffsetHeight }"
-        :style="{ top: `${getHeaderOffsetHeight}px` }"
       >
         <slot name="bodyHeader" />
       </div>
