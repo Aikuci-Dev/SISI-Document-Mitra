@@ -2,16 +2,18 @@
 const header = ref<HTMLElement>();
 const bodyHeader = ref<HTMLElement>();
 const getHeaderOffsetHeight = computed(() => header.value?.offsetHeight || 0);
-const getBodyHeaderOffsetHeight = computed(() => bodyHeader.value?.offsetHeight || 0);
+const getBodyHeaderOffsetHeight = computed(
+  () => bodyHeader.value?.offsetHeight || 0,
+);
 </script>
 
 <template>
   <div>
     <div
       ref="header"
-      class="tw-p-8 tw-bg-white"
+      class="tw-bg-white tw-p-8"
     >
-      <h1 class="tw-text-4xl tw-font-bold tw-tracking-tight ">
+      <h1 class="tw-text-4xl tw-font-bold tw-tracking-tight">
         <slot name="header" />
       </h1>
     </div>
@@ -23,15 +25,15 @@ const getBodyHeaderOffsetHeight = computed(() => bodyHeader.value?.offsetHeight 
         <slot name="bodyHeader" />
       </div>
       <div
-        class="tw-grid tw-grid-cols-1 tw-overflow-auto tw-scroll- tw-bg-slate-100"
-        :style="{ height: `calc(100vh - ${getBodyHeaderOffsetHeight}px - ${getHeaderOffsetHeight}px)` }"
+        class="tw-grid tw-grid-cols-1 tw-overflow-auto tw-bg-slate-100"
+        :style="{
+          height: `calc(100vh - ${getBodyHeaderOffsetHeight}px - ${getHeaderOffsetHeight}px)`,
+        }"
       >
-        <div
-          class="tw-flex tw-justify-center"
-        >
+        <div class="tw-flex tw-justify-center">
           <div
             v-if="$slots.bodyLeft"
-            class="tw-flex-grow"
+            class="tw-grow"
           >
             <slot name="bodyLeft" />
           </div>
@@ -46,15 +48,13 @@ const getBodyHeaderOffsetHeight = computed(() => bodyHeader.value?.offsetHeight 
           </template>
           <div
             v-if="$slots.bodyRight"
-            class="tw-flex-grow"
+            class="tw-grow"
           >
             <slot name="bodyRight" />
           </div>
         </div>
       </div>
-      <template
-        v-if="$slots.bodyFooter"
-      >
+      <template v-if="$slots.bodyFooter">
         <slot name="bodyFooter" />
       </template>
     </div>

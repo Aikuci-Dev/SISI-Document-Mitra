@@ -23,19 +23,22 @@ useHead({
   <BasePageA4 class="tw-font-montserrat">
     <div
       v-if="$slots.header"
-      class="header"
+      class="aik-header"
     >
       <slot name="header" />
     </div>
     <div
       v-if="$slots.body"
-      class="body"
+      class="aik-body"
     >
       <slot name="body" />
     </div>
+    <template v-else>
+      <slot />
+    </template>
     <div
       v-if="$slots.footer"
-      class="footer"
+      class="aik-footer"
     >
       <slot name="footer" />
     </div>
@@ -43,13 +46,13 @@ useHead({
 </template>
 
 <style scoped>
-.header {
+.aik-header {
   @apply tw-text-center tw-text-[12pt] tw-font-bold;
 }
-.body {
+.aik-body {
   @apply tw-flex tw-flex-col tw-gap-4 tw-py-4 tw-text-[11pt];
 }
-.footer {
+.aik-footer {
 }
 
 ul {

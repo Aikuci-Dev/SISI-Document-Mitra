@@ -12,7 +12,9 @@ const form = defineModel<unknown>();
   <ShadcnCard class="tw-m-10">
     <ShadcnCardHeader>
       <ShadcnCardTitle>Document Form</ShadcnCardTitle>
-      <ShadcnCardDescription>The input used within the document to replace placeholders.</ShadcnCardDescription>
+      <ShadcnCardDescription>
+        The input used within the document to replace placeholders.
+      </ShadcnCardDescription>
     </ShadcnCardHeader>
     <ShadcnCardContent>
       <div>TODO: Create Form</div>

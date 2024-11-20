@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-    body {
-        @apply tw-overflow-hidden;
-    }
+  body {
+    @apply tw-overflow-hidden;
+  }
 }
