@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'document-child',
+});
+
 const page = 'BAST';
 
 const form = ref<unknown>({});

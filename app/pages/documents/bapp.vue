@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  middleware: 'document-child',
+});
+
 const page = 'BAPP';
 
 const form = ref<unknown>({});
