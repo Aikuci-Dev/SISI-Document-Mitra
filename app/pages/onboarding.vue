@@ -42,7 +42,7 @@ async function onSubmit(values: Form) {
 
 <template>
   <div
-    class="tw-container tw-grid tw-h-screen tw-items-center tw-justify-center"
+    class="tw-container tw-flex tw-h-screen tw-items-center tw-justify-center"
   >
     <ShadcnAutoForm
       :schema
@@ -52,9 +52,10 @@ async function onSubmit(values: Form) {
           description: 'This will be used in query filters.',
         },
       }"
+      class="tw-w-96"
       @submit="onSubmit"
     >
-      <div class="tw-text-right">
+      <div class="tw-mt-4 tw-flex tw-justify-end">
         <ShadcnButton
           type="submit"
           :disabled="loading"

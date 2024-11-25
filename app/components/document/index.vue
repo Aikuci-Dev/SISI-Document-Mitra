@@ -50,12 +50,8 @@ useHead({
   @apply tw-text-center tw-text-[12pt] tw-font-bold;
 }
 .aik-body {
-  @apply tw-flex tw-flex-col tw-gap-4 tw-py-4 tw-text-[11pt];
+  @apply tw-flex tw-flex-col tw-space-y-4 tw-py-4 tw-text-[11pt];
 }
 .aik-footer {
-}
-
-ul {
-  @apply tw-list-disc;
 }
 </style>

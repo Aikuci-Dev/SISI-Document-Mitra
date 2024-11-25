@@ -9,7 +9,7 @@ const form = defineModel<unknown>();
 </script>
 
 <template>
-  <ShadcnCard class="tw-m-10">
+  <ShadcnCard>
     <ShadcnCardHeader>
       <ShadcnCardTitle>Document Form</ShadcnCardTitle>
       <ShadcnCardDescription>

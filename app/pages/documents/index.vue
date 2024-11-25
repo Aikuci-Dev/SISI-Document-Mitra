@@ -34,12 +34,8 @@ function handleFillForm(data: string[]) {
 </script>
 
 <template>
-  <div class="tw-grid tw-grid-cols-1">
+  <div>
     <NuxtLayout name="documents">
-      <template #header>
-        {{ page }}
-      </template>
-
       <template #bodyHeader>
         <DocumentBreadcrumb
           :page
@@ -59,9 +55,9 @@ function handleFillForm(data: string[]) {
             <BaseTable v-if="mitraTableData">
               <ShadcnTableHeader>
                 <ShadcnTableRow>
-                  <template v-if="mitraTableData.headers.length">
-                    <ShadcnTableHead class="tw-border-y" />
-                  </template>
+                  <ShadcnTableHead
+                    v-if="mitraTableData.headers.length"
+                  />
                   <ShadcnTableHead
                     v-for="header in mitraTableData.headers"
                     :key="header"
@@ -71,13 +67,13 @@ function handleFillForm(data: string[]) {
                   </ShadcnTableHead>
                 </ShadcnTableRow>
               </ShadcnTableHeader>
-              <ShadcnTableBody>
+              <ShadcnTableBody v-if="mitraTableData.headers">
                 <template v-if="mitraTableData.values.length">
                   <ShadcnTableRow
                     v-for="row in mitraTableData.values"
                     :key="row[10]"
                   >
-                    <ShadcnTableCell class="tw-border-y">
+                    <ShadcnTableCell>
                       <ShadcnDropdownMenu>
                         <ShadcnDropdownMenuTrigger as-child>
                           <ShadcnButton
