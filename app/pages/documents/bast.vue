@@ -1,11 +1,22 @@
 <script setup lang="ts">
+import type { WorkDocument } from '~~/types/document';
+
 definePageMeta({
   middleware: 'document-child',
 });
 
 const page = 'BAST';
 
-const form = ref<unknown>({});
+const { work } = useDocument();
+const document = computed<(WorkDocument & { bast: { number: string } }) | undefined>(
+  () => {
+    if (work.value && work.value.bast && work.value.bast.number)
+      return work.value as WorkDocument & { bast: { number: string } };
+
+    return undefined;
+  },
+);
+const form = ref(document);
 
 function handleGenerate() {
   console.log('handleGenerate');
@@ -17,9 +28,6 @@ function handleExport() {
 }
 function handleViewBAPP() {
   console.log('handleViewBAPP');
-}
-function handleViewBAST() {
-  console.log('handleViewBAST');
 }
 </script>
 
@@ -43,9 +51,6 @@ function handleViewBAST() {
                 </ShadcnButton>
                 <ShadcnButton @click="handleViewBAPP">
                   View BAPP
-                </ShadcnButton>
-                <ShadcnButton @click="handleViewBAST">
-                  View BAST
                 </ShadcnButton>
               </div>
             </div>

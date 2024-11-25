@@ -5,7 +5,8 @@ definePageMeta({
 
 const page = 'BAPP';
 
-const form = ref<unknown>({});
+const { work } = useDocument();
+const form = ref(work);
 
 function handleGenerate() {
   console.log('handleGenerate');
@@ -18,18 +19,11 @@ function handleExport() {
 function handleCreateBAST() {
   navigateTo('/documents/bast');
 }
-function handleViewBAST() {
-  console.log('handleViewBAST');
-}
 </script>
 
 <template>
   <div class="tw-grid tw-grid-cols-1">
     <NuxtLayout name="documents">
-      <template #header>
-        {{ page }} Document
-      </template>
-
       <template #bodyHeader>
         <DocumentBreadcrumb :page />
       </template>
@@ -43,9 +37,6 @@ function handleViewBAST() {
                 </ShadcnButton>
                 <ShadcnButton @click="handleCreateBAST">
                   Create BAST
-                </ShadcnButton>
-                <ShadcnButton @click="handleViewBAST">
-                  View BAST
                 </ShadcnButton>
               </div>
             </div>

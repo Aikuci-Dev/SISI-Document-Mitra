@@ -1,34 +1,38 @@
 <script setup lang="ts">
 import { MoreVertical } from 'lucide-vue-next';
+import type { WorkDocument } from '~~/types/document';
 
 const page = 'Documents';
 
 const { user } = useUserSession();
+
 const { data: mitraTableData } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
   { watch: [user], immediate: true },
 );
+const columns = computed(() => mitraTableData.value?.columns);
+const rows = computed(() => mitraTableData.value?.rows);
 
-function handleCreateBAPP(data: string[]) {
-  console.log('handleCreateBAPP', data);
+const { setWork } = useDocument();
+function handleCreateBAPP(data: WorkDocument) {
+  setWork(data);
   navigateTo('/documents/bapp');
 }
-function handleViewBAPP(data: string[]) {
+function handleViewBAPP(data: WorkDocument) {
   console.log('handleViewBAPP', data);
 }
-
-function handleCreateBAST(data: string[]) {
-  console.log('handleCreateBAST', data);
+function handleCreateBAST(data: WorkDocument) {
+  setWork(data);
   navigateTo('/documents/bast');
 }
-function handleViewBAST(data: string[]) {
+function handleViewBAST(data: WorkDocument) {
   console.log('handleViewBAST', data);
 }
 
-function handleMessageSpv(data: string[]) {
+function handleMessageSpv(data: WorkDocument) {
   console.log('handleMessageSpv', data);
 }
-function handleFillForm(data: string[]) {
+function handleFillForm(data: WorkDocument) {
   console.log('handleFillForm', data);
 }
 </script>
@@ -57,23 +61,23 @@ function handleFillForm(data: string[]) {
                 <ShadcnTableHeader>
                   <ShadcnTableRow class="tw-sticky tw-top-0 tw-z-10 tw-divide-y-4 tw-divide-y-reverse tw-bg-white">
                     <ShadcnTableHead
-                      v-if="mitraTableData.headers.length"
+                      v-if="columns"
                       class="tw-sticky tw-left-0 tw-z-20 tw-bg-white"
                     />
                     <ShadcnTableHead
-                      v-for="header in mitraTableData.headers"
-                      :key="header"
+                      v-for="column in columns"
+                      :key="column.key"
                       class="tw-text-nowrap tw-border"
                     >
-                      {{ header }}
+                      {{ column.label }}
                     </ShadcnTableHead>
                   </ShadcnTableRow>
                 </ShadcnTableHeader>
-                <ShadcnTableBody v-if="mitraTableData.headers">
-                  <template v-if="mitraTableData.values.length">
+                <ShadcnTableBody v-if="columns">
+                  <template v-if="rows">
                     <ShadcnTableRow
-                      v-for="row in mitraTableData.values"
-                      :key="row[10]"
+                      v-for="(row, indexRow) in rows"
+                      :key="indexRow"
                     >
                       <ShadcnTableCell class="tw-sticky tw-left-0 tw-border-e-4 tw-bg-white">
                         <ShadcnDropdownMenu>
@@ -90,12 +94,12 @@ function handleFillForm(data: string[]) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAPP(row)"
+                              @click="() => handleCreateBAPP(row.meta.mapped_work)"
                             >
                               Create
                             </ShadcnDropdownMenuItem>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleViewBAPP(row)"
+                              @click="() => handleViewBAPP(row.meta.mapped_work)"
                             >
                               View
                             </ShadcnDropdownMenuItem>
@@ -104,12 +108,12 @@ function handleFillForm(data: string[]) {
                               BAST
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAST(row)"
+                              @click="() => handleCreateBAST(row.meta.mapped_work)"
                             >
                               Create
                             </ShadcnDropdownMenuItem>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleViewBAST(row)"
+                              @click="() => handleViewBAST(row.meta.mapped_work)"
                             >
                               View
                             </ShadcnDropdownMenuItem>
@@ -118,12 +122,12 @@ function handleFillForm(data: string[]) {
                               Others
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleMessageSpv(row)"
+                              @click="() => handleMessageSpv(row.meta.mapped_work)"
                             >
                               Message Supervisor
                             </ShadcnDropdownMenuItem>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleFillForm(row)"
+                              @click="() => handleFillForm(row.meta.mapped_work)"
                             >
                               Fill Form
                             </ShadcnDropdownMenuItem>
@@ -131,8 +135,8 @@ function handleFillForm(data: string[]) {
                         </ShadcnDropdownMenu>
                       </ShadcnTableCell>
                       <ShadcnTableCell
-                        v-for="value in row"
-                        :key="value"
+                        v-for="(value, indexValue) in row.value"
+                        :key="`${indexRow}-${indexValue}`"
                         class="tw-text-nowrap tw-border"
                       >
                         {{ value }}
@@ -141,7 +145,7 @@ function handleFillForm(data: string[]) {
                   </template>
                   <ShadcnTableRow v-else>
                     <ShadcnTableCell
-                      :colspan="mitraTableData.headers.length"
+                      :colspan="columns.length"
                       class="tw-h-24 tw-text-center"
                     >
                       Data Record Not Found
