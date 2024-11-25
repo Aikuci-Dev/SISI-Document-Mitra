@@ -9,5 +9,5 @@ export default defineEventHandler(async (event) => {
         'Forbidden: The name you provided does not match the name in your account.',
     });
 
-  return getSpreadsheetDataByName(event, name);
+  return getDataTableByName(event, name);
 });
