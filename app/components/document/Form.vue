@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import type { WorkDocument } from '~~/types/document';
+
 type FormEmits = {
-  generate: [value: unknown];
+  generate: [value: { form: WorkDocument }];
 };
 
 defineEmits<FormEmits>();
 
-const form = defineModel<unknown>();
+const form = defineModel<WorkDocument>();
 </script>
 
 <template>
@@ -21,7 +23,10 @@ const form = defineModel<unknown>();
       <pre>form - {{ form }}</pre>
     </ShadcnCardContent>
     <ShadcnCardFooter class="tw-justify-end">
-      <ShadcnButton @click="$emit('generate', { form })">
+      <ShadcnButton
+        v-if="form"
+        @click="$emit('generate', { form })"
+      >
         Generate
       </ShadcnButton>
     </ShadcnCardFooter>
