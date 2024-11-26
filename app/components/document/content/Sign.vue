@@ -10,10 +10,10 @@ defineProps<Props>();
 
 <template>
   <div
-    class="tw-flex tw-justify-around tw-text-center tw-font-bold"
+    class="flex justify-around text-center font-bold"
   >
     <BaseSign
-      class="tw-basis-1/2"
+      class="basis-1/2"
       :sign="{
         name: employee.supervisor.name,
         role: 'Project Manager',
@@ -22,7 +22,7 @@ defineProps<Props>();
       }"
     />
     <BaseSign
-      class="tw-basis-1/2"
+      class="basis-1/2"
       :sign="{
         name: employee.name,
         role: employee.role,

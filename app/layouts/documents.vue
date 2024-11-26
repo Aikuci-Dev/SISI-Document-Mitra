@@ -15,9 +15,9 @@ const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
     <div
       v-if="$slots.header"
       ref="header"
-      class="tw-bg-white tw-p-8"
+      class="bg-white p-8"
     >
-      <h1 class="tw-text-4xl tw-font-bold tw-tracking-tight">
+      <h1 class="text-4xl font-bold tracking-tight">
         <slot name="header" />
       </h1>
     </div>
@@ -29,21 +29,21 @@ const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
         <slot name="bodyHeader" />
       </div>
       <div
-        class="tw-overflow-auto tw-bg-slate-100"
+        class="overflow-auto bg-slate-100"
         :style="{
           height: `calc(100vh - ${getBodyHeaderOffsetHeight}px - ${getHeaderOffsetHeight}px - ${getFooterOffsetHeight}px)`,
         }"
       >
-        <div class="tw-flex">
+        <div class="flex">
           <div
             v-if="$slots.bodyLeft"
-            class="tw-m-5 tw-ml-0"
+            class="m-5 ml-0"
           >
             <slot name="bodyLeft" />
           </div>
           <div
             v-if="$slots.bodyContent"
-            class="tw-max-w-[100vw] tw-grow"
+            class="max-w-[100vw] grow"
           >
             <slot name="bodyContent" />
           </div>
@@ -52,7 +52,7 @@ const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
           </template>
           <div
             v-if="$slots.bodyRight"
-            class="tw-m-5 tw-mr-0"
+            class="m-5 mr-0"
           >
             <slot name="bodyRight" />
           </div>
@@ -65,7 +65,7 @@ const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
     <div
       v-if="$slots.footer"
       ref="footer"
-      class="tw-sticky tw-bottom-0 tw-bg-white"
+      class="sticky bottom-0 bg-white"
     >
       <slot name="footer" />
     </div>

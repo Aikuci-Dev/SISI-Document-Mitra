@@ -21,11 +21,11 @@ const props = defineProps<Props>();
     <div>{{ sign.alias }}</div>
     <div>{{ sign.company }}</div>
     <!-- TODO: Implement Input Sign -->
-    <div class="tw-h-[140px]" />
-    <div class="tw-underline tw-decoration-2">
+    <div class="h-[140px]" />
+    <div class="underline decoration-2">
       {{ sign.name }}
     </div>
-    <div class="tw-font-normal tw-italic">
+    <div class="font-normal italic">
       {{ sign.role }}
     </div>
   </div>

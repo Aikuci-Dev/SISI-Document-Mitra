@@ -13,6 +13,6 @@
 }
 
 .aik-page {
-  @apply tw-m-0 tw-h-[297mm] tw-w-[210mm] tw-border tw-border-black tw-bg-white tw-p-0 print:tw-border-none;
+  @apply m-0 h-[297mm] w-[210mm] border border-black bg-white p-0 print:border-none;
 }
 </style>

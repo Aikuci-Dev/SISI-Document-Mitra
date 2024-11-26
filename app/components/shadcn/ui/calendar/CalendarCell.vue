@@ -1,33 +1,22 @@
 <script lang="ts" setup>
-import { cn } from "@/lib/utils";
-import {
-  CalendarCell,
-  type CalendarCellProps,
-  useForwardProps,
-} from "radix-vue";
-import { computed, type HTMLAttributes } from "vue";
+import { cn } from '@/lib/utils'
+import { CalendarCell, type CalendarCellProps, useForwardProps } from 'radix-vue'
+import { computed, type HTMLAttributes } from 'vue'
 
-const props = defineProps<
-  CalendarCellProps & { class?: HTMLAttributes["class"] }
->();
+const props = defineProps<CalendarCellProps & { class?: HTMLAttributes['class'] }>()
 
 const delegatedProps = computed(() => {
-  const { class: _, ...delegated } = props;
+  const { class: _, ...delegated } = props
 
-  return delegated;
-});
+  return delegated
+})
 
-const forwardedProps = useForwardProps(delegatedProps);
+const forwardedProps = useForwardProps(delegatedProps)
 </script>
 
 <template>
   <CalendarCell
-    :class="
-      cn(
-        'tw-relative tw-h-9 tw-w-9 tw-p-0 tw-text-center tw-text-sm focus-within:tw-relative focus-within:tw-z-20 [&:has([data-selected])]:tw-rounded-md [&:has([data-selected])]:tw-bg-slate-100 dark:[&:has([data-selected])]:tw-bg-slate-800 [&:has([data-selected][data-outside-view])]:tw-bg-slate-100/50 dark:[&:has([data-selected][data-outside-view])]:tw-bg-slate-800/50',
-        props.class,
-      )
-    "
+    :class="cn('relative h-9 w-9 p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([data-selected])]:rounded-md [&:has([data-selected])]:bg-slate-100 [&:has([data-selected][data-outside-view])]:bg-slate-100/50 dark:[&:has([data-selected])]:bg-slate-800 dark:[&:has([data-selected][data-outside-view])]:bg-slate-800/50', props.class)"
     v-bind="forwardedProps"
   >
     <slot />

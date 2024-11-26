@@ -20,7 +20,7 @@ useHead({
 </script>
 
 <template>
-  <BasePageA4 class="tw-font-montserrat">
+  <BasePageA4 class="font-montserrat">
     <div
       v-if="$slots.header"
       class="aik-header"
@@ -47,10 +47,10 @@ useHead({
 
 <style scoped>
 .aik-header {
-  @apply tw-text-center tw-text-[12pt] tw-font-bold;
+  @apply text-center text-[12pt] font-bold;
 }
 .aik-body {
-  @apply tw-flex tw-flex-col tw-space-y-4 tw-py-4 tw-text-[11pt];
+  @apply flex flex-col space-y-4 py-4 text-[11pt];
 }
 .aik-footer {
 }

@@ -6,6 +6,6 @@
 
 <style scoped>
 .aik-content {
-  @apply tw-flex tw-flex-col tw-space-y-8 tw-px-16 tw-py-24 tw-text-justify tw-leading-6;
+  @apply flex flex-col space-y-8 px-16 py-24 text-justify leading-6;
 }
 </style>

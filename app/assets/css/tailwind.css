@@ -4,6 +4,6 @@
 
 @layer base {
   body {
-    @apply tw-overflow-hidden;
+    @apply overflow-hidden;
   }
 }

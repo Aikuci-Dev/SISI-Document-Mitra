@@ -14,10 +14,10 @@ withDefaults(defineProps<Props>(), {
 
 <template>
   <ShadcnCard>
-    <ShadcnCardContent class="tw-flex tw-items-center tw-gap-4 tw-p-0">
-      <div class="tw-flex tw-items-center">
+    <ShadcnCardContent class="flex items-center gap-4 p-2">
+      <div class="flex items-center">
         <NuxtLink to="/">
-          <Home class="tw-size-4" />
+          <Home class="size-4" />
         </NuxtLink>
       </div>
       <BaseBreadcrumb :items>

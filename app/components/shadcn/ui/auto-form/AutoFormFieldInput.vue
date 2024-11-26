@@ -1,22 +1,14 @@
 <script setup lang="ts">
-import type { FieldProps } from "./interface";
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/shadcn/ui/form";
-import { Input } from "@/components/shadcn/ui/input";
-import { Textarea } from "@/components/shadcn/ui/textarea";
-import { computed } from "vue";
-import AutoFormLabel from "./AutoFormLabel.vue";
-import { beautifyObjectName } from "./utils";
+import type { FieldProps } from './interface'
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/components/shadcn/ui/form'
+import { Input } from '@/components/shadcn/ui/input'
+import { Textarea } from '@/components/shadcn/ui/textarea'
+import { computed } from 'vue'
+import AutoFormLabel from './AutoFormLabel.vue'
+import { beautifyObjectName } from './utils'
 
-const props = defineProps<FieldProps>();
-const inputComponent = computed(() =>
-  props.config?.component === "textarea" ? Textarea : Input,
-);
+const props = defineProps<FieldProps>()
+const inputComponent = computed(() => props.config?.component === 'textarea' ? Textarea : Input)
 </script>
 
 <template>

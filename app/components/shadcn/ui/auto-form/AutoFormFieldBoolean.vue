@@ -1,29 +1,21 @@
 <script setup lang="ts">
-import type { FieldProps } from "./interface";
-import { Checkbox } from "@/components/shadcn/ui/checkbox";
-import {
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/shadcn/ui/form";
-import { Switch } from "@/components/shadcn/ui/switch";
-import { computed } from "vue";
-import AutoFormLabel from "./AutoFormLabel.vue";
-import { beautifyObjectName } from "./utils";
+import type { FieldProps } from './interface'
+import { Checkbox } from '@/components/shadcn/ui/checkbox'
+import { FormControl, FormDescription, FormField, FormItem, FormMessage } from '@/components/shadcn/ui/form'
+import { Switch } from '@/components/shadcn/ui/switch'
+import { computed } from 'vue'
+import AutoFormLabel from './AutoFormLabel.vue'
+import { beautifyObjectName } from './utils'
 
-const props = defineProps<FieldProps>();
+const props = defineProps<FieldProps>()
 
-const booleanComponent = computed(() =>
-  props.config?.component === "switch" ? Switch : Checkbox,
-);
+const booleanComponent = computed(() => props.config?.component === 'switch' ? Switch : Checkbox)
 </script>
 
 <template>
   <FormField v-slot="slotProps" :name="fieldName">
     <FormItem>
-      <div class="tw-mb-3 tw-flex tw-items-center tw-gap-3 tw-space-y-0">
+      <div class="space-y-0 mb-3 flex items-center gap-3">
         <FormControl>
           <slot v-bind="slotProps">
             <component

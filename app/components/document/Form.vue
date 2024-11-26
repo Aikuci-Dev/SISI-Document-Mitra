@@ -22,7 +22,7 @@ const form = defineModel<WorkDocument>();
       <div>TODO: Create Form</div>
       <pre>form - {{ form }}</pre>
     </ShadcnCardContent>
-    <ShadcnCardFooter class="tw-justify-end">
+    <ShadcnCardFooter class="justify-end">
       <ShadcnButton
         v-if="form"
         @click="$emit('generate', { form })"

@@ -56,18 +56,18 @@ function handleFillForm(data: WorkDocument) {
             </ShadcnCardDescription>
           </ShadcnCardHeader>
           <ShadcnCardContent>
-            <div class="tw-h-96 tw-overflow-auto">
+            <div class="h-96 overflow-auto">
               <BaseTable v-if="mitraTableData">
                 <ShadcnTableHeader>
-                  <ShadcnTableRow class="tw-sticky tw-top-0 tw-z-10 tw-divide-y-4 tw-divide-y-reverse tw-bg-white">
+                  <ShadcnTableRow class="sticky top-0 z-10 divide-y-4 divide-y-reverse bg-white">
                     <ShadcnTableHead
                       v-if="columns"
-                      class="tw-sticky tw-left-0 tw-z-20 tw-bg-white"
+                      class="sticky left-0 z-20 bg-white"
                     />
                     <ShadcnTableHead
                       v-for="column in columns"
                       :key="column.key"
-                      class="tw-text-nowrap tw-border"
+                      class="text-nowrap border"
                     >
                       {{ column.label }}
                     </ShadcnTableHead>
@@ -79,14 +79,14 @@ function handleFillForm(data: WorkDocument) {
                       v-for="(row, indexRow) in rows"
                       :key="indexRow"
                     >
-                      <ShadcnTableCell class="tw-sticky tw-left-0 tw-border-e-4 tw-bg-white">
+                      <ShadcnTableCell class="sticky left-0 border-e-4 bg-white">
                         <ShadcnDropdownMenu>
                           <ShadcnDropdownMenuTrigger as-child>
                             <ShadcnButton
                               variant="ghost"
-                              class="tw-size-8 tw-p-0"
+                              class="size-8 p-0"
                             >
-                              <MoreVertical class="tw-size-4" />
+                              <MoreVertical class="size-4" />
                             </ShadcnButton>
                           </ShadcnDropdownMenuTrigger>
                           <ShadcnDropdownMenuContent align="end">
@@ -137,7 +137,7 @@ function handleFillForm(data: WorkDocument) {
                       <ShadcnTableCell
                         v-for="(value, indexValue) in row.value"
                         :key="`${indexRow}-${indexValue}`"
-                        class="tw-text-nowrap tw-border"
+                        class="text-nowrap border"
                       >
                         {{ value }}
                       </ShadcnTableCell>
@@ -146,7 +146,7 @@ function handleFillForm(data: WorkDocument) {
                   <ShadcnTableRow v-else>
                     <ShadcnTableCell
                       :colspan="columns.length"
-                      class="tw-h-24 tw-text-center"
+                      class="h-24 text-center"
                     >
                       Data Record Not Found
                     </ShadcnTableCell>
