@@ -32,10 +32,8 @@ export type WorkDocument = {
       };
     };
   };
+  employee: EmployeeInfo;
   po: {
-    number: string;
-  };
-  bast?: {
     number: string;
   };
   bapp: {
@@ -45,11 +43,13 @@ export type WorkDocument = {
   };
   invoice: {
     number: string;
-    nominal?: string;
+    nominal?: number;
     date: string;
     date_ts: number;
   };
-  employee: EmployeeInfo;
+  bast?: {
+    number: string;
+  };
 };
 
 export interface DocumentTableRow {

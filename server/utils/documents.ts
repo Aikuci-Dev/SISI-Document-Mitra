@@ -19,11 +19,16 @@ function makeWorkDocument(): WorkDocument {
         },
       },
     },
+    employee: {
+      name: '',
+      role: '',
+      supervisor: {
+        name: '',
+        phone: '',
+      },
+    },
     po: {
       number: '',
-    },
-    bast: {
-      number: 'bast',
     },
     bapp: {
       number: '',
@@ -32,17 +37,12 @@ function makeWorkDocument(): WorkDocument {
     },
     invoice: {
       number: '',
-      nominal: '',
+      nominal: 0,
       date: '',
       date_ts: 0,
     },
-    employee: {
-      name: '',
-      role: '',
-      supervisor: {
-        name: '',
-        phone: '',
-      },
+    bast: {
+      number: '',
     },
   };
 }
@@ -106,10 +106,15 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
         overrideValues(workDocument, columns[index].meta.mapped_key, item.trim());
     });
 
-    workDocument.details.date.ts.start = new Date(workDocument.details.date.date.start).getTime() / 1000;
-    workDocument.details.date.ts.end = new Date(workDocument.details.date.date.end).getTime() / 1000;
-    workDocument.bapp.date_ts = new Date(workDocument.bapp.date).getTime() / 1000;
-    workDocument.invoice.date_ts = new Date(workDocument.invoice.date).getTime() / 1000;
+    const [startDay, startMonth, startYear] = workDocument.details.date.date.start.split('/');
+    const [endDay, endMonth, endYear] = workDocument.details.date.date.end.split('/');
+    workDocument.details.date.ts.start = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay)).getTime();
+    workDocument.details.date.ts.end = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay)).getTime();
+
+    const [bappDay, bappMonth, bappYear] = workDocument.bapp.date.split('/');
+    const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoice.date.split('/');
+    workDocument.bapp.date_ts = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
+    workDocument.invoice.date_ts = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
 
     return { value, meta: { mapped_work: workDocument } };
   }).sort(
@@ -117,11 +122,10 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
   );
 
   return { columns, rows };
-  // return { columns, rows: Array(10).fill(rows) };
 }, {
   maxAge: 1 * 60,
   group: 'sheetData',
-  getKey: (_event: H3Event, name: string) => name.trim(),
+  getKey: (_event: H3Event, name: string) => `datatable_${name.trim()}`,
 });
 
 // --- Static Column Mapping ---
