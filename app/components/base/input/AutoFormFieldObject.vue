@@ -52,12 +52,18 @@ provide(FieldContextKey, fieldContext);
         v-for="(shape, key) in shapes"
         :key="key"
       >
-        <ShadcnAutoFormField
-          :config="config?.[key as keyof typeof config] as ConfigItem"
-          :field-name="`${fieldName}.${key.toString()}`"
-          :label="shape.schema?.description || key.toString()"
+        <slot
           :shape="shape"
-        />
+          :name="key.toString()"
+          :field-name="`${fieldName}.${key.toString()}`"
+        >
+          <ShadcnAutoFormField
+            :config="config?.[key as keyof typeof config] as ConfigItem"
+            :field-name="`${fieldName}.${key.toString()}`"
+            :label="shape.schema?.description || key.toString()"
+            :shape="shape"
+          />
+        </slot>
       </template>
     </slot>
   </section>

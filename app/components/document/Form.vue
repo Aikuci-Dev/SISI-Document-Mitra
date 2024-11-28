@@ -2,16 +2,13 @@
 import * as z from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { getLocalTimeZone, parseAbsolute } from '@internationalized/date';
+import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
 import type { WorkDocument } from '~~/types/document';
 
 type FormEmits = {
   generate: [value: { payload: WorkDocument }];
 };
-
 const emits = defineEmits<FormEmits>();
-
-const loading = ref(false);
 
 const formValue = defineModel<WorkDocument>();
 
@@ -24,44 +21,49 @@ const schema = z.object({
   dateEnd: z.any().refine(val => val, 'Invalid Date'),
 
   employeeSeparator: z.string().optional(),
-  employeeName: z.string().min(1, 'Employee name is required.').describe('Name'), // define with `describe` method
-  employeeRole: z.string({ description: 'Role' }).min(1, 'Employee role is required.'), // define using `description` option
-  supervisorName: z.string().min(1, 'Supervisor name is required.'), // define using `label` props
-  supervisorPhone: z.string({ description: 'Phone Number' }).optional(),
+  employeeName: z.string().min(1, 'Employee name is required.'),
+  employeeRole: z.string().min(1, 'Employee role is required.'),
+  supervisorName: z.string().min(1, 'Supervisor name is required.'),
+  supervisorRole: z.string().min(1, 'Supervisor role is required.'),
+  supervisorPhone: z.string().optional(),
 
   detail: z.object({
     po: z.string().min(1, 'PO number is required.'),
     bapp: z.string().min(1, 'BAPP number is required.'),
-    invoiceNumber: z.string({ description: 'Invoice' }).min(1, 'Invoice number is required.'),
-    invoiceNominal: z.number().min(1, 'Invoice nominal is required.').describe('Invoice Nominal'),
+    invoice: z.string().min(1, 'Invoice number is required.'),
+    invoiceNominal: z.string().min(1, 'Invoice nominal is required.'),
     bast: z.string().optional(),
   }),
 });
-type Form = z.infer<typeof schema>;
-
 const form = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
-    title: formValue.value?.details.title,
     dateStart: parseAbsolute(new Date(dateStartTS).toISOString(), getLocalTimeZone()),
     dateEnd: parseAbsolute(new Date(dateEndTS).toISOString(), getLocalTimeZone()),
 
-    employeeName: formValue.value?.employee.name,
-    employeeRole: formValue.value?.employee.role,
-    supervisorName: formValue.value?.employee.supervisor.name,
     supervisorPhone: formValue.value?.employee.supervisor.phone?.toString(),
-
     detail: {
-      po: formValue.value?.po.number,
-      bapp: formValue.value?.bapp.number,
-      invoiceNumber: formValue.value?.invoice.number,
-      invoiceNominal: formValue.value?.invoice.nominal,
-      bast: formValue.value?.bast?.number,
+      invoiceNominal: formValue.value?.invoice.nominal?.toString(),
     },
   },
 });
 
-async function onSubmit(values: Form) {
+watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
+  if (date) formValue.value!.details.date.ts.start = date.toDate(getLocalTimeZone()).getTime();
+});
+watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
+  if (date) formValue.value!.details.date.ts.end = date.toDate(getLocalTimeZone()).getTime();
+});
+watch(() => form.values.supervisorPhone, (phone) => {
+  if (phone) formValue.value!.employee.supervisor.phone = +phone.replace(/\D+/g, '');
+});
+watch(() => form.values.detail?.invoiceNominal, (invoice) => {
+  if (invoice) formValue.value!.invoice.nominal = +invoice.replace(/\D+/g, '');
+});
+
+const loading = ref(false);
+
+async function onSubmit(values: z.infer<typeof schema>) {
   loading.value = true;
 
   console.log('values', values);
@@ -73,7 +75,7 @@ async function onSubmit(values: Form) {
 </script>
 
 <template>
-  <ShadcnCard>
+  <ShadcnCard v-if="formValue">
     <ShadcnCardHeader>
       <ShadcnCardTitle>Document Form</ShadcnCardTitle>
       <ShadcnCardDescription>
@@ -89,6 +91,7 @@ async function onSubmit(values: Form) {
       >
         <template #title="slotProps">
           <ShadcnAutoFormFieldInput
+            v-model="formValue.details.title"
             v-bind="slotProps"
             class="col-span-2"
           />
@@ -116,6 +119,22 @@ async function onSubmit(values: Form) {
             </ShadcnLabel>
           </section>
         </template>
+        <template #employeeName="slotProps">
+          <ShadcnAutoFormFieldInput
+            v-model="formValue.employee.name"
+            v-bind="slotProps"
+            label="Name"
+            required
+          />
+        </template>
+        <template #employeeRole="slotProps">
+          <ShadcnAutoFormFieldInput
+            v-model="formValue.employee.role"
+            v-bind="slotProps"
+            label="Role"
+            required
+          />
+        </template>
         <template #supervisorName="slotProps">
           <section class="col-span-2 mt-4">
             <ShadcnSeparator
@@ -123,14 +142,30 @@ async function onSubmit(values: Form) {
             />
           </section>
           <ShadcnAutoFormFieldInput
-            label="Name"
+            v-model="formValue.employee.supervisor.name"
             v-bind="slotProps"
+            label="Name"
             required
+          />
+        </template>
+        <template #supervisorRole="slotProps">
+          <ShadcnAutoFormFieldInput
+            v-model="formValue.employee.supervisor.role"
+            v-bind="slotProps"
+            label="Role"
+            required
+          />
+        </template>
+        <template #supervisorPhone="slotProps">
+          <ShadcnAutoFormFieldInput
+            v-bind="slotProps"
+            label="Phone"
           />
         </template>
 
         <template #detail="slotProps">
           <DocumentFormDetail
+            v-model="formValue"
             v-bind="slotProps"
             class="col-span-2 m-4"
           />
