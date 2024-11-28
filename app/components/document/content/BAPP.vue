@@ -5,7 +5,11 @@ interface Props {
   data: WorkDocument;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const dateStart = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(props.data.details.date.ts.start)));
+const dayEnd = computed(() => new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(props.data.details.date.ts.end)));
+const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(props.data.details.date.ts.end)));
 </script>
 
 <template>
@@ -21,8 +25,7 @@ defineProps<Props>();
     <template #body>
       <div>
         <p>
-          Pada hari ini, {{ data.details.date.date.end }} tanggal {{ data.details.date.date.end }}, telah
-          diselesaikan pekerjaan oleh pihak-pihak berikut:
+          Pada hari ini, {{ dayEnd }} tanggal {{ dateEnd }}, telah diselesaikan pekerjaan oleh pihak-pihak berikut:
         </p>
       </div>
       <div class="px-12">
@@ -45,8 +48,7 @@ defineProps<Props>();
                 :
               </td>
               <td>
-                <span class="italic">Project Manager</span> PT. Sinergi
-                Informatika Semen Indonesia
+                <span class="italic">{{ data.employee.supervisor.role }}</span> PT. Sinergi Informatika Semen Indonesia
               </td>
             </tr>
             <tr>
@@ -91,8 +93,7 @@ defineProps<Props>();
         <div class="ml-16">
           <ul class="list-disc indent-4">
             <li>
-              Surat Perintah Kerja No. {{ data.po.number }} perihal Pengadaan
-              "{{ data.details.title }}"
+              Surat Perintah Kerja No. {{ data.po.number }} perihal Pengadaan "{{ data.details.title }}"
             </li>
           </ul>
         </div>
@@ -100,11 +101,7 @@ defineProps<Props>();
       <div>
         <div>
           <p>
-            Dengan ini menyatakan bahwa <strong>PIHAK KEDUA</strong> telah
-            melaksanakan pekerjaan kepada
-            <strong>PIHAK PERTAMA</strong> berupa layanan Jasa Developer
-            atas {{ data.details.title }} dari tanggal {{ data.details.date.date.start }} -
-            {{ data.details.date.date.end }} dengan detail sebagai berikut:
+            Dengan ini menyatakan bahwa <strong>PIHAK KEDUA</strong> telah melaksanakan pekerjaan kepada <strong>PIHAK PERTAMA</strong> berupa layanan Jasa Developer atas {{ data.details.title }} dari tanggal {{ dateStart }} - {{ dateEnd }} dengan detail sebagai berikut:
           </p>
         </div>
         <div class="px-12">
@@ -143,8 +140,7 @@ defineProps<Props>();
       </div>
       <div>
         <p>
-          Demikian Berita Acara Pemeriksaan Pekerjaan ini dibuat untuk
-          dipergunakan sebagaimana mestinya.
+          Demikian Berita Acara Pemeriksaan Pekerjaan ini dibuat untuk dipergunakan sebagaimana mestinya.
         </p>
       </div>
       <div />

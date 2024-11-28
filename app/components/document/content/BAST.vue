@@ -5,7 +5,10 @@ interface Props {
   data: WorkDocument & { bast: { number: string } };
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+const dayEnd = computed(() => new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(props.data.details.date.ts.end)));
+const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(props.data.details.date.ts.end)));
 </script>
 
 <template>
@@ -21,8 +24,7 @@ defineProps<Props>();
     <template #body>
       <div>
         <p>
-          Pada hari ini, {{ data.details.date.date.end }} tanggal {{ data.details.date.date.end }}, yang
-          bertanda tangan di bawah ini:
+          Pada hari ini, {{ dayEnd }} tanggal {{ dateEnd }}, yang bertanda tangan di bawah ini:
         </p>
       </div>
       <div class="px-12">
@@ -45,8 +47,7 @@ defineProps<Props>();
                 :
               </td>
               <td>
-                <span class="italic">Project Manager</span> PT. Sinergi
-                Informatika Semen Indonesia
+                <span class="italic">{{ data.employee.supervisor.role }}</span> PT. Sinergi Informatika Semen Indonesia
               </td>
             </tr>
             <tr>
@@ -91,9 +92,7 @@ defineProps<Props>();
         <div class="ml-16">
           <ul class="list-disc indent-4">
             <li>
-              Surat Perintah Kerja No. {{ data.po.number }} perihal Pengadaan
-              "{{ data.details.title }}" Berita Acara Pemeriksaan Pekerjaan No.
-              {{ data.bapp.number }} tanggal {{ data.details.date.date.end }}
+              Surat Perintah Kerja No. {{ data.po.number }} perihal Pengadaan "{{ data.details.title }}" Berita Acara Pemeriksaan Pekerjaan No. {{ data.bapp.number }} tanggal {{ dateEnd }}
             </li>
           </ul>
         </div>
@@ -101,19 +100,15 @@ defineProps<Props>();
       <div>
         <p>Kedua belah Pihak secara bersama-sama sepakat bahwa:</p>
         <p>
-          <strong>PIHAK KEDUA</strong> telah menyelesaikan pekerjaan
-          "{{ data.details.title }}" dan menyerahkan kepada
-          <strong>PIHAK PERTAMA</strong>.
+          <strong>PIHAK KEDUA</strong> telah menyelesaikan pekerjaan "{{ data.details.title }}" dan menyerahkan kepada <strong>PIHAK PERTAMA</strong>.
         </p>
         <p>
-          <strong>PIHAK PERTAMA</strong> menerima baik penyerahan dari
-          <strong>PIHAK KEDUA</strong> berupa pekerjaan tersebut diatas.
+          <strong>PIHAK PERTAMA</strong> menerima baik penyerahan dari <strong>PIHAK KEDUA</strong> berupa pekerjaan tersebut diatas.
         </p>
       </div>
       <div>
         <p>
-          Demikian Berita Acara Serah Terima Pekerjaan ini dibuat untuk
-          dipergunakan sebagaimana mestinya.
+          Demikian Berita Acara Serah Terima Pekerjaan ini dibuat untuk dipergunakan sebagaimana mestinya.
         </p>
       </div>
       <div />
