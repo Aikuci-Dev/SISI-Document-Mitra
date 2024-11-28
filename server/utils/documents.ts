@@ -24,7 +24,8 @@ function makeWorkDocument(): WorkDocument {
       role: '',
       supervisor: {
         name: '',
-        phone: '',
+        role: '',
+        phone: 0,
       },
     },
     po: {
@@ -115,6 +116,8 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
     const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoice.date.split('/');
     workDocument.bapp.date_ts = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
     workDocument.invoice.date_ts = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
+
+    workDocument.employee.supervisor.role = 'Project Manager';
 
     return { value, meta: { mapped_work: workDocument } };
   }).sort(

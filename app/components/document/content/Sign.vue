@@ -16,7 +16,7 @@ defineProps<Props>();
       class="basis-1/2"
       :sign="{
         name: employee.supervisor.name,
-        role: 'Project Manager',
+        role: employee.supervisor.role,
         alias: 'PIHAK PERTAMA',
         company: 'PT. Sinergi Informatika Semen Indonesia',
       }"

@@ -14,7 +14,8 @@ export interface EmployeeInfo {
   role: string;
   supervisor: {
     name: string;
-    phone?: string | number;
+    role: string;
+    phone?: number;
   };
 }
 
