@@ -26,6 +26,7 @@
     "h3-zod": "^0.5.3",
     "lucide-vue-next": "^0.454.0",
     "nuxt": "^3.14.159",
+    "nuxt-signature-pad": "^1.1.2",
     "radix-vue": "^1.9.8",
     "shadcn-nuxt": "^0.11.2",
     "tailwind-merge": "^2.5.4",
