@@ -9,14 +9,11 @@ export interface Sign {
   company: string;
   isSignPad?: boolean;
 }
-
-interface Props {
+const props = defineProps<{
   sign: Sign;
   signPad?: SignPad;
   class?: HTMLAttributes['class'];
-}
-
-const props = defineProps<Props>();
+}>();
 
 const signUrl = defineModel<string>('url');
 </script>

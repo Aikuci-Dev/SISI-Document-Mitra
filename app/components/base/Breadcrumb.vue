@@ -4,12 +4,7 @@ export interface Item {
   label: string;
   href: string;
 }
-
-interface Props {
-  items: Item[];
-}
-
-defineProps<Props>();
+defineProps<{ items: Item[] }>();
 </script>
 
 <template>

@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import type { WorkDocument } from '~~/types/document';
 
-interface Props {
+const props = defineProps<{
   data: WorkDocument & { bast: { number: string } };
-}
-
-const props = defineProps<Props>();
+}>();
 
 const dayEnd = computed(() => new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(props.data.details.date.ts.end)));
 const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(props.data.details.date.ts.end)));

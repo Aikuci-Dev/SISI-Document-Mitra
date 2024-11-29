@@ -1,11 +1,7 @@
 <script setup lang="ts">
 import type { EmployeeInfo } from '~~/types/document';
 
-interface Props {
-  employee: EmployeeInfo;
-}
-
-defineProps<Props>();
+defineProps<{ employee: EmployeeInfo }>();
 </script>
 
 <template>

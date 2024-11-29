@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import * as z from 'zod';
+import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 
@@ -18,7 +18,7 @@ const form = useForm({
   initialValues: { name: user.value!.oauth!.name },
 });
 
-async function onSubmit(values: Form) {
+async function handleSubmit(values: Form) {
   loading.value = true;
 
   try {
@@ -53,7 +53,7 @@ async function onSubmit(values: Form) {
         },
       }"
       class="w-96"
-      @submit="onSubmit"
+      @submit="handleSubmit"
     >
       <div class="mt-4 flex justify-end">
         <ShadcnButton

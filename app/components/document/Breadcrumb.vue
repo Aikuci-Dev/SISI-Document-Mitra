@@ -6,7 +6,6 @@ interface Props {
   page: string;
   items?: Item[];
 }
-
 withDefaults(defineProps<Props>(), {
   items: () => [{ label: 'Documents', href: '/documents' }],
 });
