@@ -1,14 +1,18 @@
 <script setup lang="ts">
-import * as z from 'zod';
+import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
 import type { WorkDocument } from '~~/types/document';
 
 type FormEmits = {
-  generate: [value: { payload: WorkDocument }];
+  generate: [];
 };
 const emits = defineEmits<FormEmits>();
+
+defineProps<{
+  isDisabledAction?: boolean;
+}>();
 
 const formValue = defineModel<WorkDocument>();
 
@@ -31,7 +35,7 @@ const schema = z.object({
     po: z.string().min(1, 'PO number is required.'),
     bapp: z.string().min(1, 'BAPP number is required.'),
     invoice: z.string().min(1, 'Invoice number is required.'),
-    invoiceNominal: z.string().min(1, 'Invoice nominal is required.'),
+    invoiceNominal: z.string().min(1, 'Invoice nominal is required.').refine(val => +val.replace(/\D+/g, '') > 0, 'Invoice nominal is required.'),
     bast: z.string().optional(),
   }),
 });
@@ -61,16 +65,8 @@ watch(() => form.values.detail?.invoiceNominal, (invoice) => {
   if (invoice) formValue.value!.invoice.nominal = +invoice.replace(/\D+/g, '');
 });
 
-const loading = ref(false);
-
-async function onSubmit(values: z.infer<typeof schema>) {
-  loading.value = true;
-
-  console.log('values', values);
-  if (formValue.value)
-    emits('generate', { payload: formValue.value });
-
-  loading.value = false;
+async function handleSubmit() {
+  emits('generate');
 }
 </script>
 
@@ -87,7 +83,7 @@ async function onSubmit(values: z.infer<typeof schema>) {
         :schema
         :form
         class="grid grid-cols-2 gap-x-4"
-        @submit="onSubmit"
+        @submit="handleSubmit"
       >
         <template #title="slotProps">
           <ShadcnAutoFormFieldInput
@@ -157,6 +153,7 @@ async function onSubmit(values: z.infer<typeof schema>) {
           />
         </template>
         <template #supervisorPhone="slotProps">
+          <!-- TODO: Masking using `maska` -->
           <ShadcnAutoFormFieldInput
             v-bind="slotProps"
             label="Phone"
@@ -174,7 +171,7 @@ async function onSubmit(values: z.infer<typeof schema>) {
         <div class="col-span-2 mt-4 flex justify-end">
           <ShadcnButton
             type="submit"
-            :disabled="loading"
+            :disabled="isDisabledAction"
           >
             Generate
           </ShadcnButton>

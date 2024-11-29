@@ -9,12 +9,18 @@ export interface DocumentTableColumn extends TableColumn {
   };
 }
 
+export interface Sign {
+  url: string;
+}
+
 export interface EmployeeInfo {
   name: string;
   role: string;
+  sign: Sign;
   supervisor: {
     name: string;
     role: string;
+    sign: Sign;
     phone?: number;
   };
 }

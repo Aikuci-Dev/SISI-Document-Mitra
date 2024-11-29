@@ -7,8 +7,26 @@ const page = 'BAPP';
 
 const { work } = useDocument();
 const form = ref(work);
+const formSign = ref();
+const showDialogSign = ref(false);
+const isLoading = ref(false);
+const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
 
+function handleSign() {
+  if (!form.value) return;
+  form.value.employee.sign.url = formSign.value;
+  handleGenerate();
+}
 function handleGenerate() {
+  showDialogSign.value = false;
+  isLoading.value = true;
+
+  if (!formSign.value) {
+    showDialogSign.value = true;
+    return;
+  }
+
+  isLoading.value = false;
   console.log('handleGenerate');
 }
 function handleExport() {
@@ -30,10 +48,18 @@ function handleCreateBAST() {
       <template #bodyLeft>
         <DocumentForm
           v-model="form"
+          :is-disabled-action="isDisabledAction"
           @generate="handleGenerate"
         />
       </template>
       <template #bodyContent>
+        <div>
+          <DocumentDialogSign
+            v-model:open="showDialogSign"
+            v-model="formSign"
+            @sign="handleSign"
+          />
+        </div>
         <DocumentContentBAPP
           v-if="form"
           :data="form"

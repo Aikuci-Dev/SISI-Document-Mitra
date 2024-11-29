@@ -22,9 +22,15 @@ function makeWorkDocument(): WorkDocument {
     employee: {
       name: '',
       role: '',
+      sign: {
+        url: '',
+      },
       supervisor: {
         name: '',
         role: '',
+        sign: {
+          url: '',
+        },
         phone: 0,
       },
     },

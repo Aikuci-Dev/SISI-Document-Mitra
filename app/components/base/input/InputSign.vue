@@ -5,13 +5,19 @@ export interface SignPad {
   penColor?: string;
   backgroundColor?: string;
 }
-
 const props = withDefaults(defineProps<SignPad>(), {
   width: '100%',
   height: '100%',
   penColor: 'rgb(0,0,0)',
   backgroundColor: 'rgb(255, 255, 255)',
 });
+
+type SignEmits = {
+  save: [];
+  undo: [];
+  clear: [];
+};
+const emits = defineEmits<SignEmits>();
 
 const signUrl = defineModel<string>('url');
 
@@ -21,24 +27,25 @@ const signatureOptions = reactive({
 });
 const signature = ref();
 
-const handleLoadFromDataURL = (url: string) => {
-  return signature.value.fromDataURL(url);
-};
 function handleSignatureSave() {
-  console.log(signature.value.saveSignature());
-  console.log(signature.value.isCanvasEmpty());
+  if (signature.value.isCanvasEmpty()) return;
+
+  signUrl.value = signature.value.saveSignature();
+  emits('save');
 }
 function handleSignatureUndo() {
+  emits('undo');
   return signature.value.undo();
 }
 function handleSignatureClear() {
+  emits('clear');
   return signature.value.clearCanvas();
 }
 </script>
 
 <template>
   <div class="border-4 bg-white">
-    <div class="relative border-b-2">
+    <div class="border-b-2">
       <NuxtSignaturePad
         ref="signature"
         :height
@@ -46,15 +53,6 @@ function handleSignatureClear() {
         :options="signatureOptions"
         :default-url="signUrl"
       />
-
-      <div class="absolute right-0 top-0">
-        <ShadcnButton
-          variant="ghost"
-          @click="handleLoadFromDataURL(signUrl!)"
-        >
-          Load
-        </ShadcnButton>
-      </div>
     </div>
     <div class="flex h-9 justify-around">
       <ShadcnButton
