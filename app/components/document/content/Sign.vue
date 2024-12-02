@@ -20,7 +20,7 @@ const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
         alias: 'PIHAK PERTAMA',
         company: 'PT. Sinergi Informatika Semen Indonesia',
       }"
-      :sign-pad="{ height: '140px', width: '140px' }"
+      :sign-pad="{ height: '100px', width: '100px' }"
     />
     <BaseSign
       v-model:url="employeeSignURL"
@@ -31,7 +31,7 @@ const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
         alias: 'PIHAK KEDUA',
         company: '&nbsp;',
       }"
-      :sign-pad="{ height: '140px', width: '140px' }"
+      :sign-pad="{ height: '100px', width: '100px' }"
     />
   </div>
 </template>

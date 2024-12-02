@@ -33,11 +33,11 @@ const signUrl = defineModel<string>('url');
       <img
         v-else-if="signUrl"
         :src="signUrl"
-        class="size-[140px]"
+        class="size-[100px]"
       >
       <div
         v-else
-        class="h-[140px]"
+        class="h-[100px]"
       />
     </div>
     <div class="underline decoration-2">

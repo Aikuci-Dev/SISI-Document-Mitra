@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useVueToPrint } from 'vue-to-print';
+
 definePageMeta({
   middleware: 'document-child',
 });
@@ -17,7 +19,7 @@ function handleSign() {
   form.value.employee.sign.url = formSign.value;
   handleGenerate();
 }
-function handleGenerate() {
+async function handleGenerate() {
   showDialogSign.value = false;
   isLoading.value = true;
 
@@ -26,14 +28,23 @@ function handleGenerate() {
     return;
   }
 
+  await nextTick();
   isLoading.value = false;
-  console.log('handleGenerate');
+
+  // console.log('handleGenerate');
+  // // TODO: Implement generate PDF functionality
+  // // Similar to `handlePrint`, but process it on server-side.
+
+  handlePrint();
 }
-function handleExport() {
-  // TODO: Implement export functionality
-  // Similar to handleGenerate, but process it on server-side.
-  console.log('handleExport');
-}
+
+const documentComponentRef = ref();
+const { handlePrint } = useVueToPrint({
+  content: documentComponentRef,
+  documentTitle: `BAPP_${form.value?.bapp.number}`,
+  removeAfterPrint: true,
+});
+
 function handleCreateBAST() {
   navigateTo('/documents/bast');
 }
@@ -62,13 +73,14 @@ function handleCreateBAST() {
         </div>
         <DocumentContentBAPP
           v-if="form"
+          ref="documentComponentRef"
           :data="form"
         />
       </template>
       <template #bodyRight>
         <DocumentAction>
-          <ShadcnButton @click="handleExport">
-            Export
+          <ShadcnButton @click="handlePrint">
+            Print
           </ShadcnButton>
           <ShadcnButton @click="handleCreateBAST">
             Create BAST
