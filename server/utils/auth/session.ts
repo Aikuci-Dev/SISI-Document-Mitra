@@ -39,6 +39,32 @@ export async function requireUserSession(
   return userSession as UserSessionRequired;
 }
 
+export async function verifyUserAuthorizationByName(
+  event: H3Event,
+  opts: { hasBodyPayload?: boolean } = {},
+) {
+  const { user } = await requireUserSession(event);
+
+  let name = '';
+  const query: { name?: string } = getQuery(event);
+  if (query.name) name = query.name;
+  const param = getRouterParam(event, 'name');
+  if (param) name = decodeURI(param);
+  if (opts.hasBodyPayload) {
+    const body: { name?: string } = await readBody(event);
+    if (body.name) name = body.name;
+  }
+
+  if (name !== user.name) {
+    throw createError({
+      statusCode: 403,
+      message: 'Forbidden: The name you provided does not match the name in your account.',
+    });
+  }
+
+  return user;
+}
+
 function _useSession(event: H3Event) {
   return useSession<UserSession>(event, { password: sessionConfig.password });
 }
