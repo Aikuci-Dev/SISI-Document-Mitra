@@ -69,7 +69,13 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
                 <td class="w-2">
                   :
                 </td>
-                <td>{{ data.invoice.nominal }}</td>
+                <td>
+                  {{
+                    Intl
+                      .NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
+                      .format(data.invoice.nominal || 0)
+                  }}
+                </td>
               </tr>
             </tbody>
           </table>
