@@ -16,7 +16,9 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/onboarding');
   }
 
-  if (['/', '/onboarding'].includes(to.path)) return navigateTo('/dashboard');
+  if (to.path === '/onboarding') return navigateTo('/dashboard');
+
+  if (to.path === '/') return navigateTo('/dashboard', { redirectCode: 301 });
 
   return;
 });
