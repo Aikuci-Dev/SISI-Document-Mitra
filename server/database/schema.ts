@@ -18,3 +18,11 @@ export const documentBapp = sqliteTable('document_bapp', {
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
+
+export const documentBast = sqliteTable('document_bast', {
+  id: text().unique(),
+  original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
+  value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }),
+});
