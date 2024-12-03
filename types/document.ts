@@ -20,11 +20,15 @@ export interface DocumentTable {
 
 export interface DocumentState {
   work?: WorkDocument;
+  workKey?: string;
   [key: string]: unknown;
 }
+
+export type WorkAndKey = WorkDocument & { key: string };
 
 export interface WorkDocumentComposable {
   document: Ref<DocumentState>;
   work: ComputedRef<WorkDocument | undefined>;
-  setWork: (data: WorkDocument) => void;
+  workKey: ComputedRef<string | undefined>;
+  setWork: (data: WorkAndKey) => void;
 }

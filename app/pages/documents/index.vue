@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { MoreVertical } from 'lucide-vue-next';
-import type { WorkDocument } from '~~/types/document';
+import type { WorkAndKey } from '~~/types/document';
+import type { WorkDocument } from '~~/types/schema/document';
 
 const page = 'Documents';
 
@@ -14,14 +15,14 @@ const columns = computed(() => mitraTableData.value?.columns);
 const rows = computed(() => mitraTableData.value?.rows);
 
 const { setWork } = useDocument();
-function handleCreateBAPP(data: WorkDocument) {
+function handleCreateBAPP(data: WorkAndKey) {
   setWork(data);
   navigateTo('/documents/bapp');
 }
 function handleViewBAPP(data: WorkDocument) {
   console.log('handleViewBAPP', data);
 }
-function handleCreateBAST(data: WorkDocument) {
+function handleCreateBAST(data: WorkAndKey) {
   setWork(data);
   navigateTo('/documents/bast');
 }
@@ -76,8 +77,8 @@ function handleFillForm(data: WorkDocument) {
                 <ShadcnTableBody v-if="columns">
                   <template v-if="rows">
                     <ShadcnTableRow
-                      v-for="(row, indexRow) in rows"
-                      :key="indexRow"
+                      v-for="row in rows"
+                      :key="row.key"
                     >
                       <ShadcnTableCell class="sticky left-0 border-e-4 bg-white">
                         <ShadcnDropdownMenu>
@@ -94,7 +95,7 @@ function handleFillForm(data: WorkDocument) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAPP(row.meta.mapped_work)"
+                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, key: row.key })"
                             >
                               Create
                             </ShadcnDropdownMenuItem>
@@ -108,7 +109,7 @@ function handleFillForm(data: WorkDocument) {
                               BAST
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAST(row.meta.mapped_work)"
+                              @click="() => handleCreateBAST({ ...row.meta.mapped_work, key: row.key })"
                             >
                               Create
                             </ShadcnDropdownMenuItem>
@@ -135,8 +136,8 @@ function handleFillForm(data: WorkDocument) {
                         </ShadcnDropdownMenu>
                       </ShadcnTableCell>
                       <ShadcnTableCell
-                        v-for="(value, indexValue) in row.value"
-                        :key="`${indexRow}-${indexValue}`"
+                        v-for="(value, index) in row.value"
+                        :key="`${row.key}-${index}`"
                         class="text-nowrap border"
                       >
                         {{ value }}

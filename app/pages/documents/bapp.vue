@@ -7,7 +7,7 @@ definePageMeta({
 
 const page = 'BAPP';
 
-const { work } = useDocument();
+const { work, workKey } = useDocument();
 const form = ref(work);
 const formSign = ref();
 const showDialogSign = ref(false);
@@ -20,22 +20,33 @@ function handleSign() {
   handleGenerate();
 }
 async function handleGenerate() {
-  showDialogSign.value = false;
   isLoading.value = true;
+  showDialogSign.value = false;
 
   if (!formSign.value) {
     showDialogSign.value = true;
     return;
   }
 
-  await nextTick();
+  try {
+    await nextTick();
+
+    await $fetch(`/api/documents/mitra/bapp/${workKey.value}`, {
+      method: 'POST',
+      params: { name: form.value!.employee.name },
+      body: form.value,
+    });
+    // TODO: Implement PDF generation on the server (similar to `handlePrint`)
+
+    // Remove when server-side implementation is done
+    handlePrint();
+  }
+  catch (error) {
+    // TODO: Error Handling
+    console.error(error);
+  }
+
   isLoading.value = false;
-
-  // console.log('handleGenerate');
-  // // TODO: Implement generate PDF functionality
-  // // Similar to `handlePrint`, but process it on server-side.
-
-  handlePrint();
 }
 
 const documentComponentRef = ref();

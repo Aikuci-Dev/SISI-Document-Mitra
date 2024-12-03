@@ -1,7 +1,8 @@
 import type { H3Event } from 'h3';
 import { overrideValues, snakeCase } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
-import type { DocumentTable, DocumentTableColumn, WorkDocument } from '~~/types/document';
+import type { WorkDocument } from '~~/types/schema/document';
+import type { DocumentTable, DocumentTableColumn } from '~~/types/document';
 
 // Function to construct the initial WorkDocument structure
 function makeWorkDocument(): WorkDocument {
@@ -65,7 +66,7 @@ export const getSpreadsheetData = defineCachedFunction<SheetValues>(async (_even
   const [headers, ...rest] = data.values;
   return { headers, values: rest };
 }, {
-  maxAge: 5 * 60,
+  maxAge: 30 * 60,
   group: 'sheetData',
   getKey: () => 'all',
 });
@@ -95,7 +96,7 @@ export const getRawDataByName = defineCachedFunction<SheetValues>(async (event: 
     values: freelancerIndex === -1 ? [] : values.filter(mitra => mitra[freelancerIndex] == name),
   };
 }, {
-  maxAge: 1 * 60,
+  maxAge: 5 * 60,
   group: 'sheetData',
   getKey: (_event: H3Event, name: string) => `raw_${name.trim()}`,
 });
@@ -105,37 +106,53 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
   const { values } = await getRawDataByName(event, name);
   const columns = await getDataColumns(event);
 
-  const rows = values.map((value) => {
-    const workDocument = makeWorkDocument();
+  const rows = values
+    .map((value) => {
+      const workDocument = makeWorkDocument();
 
-    value.forEach((item, index) => {
-      if (columns[index].meta.mapped_key)
-        overrideValues(workDocument, columns[index].meta.mapped_key, item.trim());
-    });
+      value.forEach((item, index) => {
+        if (columns[index].meta.mapped_key)
+          overrideValues(workDocument, columns[index].meta.mapped_key, item.trim());
+      });
 
-    const [startDay, startMonth, startYear] = workDocument.details.date.date.start.split('/');
-    const [endDay, endMonth, endYear] = workDocument.details.date.date.end.split('/');
-    workDocument.details.date.ts.start = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay)).getTime();
-    workDocument.details.date.ts.end = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay)).getTime();
+      const [startDay, startMonth, startYear] = workDocument.details.date.date.start.split('/');
+      const [endDay, endMonth, endYear] = workDocument.details.date.date.end.split('/');
+      workDocument.details.date.ts.start = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay)).getTime();
+      workDocument.details.date.ts.end = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay)).getTime();
 
-    const [bappDay, bappMonth, bappYear] = workDocument.bapp.date.split('/');
-    const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoice.date.split('/');
-    workDocument.bapp.date_ts = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
-    workDocument.invoice.date_ts = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
+      const [bappDay, bappMonth, bappYear] = workDocument.bapp.date.split('/');
+      const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoice.date.split('/');
+      workDocument.bapp.date_ts = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
+      workDocument.invoice.date_ts = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
 
-    workDocument.employee.supervisor.role = 'Project Manager';
+      workDocument.employee.supervisor.role = 'Project Manager';
 
-    return { value, meta: { mapped_work: workDocument } };
-  }).sort(
-    (prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts,
-  );
+      return { key: `${workDocument.details.date.ts.end}-${workDocument.po.number}`, value, meta: { mapped_work: workDocument } };
+    })
+    .filter(value => value.meta.mapped_work.po.number)
+    .sort((prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts);
 
   return { columns, rows };
 }, {
-  maxAge: 1 * 60,
+  maxAge: 5 * 60,
   group: 'sheetData',
   getKey: (_event: H3Event, name: string) => `datatable_${name.trim()}`,
 });
+
+// Get WorkDocument by a specific name and ID
+export async function getMyWorkDocumentById(event: H3Event, context: { name: string; id: string }): Promise<WorkDocument> {
+  const { name, id } = context;
+
+  const dataTables = await getDataTableByName(event, name);
+  const dataTable = dataTables.rows.find(row => row.key === id);
+  if (!dataTable)
+    throw createError({
+      statusCode: 500,
+      message: 'Something went wrong. Please refresh the page OR try again later.',
+    });
+
+  return dataTable.meta.mapped_work;
+};
 
 // --- Static Column Mapping ---
 
