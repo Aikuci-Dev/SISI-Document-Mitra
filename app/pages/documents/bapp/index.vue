@@ -19,7 +19,8 @@ function handleSign() {
   form.value.employee.sign.url = formSign.value;
   handleGenerate();
 }
-async function handleGenerate() {
+
+async function handleGenerate(skipStore?: boolean) {
   isLoading.value = true;
   showDialogSign.value = false;
 
@@ -28,22 +29,25 @@ async function handleGenerate() {
     return;
   }
 
-  try {
-    await nextTick();
+  await nextTick();
 
-    await $fetch(`/api/documents/mitra/bapp/${workKey.value}`, {
-      method: 'POST',
-      params: { name: form.value!.employee.name },
-      body: form.value,
-    });
-    // TODO: Implement PDF generation on the server (similar to `handlePrint`)
+  if (skipStore) handlePrint();
+  else {
+    try {
+      await $fetch(`/api/documents/mitra/bapp/${workKey.value}`, {
+        method: 'POST',
+        params: { name: form.value!.employee.name },
+        body: form.value,
+      });
+      // TODO: Implement PDF generation on the server (similar to `handlePrint`)
 
-    // Remove when server-side implementation is done
-    handlePrint();
-  }
-  catch (error) {
-    // TODO: Error Handling
-    console.error(error);
+      // Remove when server-side implementation is done
+      handlePrint();
+    }
+    catch (error) {
+      // TODO: Error Handling
+      console.error(error);
+    }
   }
 
   isLoading.value = false;
@@ -90,10 +94,13 @@ function handleCreateBAST() {
       </template>
       <template #bodyRight>
         <DocumentAction>
-          <ShadcnButton @click="handlePrint">
+          <ShadcnButton @click="() => handleGenerate(true)">
             Print
           </ShadcnButton>
-          <ShadcnButton @click="handleCreateBAST">
+          <ShadcnButton
+            v-if="form?.bast?.number"
+            @click="handleCreateBAST"
+          >
             Create BAST
           </ShadcnButton>
         </DocumentAction>
