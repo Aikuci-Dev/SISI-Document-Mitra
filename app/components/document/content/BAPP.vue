@@ -12,9 +12,22 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
   <Document>
     <template #header>
       <h1>BERITA ACARA PEMERIKSAAN PEKERJAAN</h1>
-      <h1>{{ data.details.title }}</h1>
+      <h1>
+        <slot
+          name="details-title"
+          :value="data.details.title"
+        >
+          {{ data.details.title }}
+        </slot>
+      </h1>
       <h1 class="text-[11pt] font-normal">
-        No: {{ data.bapp.number }}
+        No:
+        <slot
+          name="bapp-number"
+          :value="data.bapp.number"
+        >
+          {{ data.bapp.number }}
+        </slot>
       </h1>
     </template>
 
@@ -24,13 +37,63 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
           Pada hari ini, {{ dayEnd }} tanggal {{ dateEnd }}, telah diselesaikan pekerjaan oleh pihak-pihak berikut:
         </p>
       </div>
-      <DocumentContentParticipant :employee="data.employee" />
+
+      <DocumentContentParticipant :employee="data.employee">
+        <template #supervisor-name="{ value }">
+          <slot
+            name="supervisor-name"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #supervisor-role="{ value }">
+          <slot
+            name="supervisor-role"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #employee-name="{ value }">
+          <slot
+            name="employee-name"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #employee-role="{ value }">
+          <slot
+            name="employee-role"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+      </DocumentContentParticipant>
+
       <div>
         <p>Dengan berdasarkan:</p>
         <div class="ml-16">
           <ul class="list-disc indent-4">
             <li>
-              Surat Perintah Kerja No. {{ data.po.number }} perihal Pengadaan "{{ data.details.title }}"
+              Surat Perintah Kerja No.
+              <slot
+                name="po-number"
+                :value="data.po.number"
+              >
+                {{ data.po.number }}
+              </slot>
+              perihal Pengadaan
+              <span>
+                "<slot
+                  name="details-title"
+                  :value="data.details.title"
+                >
+                  {{ data.details.title }}
+                </slot>"
+              </span>
             </li>
           </ul>
         </div>
@@ -38,7 +101,14 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
       <div>
         <div>
           <p>
-            Dengan ini menyatakan bahwa <strong>PIHAK KEDUA</strong> telah melaksanakan pekerjaan kepada <strong>PIHAK PERTAMA</strong> berupa layanan Jasa Developer atas {{ data.details.title }} dari tanggal {{ dateStart }} - {{ dateEnd }} dengan detail sebagai berikut:
+            Dengan ini menyatakan bahwa <strong>PIHAK KEDUA</strong> telah melaksanakan pekerjaan kepada <strong>PIHAK PERTAMA</strong> berupa layanan Jasa Developer atas
+            <slot
+              name="details-title"
+              :value="data.details.title"
+            >
+              {{ data.details.title }}
+            </slot>
+            dari tanggal {{ dateStart }} - {{ dateEnd }} dengan detail sebagai berikut:
           </p>
         </div>
         <div class="px-12">
@@ -51,7 +121,14 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
                 <td class="w-2">
                   :
                 </td>
-                <td>{{ data.po.number }}</td>
+                <td>
+                  <slot
+                    name="po-number"
+                    :value="data.po.number"
+                  >
+                    {{ data.po.number }}
+                  </slot>
+                </td>
               </tr>
               <tr>
                 <td class="w-[150px]">
@@ -60,7 +137,14 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
                 <td class="w-2">
                   :
                 </td>
-                <td>{{ data.invoice.number }}</td>
+                <td>
+                  <slot
+                    name="invoice-number"
+                    :value="data.invoice.number"
+                  >
+                    {{ data.invoice.number }}
+                  </slot>
+                </td>
               </tr>
               <tr>
                 <td class="w-[150px]">
@@ -70,11 +154,16 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
                   :
                 </td>
                 <td>
-                  {{
-                    Intl
-                      .NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
-                      .format(data.invoice.nominal || 0)
-                  }}
+                  <slot
+                    name="invoice-nominal"
+                    :value="data.invoice.nominal"
+                  >
+                    {{
+                      Intl
+                        .NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
+                        .format(data.invoice.nominal || 0)
+                    }}
+                  </slot>
                 </td>
               </tr>
             </tbody>
@@ -88,7 +177,73 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
       </div>
       <div />
       <div />
-      <DocumentContentSign :employee="data.employee" />
+
+      <DocumentContentSign :employee="data.employee">
+        <template #supervisor-alias="{ value }">
+          <slot
+            name="supervisor-alias"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #supervisor-company="{ value }">
+          <slot
+            name="supervisor-company"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #supervisor-name="{ value }">
+          <slot
+            name="supervisor-name"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #supervisor-role="{ value }">
+          <slot
+            name="supervisor-role"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #employee-alias="{ value }">
+          <slot
+            name="employee-alias"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #employee-company="{ value }">
+          <slot
+            name="employee-company"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #employee-name="{ value }">
+          <slot
+            name="employee-name"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+        <template #employee-role="{ value }">
+          <slot
+            name="employee-role"
+            :value
+          >
+            {{ value }}
+          </slot>
+        </template>
+      </DocumentContentSign>
     </template>
   </Document>
 </template>

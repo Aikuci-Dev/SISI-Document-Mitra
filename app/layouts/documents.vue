@@ -21,7 +21,7 @@ const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
         <slot name="header" />
       </h1>
     </div>
-    <div>
+    <slot name="body">
       <div
         v-if="$slots.bodyHeader"
         ref="bodyHeader"
@@ -61,7 +61,7 @@ const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
       <template v-if="$slots.bodyFooter">
         <slot name="bodyFooter" />
       </template>
-    </div>
+    </slot>
     <div
       v-if="$slots.footer"
       ref="footer"

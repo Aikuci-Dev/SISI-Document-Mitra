@@ -16,7 +16,14 @@ defineProps<{ employee: EmployeeInfo }>();
             <td class="w-2">
               :
             </td>
-            <td>{{ employee.supervisor.name }}</td>
+            <td>
+              <slot
+                name="supervisor-name"
+                :value="employee.supervisor.name"
+              >
+                {{ employee.supervisor.name }}
+              </slot>
+            </td>
           </tr>
           <tr>
             <td class="w-[100px]">
@@ -26,7 +33,14 @@ defineProps<{ employee: EmployeeInfo }>();
               :
             </td>
             <td>
-              <span class="italic">{{ employee.supervisor.role }}</span> PT. Sinergi Informatika Semen Indonesia
+              <span class="italic">
+                <slot
+                  name="supervisor-role"
+                  :value="employee.supervisor.role"
+                >
+                  {{ employee.supervisor.role }}
+                </slot>
+              </span> PT. Sinergi Informatika Semen Indonesia
             </td>
           </tr>
           <tr>
@@ -47,7 +61,14 @@ defineProps<{ employee: EmployeeInfo }>();
             <td class="w-2">
               :
             </td>
-            <td>{{ employee.name }}</td>
+            <td>
+              <slot
+                name="employee-name"
+                :value="employee.name"
+              >
+                {{ employee.name }}
+              </slot>
+            </td>
           </tr>
           <tr>
             <td class="w-[100px]">
@@ -56,7 +77,16 @@ defineProps<{ employee: EmployeeInfo }>();
             <td class="w-2">
               :
             </td>
-            <td><span class="italic">{{ employee.role }}</span></td>
+            <td>
+              <span class="italic">
+                <slot
+                  name="employee-role"
+                  :value="employee.role"
+                >
+                  {{ employee.role }}
+                </slot>
+              </span>
+            </td>
           </tr>
           <tr>
             <td colspan="3">

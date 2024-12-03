@@ -20,8 +20,22 @@ const signUrl = defineModel<string>('url');
 
 <template>
   <div :class="props.class">
-    <div>{{ sign.alias }}</div>
-    <div>{{ sign.company }}</div>
+    <div>
+      <slot
+        name="alias"
+        :value="sign.alias"
+      >
+        {{ sign.alias }}
+      </slot>
+    </div>
+    <div>
+      <slot
+        name="company"
+        :value="sign.company"
+      >
+        {{ sign.company }}
+      </slot>
+    </div>
     <div class="flex justify-center">
       <NuxtSignaturePad
         v-if="sign.isSignPad"
@@ -41,10 +55,20 @@ const signUrl = defineModel<string>('url');
       />
     </div>
     <div class="underline decoration-2">
-      {{ sign.name }}
+      <slot
+        name="name"
+        :value="sign.name"
+      >
+        {{ sign.name }}
+      </slot>
     </div>
     <div class="font-normal italic">
-      {{ sign.role }}
+      <slot
+        name="role"
+        :value="sign.role"
+      >
+        {{ sign.role }}
+      </slot>
     </div>
   </div>
 </template>

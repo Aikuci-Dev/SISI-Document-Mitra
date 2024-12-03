@@ -21,7 +21,40 @@ const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
         company: 'PT. Sinergi Informatika Semen Indonesia',
       }"
       :sign-pad="{ height: '100px', width: '100px' }"
-    />
+    >
+      <template #alias="{ value }">
+        <slot
+          name="supervisor-alias"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+      <template #company="{ value }">
+        <slot
+          name="supervisor-company"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+      <template #name="{ value }">
+        <slot
+          name="supervisor-name"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+      <template #role="{ value }">
+        <slot
+          name="supervisor-role"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+    </BaseSign>
     <BaseSign
       v-model:url="employeeSignURL"
       class="basis-1/2"
@@ -32,6 +65,39 @@ const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
         company: '&nbsp;',
       }"
       :sign-pad="{ height: '100px', width: '100px' }"
-    />
+    >
+      <template #alias="{ value }">
+        <slot
+          name="employee-alias"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+      <template #company="{ value }">
+        <slot
+          name="employee-company"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+      <template #name="{ value }">
+        <slot
+          name="employee-name"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+      <template #role="{ value }">
+        <slot
+          name="employee-role"
+          :value
+        >
+          {{ value }}
+        </slot>
+      </template>
+    </BaseSign>
   </div>
 </template>
