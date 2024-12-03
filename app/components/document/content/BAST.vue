@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { WorkDocument } from '~~/types/document';
+import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{
   data: WorkDocument & { bast: { number: string } };

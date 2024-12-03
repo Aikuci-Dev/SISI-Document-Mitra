@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EmployeeInfo } from '~~/types/document';
+import type { EmployeeInfo } from '~~/types/schema/document';
 
 const props = defineProps<{ employee: EmployeeInfo }>();
 

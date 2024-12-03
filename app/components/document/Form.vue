@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
-import type { WorkDocument } from '~~/types/document';
+import type { WorkDocument } from '~~/types/schema/document';
 
 type FormEmits = {
   generate: [];

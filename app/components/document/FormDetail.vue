@@ -1,7 +1,7 @@
 <script setup lang="ts"  generic="T extends ZodRawShape">
 import type { ZodObject, ZodRawShape } from 'zod';
 import type { Shape } from '~/components/shadcn/ui/auto-form/interface';
-import type { WorkDocument } from '~~/types/document';
+import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{
   fieldName: string;
@@ -56,6 +56,7 @@ const delegatedProps = computed(() => {
           />
         </template>
         <template #invoiceNominal="slotProps">
+          <!-- TODO: Masking using `maska` -->
           <ShadcnAutoFormFieldInput
             v-bind="slotProps"
             label="Invoice Nominal"
