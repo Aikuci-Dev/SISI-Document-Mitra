@@ -1,11 +1,13 @@
 <script setup lang="ts">
+import { useDateFormat } from '@vueuse/core';
+import { formatCurrency } from '~/lib/utils';
 import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dateStart = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(props.data.details.date.ts.start)));
-const dayEnd = computed(() => new Intl.DateTimeFormat('id-ID', { weekday: 'long' }).format(new Date(props.data.details.date.ts.end)));
-const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }).format(new Date(props.data.details.date.ts.end)));
+const dateStart = useDateFormat(new Date(props.data.details.date.ts.start), 'DD MMMM YYYY', { locales: 'id-ID' });
+const dateEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'DD MMMM YYYY', { locales: 'id-ID' });
+const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', { locales: 'id-ID' });
 </script>
 
 <template>
@@ -34,7 +36,21 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
     <template #body>
       <div>
         <p>
-          Pada hari ini, {{ dayEnd }} tanggal {{ dateEnd }}, telah diselesaikan pekerjaan oleh pihak-pihak berikut:
+          Pada hari ini,
+          <slot
+            name="details-day-end"
+            :value="data.details.date.ts.end"
+          >
+            {{ dayEnd }}
+          </slot>
+          tanggal
+          <slot
+            name="details-date-end"
+            :value="data.details.date.ts.end"
+          >
+            {{ dateEnd }}
+          </slot>
+          , telah diselesaikan pekerjaan oleh pihak-pihak berikut:
         </p>
       </div>
 
@@ -108,7 +124,21 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
             >
               {{ data.details.title }}
             </slot>
-            dari tanggal {{ dateStart }} - {{ dateEnd }} dengan detail sebagai berikut:
+            dari tanggal
+            <slot
+              name="details-date-start"
+              :value="data.details.date.ts.start"
+            >
+              {{ dateStart }}
+            </slot>
+            -
+            <slot
+              name="details-date-end"
+              :value="data.details.date.ts.end"
+            >
+              {{ dateEnd }}
+            </slot>
+            dengan detail sebagai berikut:
           </p>
         </div>
         <div class="px-12">
@@ -158,11 +188,7 @@ const dateEnd = computed(() => new Intl.DateTimeFormat('id-ID', { year: 'numeric
                     name="invoice-nominal"
                     :value="data.invoice.nominal"
                   >
-                    {{
-                      Intl
-                        .NumberFormat('id-ID', { style: 'currency', currency: 'IDR' })
-                        .format(data.invoice.nominal || 0)
-                    }}
+                    {{ formatCurrency(data.invoice.nominal) }}
                   </slot>
                 </td>
               </tr>
