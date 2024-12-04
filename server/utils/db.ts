@@ -1,7 +1,4 @@
-import { drizzle } from 'drizzle-orm/libsql';
-
-import type { SQLiteColumn } from 'drizzle-orm/sqlite-core';
-import { sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/libsql/web';
 import * as schema from '../database/schema';
 
 export { sql, eq, and, or } from 'drizzle-orm';
@@ -9,11 +6,19 @@ export { sql, eq, and, or } from 'drizzle-orm';
 export const tables = schema;
 
 export function useDB() {
-  return drizzle({ connection: { url: process.env.DB_FILE_NAME! }, schema });
+  return drizzle({
+    connection: {
+      url: process.env.DATABASE_URL!,
+      authToken: process.env.DATABASE_AUTH_TOKEN!,
+    },
+    schema,
+  });
 }
 
-export function aliasedColumn(column: SQLiteColumn | string, alias: string) {
-  return sql<string>`${column}`.as(alias);
+export function takeFirst<T extends unknown[]>(values: T): T[number] {
+  if (values.length !== 1) return undefined;
+
+  return values[0];
 }
 
 export function takeFirstOrThrow<T extends unknown[]>(values: T): T[number] {
