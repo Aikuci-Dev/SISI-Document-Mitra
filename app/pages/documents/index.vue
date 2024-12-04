@@ -19,20 +19,17 @@ function handleCreateBAPP(data: WorkAndKey) {
   setWork(data);
   navigateTo('/documents/bapp');
 }
-function handleViewBAPP(data: WorkDocument) {
-  console.log('handleViewBAPP', data);
+function handleViewBAPP(id: string) {
+  navigateTo(`/documents/bapp/${id}`, { open: { target: '_blank' } });
 }
 function handleCreateBAST(data: WorkAndKey) {
   setWork(data);
   navigateTo('/documents/bast');
 }
-function handleViewBAST(data: WorkDocument) {
-  console.log('handleViewBAST', data);
+function handleViewBAST(id: string) {
+  navigateTo(`/documents/bast/${id}`, { open: { target: '_blank' } });
 }
 
-function handleMessageSpv(data: WorkDocument) {
-  console.log('handleMessageSpv', data);
-}
 function handleFillForm(data: WorkDocument) {
   console.log('handleFillForm', data);
 }
@@ -100,33 +97,30 @@ function handleFillForm(data: WorkDocument) {
                               Create
                             </ShadcnDropdownMenuItem>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleViewBAPP(row.meta.mapped_work)"
+                              @click="() => handleViewBAPP(row.key)"
                             >
                               View
                             </ShadcnDropdownMenuItem>
-                            <ShadcnDropdownMenuSeparator />
-                            <ShadcnDropdownMenuLabel>
-                              BAST
-                            </ShadcnDropdownMenuLabel>
-                            <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAST({ ...row.meta.mapped_work, key: row.key })"
-                            >
-                              Create
-                            </ShadcnDropdownMenuItem>
-                            <ShadcnDropdownMenuItem
-                              @click="() => handleViewBAST(row.meta.mapped_work)"
-                            >
-                              View
-                            </ShadcnDropdownMenuItem>
+                            <div v-if="row.meta.mapped_work.bast?.number">
+                              <ShadcnDropdownMenuSeparator />
+                              <ShadcnDropdownMenuLabel>
+                                BAST
+                              </ShadcnDropdownMenuLabel>
+                              <ShadcnDropdownMenuItem
+                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, key: row.key })"
+                              >
+                                Create
+                              </ShadcnDropdownMenuItem>
+                              <ShadcnDropdownMenuItem
+                                @click="() => handleViewBAST(row.key)"
+                              >
+                                View
+                              </ShadcnDropdownMenuItem>
+                            </div>
                             <ShadcnDropdownMenuSeparator />
                             <ShadcnDropdownMenuLabel>
                               Others
                             </ShadcnDropdownMenuLabel>
-                            <ShadcnDropdownMenuItem
-                              @click="() => handleMessageSpv(row.meta.mapped_work)"
-                            >
-                              Message Supervisor
-                            </ShadcnDropdownMenuItem>
                             <ShadcnDropdownMenuItem
                               @click="() => handleFillForm(row.meta.mapped_work)"
                             >

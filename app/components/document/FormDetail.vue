@@ -68,10 +68,12 @@ const delegatedProps = computed(() => {
           #bast="slotProps"
         >
           <ShadcnAutoFormFieldInput
+            v-if="formValue.bast.number.length"
             v-model="formValue.bast.number"
             v-bind="slotProps"
             label="BAST"
           />
+          <span v-else />
         </template>
       </BaseInputAutoFormFieldObject>
     </ShadcnCardContent>

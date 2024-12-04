@@ -23,7 +23,6 @@ if (error.value?.statusCode === 404) {
             <DocumentContentBAPP
               v-if="data?.value"
               :data="data?.value"
-              class="h-full overflow-auto"
             >
               <template #details-title="{ value }">
                 <BaseFieldHighlight
