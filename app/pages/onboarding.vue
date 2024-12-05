@@ -2,6 +2,7 @@
 import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
+import { toast } from '~/components/shadcn/ui/toast';
 
 const { user, fetch: refetchUserSession } = useUserSession();
 const loading = ref(false);
@@ -11,30 +12,36 @@ const schema = z.object({
     .string({ required_error: 'Name is required.' })
     .min(2, { message: 'Name must be at least 2 characters.' }),
 });
-type Form = z.infer<typeof schema>;
 
 const form = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: { name: user.value!.oauth!.name },
 });
 
-async function handleSubmit(values: Form) {
+const showAlertDialog = ref(false);
+
+async function handleSubmit() {
+  showAlertDialog.value = false;
   loading.value = true;
 
-  try {
-    const { id, email } = user.value!.oauth!;
-    await $fetch('/api/user/google', {
-      method: 'POST',
-      body: { id, email, name: values.name },
-    });
+  const { id, email } = user.value!.oauth!;
+  await $fetch('/api/user/google', {
+    method: 'POST',
+    body: { id, email, name: form.values.name },
+    onResponseError: ({ response }) => {
+      const messages = response.statusText.split('>>');
+      toast({
+        title: messages[0]?.trim(),
+        description: messages[1]?.trim(),
+        variant: 'destructive',
+      });
 
-    await refetchUserSession();
-    navigateTo('/documents');
-  }
-  catch (error) {
-    // TODO: Error Handling
-    console.error(error);
-  }
+      loading.value = false;
+    },
+  });
+
+  await refetchUserSession();
+  navigateTo('/documents');
 
   loading.value = false;
 }
@@ -44,6 +51,23 @@ async function handleSubmit(values: Form) {
   <div
     class="container flex h-screen items-center justify-center"
   >
+    <ShadcnAlertDialog v-model:open="showAlertDialog">
+      <ShadcnAlertDialogContent>
+        <ShadcnAlertDialogHeader>
+          <ShadcnAlertDialogTitle>Final Confirmation</ShadcnAlertDialogTitle>
+          <ShadcnAlertDialogDescription>
+            This action cannot be undone. Please make sure the name you provide matches the one registered on SISI.
+          </ShadcnAlertDialogDescription>
+        </ShadcnAlertDialogHeader>
+        <ShadcnAlertDialogFooter>
+          <ShadcnAlertDialogCancel>Cancel</ShadcnAlertDialogCancel>
+          <ShadcnAlertDialogAction @click="handleSubmit">
+            Confirm
+          </ShadcnAlertDialogAction>
+        </ShadcnAlertDialogFooter>
+      </ShadcnAlertDialogContent>
+    </ShadcnAlertDialog>
+
     <ShadcnAutoForm
       :schema
       :form
@@ -53,7 +77,7 @@ async function handleSubmit(values: Form) {
         },
       }"
       class="w-96"
-      @submit="handleSubmit"
+      @submit="() => showAlertDialog = true"
     >
       <div class="mt-4 flex justify-end">
         <ShadcnButton

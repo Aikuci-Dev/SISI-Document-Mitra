@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
+import { toast } from '~/components/shadcn/ui/toast';
 
 definePageMeta({
   layout: false,
@@ -34,21 +35,23 @@ async function handleGenerate(skipStore?: boolean) {
 
   if (skipStore) handlePrint();
   else {
-    try {
-      await $fetch(`/api/documents/mitra/bapp/${workKey.value}`, {
-        method: 'POST',
-        params: { name: form.value!.employee.name },
-        body: form.value,
-      });
-      // TODO: Implement PDF generation on the server (similar to `handlePrint`)
+    await $fetch(`/api/documents/mitra/bapp/${workKey.value}`, {
+      method: 'POST',
+      params: { name: form.value!.employee.name },
+      body: form.value,
+      onResponseError: ({ response }) => {
+        const messages = response.statusText.split('>>');
+        toast({
+          title: messages[0]?.trim(),
+          description: messages[1]?.trim(),
+          variant: 'destructive',
+        });
+      },
+    });
+    // TODO: Implement PDF generation on the server (similar to `handlePrint`)
 
-      // Remove when server-side implementation is done
-      handlePrint();
-    }
-    catch (error) {
-      // TODO: Error Handling
-      console.error(error);
-    }
+    // Remove when server-side implementation is done
+    handlePrint();
   }
 
   isLoading.value = false;

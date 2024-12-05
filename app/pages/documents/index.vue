@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { MoreVertical } from 'lucide-vue-next';
+import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
 import type { WorkAndKey } from '~~/types/document';
 import type { WorkDocument } from '~~/types/schema/document';
 
@@ -80,7 +80,7 @@ function handleFillForm(data: WorkDocument) {
                   </ShadcnTableRow>
                 </ShadcnTableHeader>
                 <ShadcnTableBody v-if="columns">
-                  <template v-if="rows">
+                  <template v-if="rows?.length">
                     <ShadcnTableRow
                       v-for="row in rows"
                       :key="row.key"
@@ -147,11 +147,18 @@ function handleFillForm(data: WorkDocument) {
                     </ShadcnTableRow>
                   </template>
                   <ShadcnTableRow v-else>
+                    <ShadcnTableCell />
                     <ShadcnTableCell
                       :colspan="columns.length"
-                      class="h-24 text-center"
+                      class="h-24 border text-center"
                     >
-                      Data Record Not Found
+                      <ShadcnAlert>
+                        <MessageCircleWarning class="size-4" />
+                        <ShadcnAlertTitle>No document found associated with your name '{{ user?.name }}'</ShadcnAlertTitle>
+                        <ShadcnAlertDescription>
+                          Please contact admin to create a new one for you.
+                        </ShadcnAlertDescription>
+                      </ShadcnAlert>
                     </ShadcnTableCell>
                   </ShadcnTableRow>
                 </ShadcnTableBody>
