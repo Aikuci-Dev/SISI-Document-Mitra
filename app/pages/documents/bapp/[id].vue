@@ -3,14 +3,18 @@ import { formatDate } from '@vueuse/core';
 import { highlightLevel } from '~/components/base/field/const';
 import { formatCurrency } from '~/lib/utils';
 
+definePageMeta({
+  layout: false,
+});
+
 const route = useRoute();
 
 const { data, error } = await useFetch(
   `/api/documents/mitra/bapp/${route.params.id}`,
 );
 
-if (error.value?.statusCode === 404) {
-  navigateTo('/404');
+if (error.value) {
+  throw createError({ ...error.value, fatal: true });
 }
 </script>
 

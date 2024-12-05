@@ -3,6 +3,7 @@ import { useVueToPrint } from 'vue-to-print';
 import type { WorkDocument } from '~~/types/schema/document';
 
 definePageMeta({
+  layout: false,
   middleware: 'document-child',
 });
 

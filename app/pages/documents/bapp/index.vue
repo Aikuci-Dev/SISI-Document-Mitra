@@ -2,6 +2,7 @@
 import { useVueToPrint } from 'vue-to-print';
 
 definePageMeta({
+  layout: false,
   middleware: 'document-child',
 });
 
