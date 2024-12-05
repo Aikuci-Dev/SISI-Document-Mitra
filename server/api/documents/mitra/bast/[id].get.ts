@@ -6,5 +6,5 @@ export default defineEventHandler(async (event) => {
     .from(tables.documentBast)
     .where(eq(tables.documentBast.id, id));
 
-  return catchFirstOrThrow(workDocument);
+  return catchFirst(workDocument);
 });

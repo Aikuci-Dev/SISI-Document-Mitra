@@ -3,7 +3,7 @@ export default defineEventHandler(async (event) => {
   const payload = await readBody(event);
 
   if (payload.g_csrf_token !== cookies.g_csrf_token)
-    throw createError({ statusCode: 401, statusMessage: 'Unauthorized' });
+    throw createError({ statusCode: 401 });
 
   const googleJWT = await verifyCredential(payload.credential);
   const { sub: id, email, name } = googleJWT!;

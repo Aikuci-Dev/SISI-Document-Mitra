@@ -58,7 +58,7 @@ export async function verifyUserAuthorizationByName(
   if (name !== user.name) {
     throw createError({
       statusCode: 403,
-      message: 'Forbidden: The name you provided does not match the name in your account.',
+      statusMessage: 'Forbidden. >> The name you provided does not match the name in your account.',
     });
   }
 

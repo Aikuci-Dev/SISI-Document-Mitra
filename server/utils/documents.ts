@@ -90,10 +90,12 @@ export const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async 
 // Get raw data for a specific name (e.g., freelancer)
 export const getRawDataByName = defineCachedFunction<SheetValues>(async (event: H3Event, name: string) => {
   const { headers, values } = await getSpreadsheetData(event);
-  const freelancerIndex = headers.findIndex(header => header.toLowerCase() == 'freelancer');
+  const freelancerIndex = headers.findIndex(header => header.trim().toLowerCase() == 'freelancer');
   return {
     headers,
-    values: freelancerIndex === -1 ? [] : values.filter(mitra => mitra[freelancerIndex] == name),
+    values: freelancerIndex === -1
+      ? []
+      : values.filter(mitra => mitra[freelancerIndex].trim().toLowerCase() == name.trim().toLowerCase()),
   };
 }, {
   maxAge: 5 * 60,
@@ -148,7 +150,7 @@ export async function getMyWorkDocumentById(event: H3Event, context: { name: str
   if (!dataTable)
     throw createError({
       statusCode: 500,
-      message: 'Something went wrong. Please refresh the page OR try again later.',
+      statusMessage: 'Something went wrong. >> Please refresh the page OR try again later.',
     });
 
   return dataTable.meta.mapped_work;

@@ -1,4 +1,6 @@
 import { drizzle } from 'drizzle-orm/libsql/web';
+import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
+import { sql, type SQL } from 'drizzle-orm';
 import * as schema from '../database/schema';
 
 export { sql, eq, and, or } from 'drizzle-orm';
@@ -13,6 +15,10 @@ export function useDB() {
     },
     schema,
   });
+}
+
+export function columnLower(column: AnySQLiteColumn): SQL {
+  return sql`lower(${column})`;
 }
 
 export function takeFirst<T extends unknown[]>(values: T): T[number] {
