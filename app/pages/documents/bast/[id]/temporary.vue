@@ -4,6 +4,7 @@ import { highlightLevel } from '~/components/base/field/const';
 
 definePageMeta({
   layout: false,
+  name: '[public] Validate BAST',
 });
 
 const route = useRoute();
