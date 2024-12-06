@@ -45,26 +45,36 @@ async function handleSign() {
       <template #body>
         <div class="h-screen overflow-auto bg-slate-100 print:h-full print:overflow-hidden">
           <DocumentAction class="absolute right-5 top-5">
-            <ShadcnTooltipProvider :disabled="!!data?.isValid">
+            <ShadcnTooltipProvider :disabled="!data?.isValidated && !data?.isApproved">
               <ShadcnTooltip
-                :open="!data?.isValid"
-                :disable-closing-trigger="!data?.isValid"
+                :open="!data?.isValidated || !data?.isApproved"
+                :disable-closing-trigger="!data?.isValidated || !data?.isApproved"
               >
                 <ShadcnTooltipTrigger as-child>
                   <ShadcnButton
-                    :disabled="!data?.isValid"
+                    :disabled="!data?.isValidated || !data?.isApproved"
                     @click="() => showDialogSign = true"
                   >
                     Sign
                   </ShadcnButton>
                 </ShadcnTooltipTrigger>
                 <ShadcnTooltipContent>
-                  <p class="font-bold">
-                    Please contact an admin to check if the document is valid.
-                  </p>
-                  <p class="text-red-500">
-                    You can't sign this document because it hasn't been validated by an admin.
-                  </p>
+                  <div v-if="!data?.isValidated">
+                    <p class="text-red-500">
+                      The admin hasn't reviewed this document yet.
+                    </p>
+                    <p class="font-bold">
+                      This document is awaiting admin review before you can sign it.
+                    </p>
+                  </div>
+                  <div v-else-if="!data?.isApproved">
+                    <p class="text-red-500">
+                      The admin has rejected this document.
+                    </p>
+                    <p class="font-bold">
+                      This document needs to be revised by the employee before you can sign it.
+                    </p>
+                  </div>
                 </ShadcnTooltipContent>
               </ShadcnTooltip>
             </ShadcnTooltipProvider>

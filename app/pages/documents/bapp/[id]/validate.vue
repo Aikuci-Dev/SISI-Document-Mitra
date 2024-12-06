@@ -56,7 +56,7 @@ async function handleReject() {
         <div class="h-screen overflow-auto bg-slate-100 print:h-full print:overflow-hidden">
           <DocumentAction class="absolute right-5 top-5">
             <div
-              v-if="!data?.isValid"
+              v-if="!data?.isValidated"
               class="flex justify-between space-x-4"
             >
               <ShadcnButton
