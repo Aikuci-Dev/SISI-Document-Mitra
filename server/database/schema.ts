@@ -15,14 +15,22 @@ export const documentBapp = sqliteTable('document_bapp', {
   id: text().unique(),
   original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
+  isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
+  isApproved: integer('is_approved', { mode: 'boolean' }).default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
+  validatedAt: integer('validated_at', { mode: 'timestamp' }),
+  signedAt: integer('signed_at', { mode: 'timestamp' }),
 });
 
 export const documentBast = sqliteTable('document_bast', {
   id: text().unique(),
   original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
+  isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
+  isApproved: integer('is_approved', { mode: 'boolean' }).default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
+  validatedAt: integer('validated_at', { mode: 'timestamp' }),
+  signedAt: integer('signed_at', { mode: 'timestamp' }),
 });
