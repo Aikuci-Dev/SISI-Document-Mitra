@@ -1,4 +1,7 @@
 export default defineEventHandler(async (event) => {
+  const adminEmailsEnv = useRuntimeConfig(event).user.admin.email;
+  const adminEmails = adminEmailsEnv.replace(/\s/g, '').split(',');
+
   const cookies = parseCookies(event);
   const payload = await readBody(event);
 
@@ -20,10 +23,12 @@ export default defineEventHandler(async (event) => {
     )
     .get();
 
+  const isAdmin = email && adminEmails.includes(email);
   await setUserSession(event, {
     user: {
       oauth: { id: googleId, email, name },
-      name: user ? user.name : undefined,
+      name: user?.name,
+      role: isAdmin ? ['admin'] : undefined,
     },
   });
 

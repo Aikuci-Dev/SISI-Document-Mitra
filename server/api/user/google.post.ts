@@ -2,6 +2,9 @@ import { LibsqlError } from '@libsql/client';
 import { useValidatedBody, z } from 'h3-zod';
 
 export default defineEventHandler(async (event) => {
+  const adminEmailsEnv = useRuntimeConfig(event).user.admin.email;
+  const adminEmails = adminEmailsEnv.replace(/\s/g, '').split(',');
+
   const { id, email, name } = await useValidatedBody(event, {
     id: z.number(),
     email: z.string().email(),
@@ -46,7 +49,10 @@ export default defineEventHandler(async (event) => {
     });
 
   await setUserSession(event, {
-    user: { name: user.name },
+    user: {
+      name: user.name,
+      role: adminEmails.includes(email) ? ['admin'] : undefined,
+    },
   });
 
   return { id: user.googleId, email: user.email, name: user.name };

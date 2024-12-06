@@ -25,6 +25,11 @@ export default defineNuxtConfig({
     session: {
       password: '',
     },
+    user: {
+      admin: {
+        email: '',
+      },
+    },
   },
   future: {
     compatibilityVersion: 4,

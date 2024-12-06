@@ -7,6 +7,7 @@ interface UserOauth {
 export interface User {
   oauth?: UserOauth;
   name?: string;
+  role?: string[];
 }
 
 export interface UserSession {

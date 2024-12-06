@@ -41,24 +41,44 @@ export async function requireUserSession(
 
 export async function verifyUserAuthorizationByName(
   event: H3Event,
-  opts: { hasBodyPayload?: boolean } = {},
+  opts: { hasBodyPayload?: boolean; name?: string; errorMessage?: string } = {},
 ) {
   const { user } = await requireUserSession(event);
 
   let name = '';
-  const query: { name?: string } = getQuery(event);
-  if (query.name) name = query.name;
-  const param = getRouterParam(event, 'name');
-  if (param) name = decodeURI(param);
-  if (opts.hasBodyPayload) {
-    const body: { name?: string } = await readBody(event);
-    if (body.name) name = body.name;
+  if (opts.name) name = opts.name;
+  else {
+    const query: { name?: string } = getQuery(event);
+    if (query.name) name = query.name;
+    const param = getRouterParam(event, 'name');
+    if (param) name = decodeURI(param);
+    if (opts.hasBodyPayload) {
+      const body: { name?: string } = await readBody(event);
+      if (body.name) name = body.name;
+    }
   }
 
   if (name !== user.name) {
     throw createError({
       statusCode: 403,
-      statusMessage: 'Forbidden. >> The name you provided does not match the name in your account.',
+      statusMessage: opts.errorMessage || 'Forbidden. >> The name you provided does not match the name in your account.',
+    });
+  }
+
+  return user;
+}
+
+export async function verifyUserAuthorizationByRole(
+  event: H3Event,
+  opts: { role: string[] },
+) {
+  const { user } = await requireUserSession(event);
+
+  const hasPermission = user.role && opts.role.some(role => user.role!.includes(role));
+  if (!hasPermission) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Forbidden. >> Your role is not in scope, you don\'t have permission to perform this action.',
     });
   }
 
