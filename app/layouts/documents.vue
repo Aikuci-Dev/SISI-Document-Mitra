@@ -1,0 +1,73 @@
+<script setup lang="ts">
+const header = ref<HTMLElement>();
+const bodyHeader = ref<HTMLElement>();
+const footer = ref<HTMLElement>();
+
+const getHeaderOffsetHeight = computed(() => header.value?.offsetHeight || 0);
+const getBodyHeaderOffsetHeight = computed(
+  () => bodyHeader.value?.offsetHeight || 0,
+);
+const getFooterOffsetHeight = computed(() => footer.value?.offsetHeight || 0);
+</script>
+
+<template>
+  <div>
+    <div
+      v-if="$slots.header"
+      ref="header"
+      class="bg-white p-8"
+    >
+      <h1 class="text-4xl font-bold tracking-tight">
+        <slot name="header" />
+      </h1>
+    </div>
+    <slot name="body">
+      <div
+        v-if="$slots.bodyHeader"
+        ref="bodyHeader"
+      >
+        <slot name="bodyHeader" />
+      </div>
+      <div
+        class="overflow-auto bg-slate-100"
+        :style="{
+          height: `calc(100vh - ${getBodyHeaderOffsetHeight}px - ${getHeaderOffsetHeight}px - ${getFooterOffsetHeight}px)`,
+        }"
+      >
+        <div class="flex">
+          <div
+            v-if="$slots.bodyLeft"
+            class="m-5 ml-0"
+          >
+            <slot name="bodyLeft" />
+          </div>
+          <div
+            v-if="$slots.bodyContent"
+            class="max-w-[100vw] grow"
+          >
+            <slot name="bodyContent" />
+          </div>
+          <template v-else>
+            <slot />
+          </template>
+          <div
+            v-if="$slots.bodyRight"
+            class="m-5 mr-0"
+          >
+            <slot name="bodyRight" />
+          </div>
+        </div>
+      </div>
+      <template v-if="$slots.bodyFooter">
+        <slot name="bodyFooter" />
+      </template>
+    </slot>
+    <div
+      v-if="$slots.footer"
+      ref="footer"
+      class="sticky bottom-0 bg-white"
+    >
+      <slot name="footer" />
+    </div>
+  </div>
+</template>

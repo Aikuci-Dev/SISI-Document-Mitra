@@ -1,19 +1,25 @@
 <script setup lang="ts">
-const config = useRuntimeConfig();
+useHead({
+  script: [
+    {
+      src: 'https://accounts.google.com/gsi/client',
+      async: true,
+    },
+  ],
+});
 </script>
 
 <template>
   <div id="login-provider-google">
-    <component is="script" src="https://accounts.google.com/gsi/client" async />
     <div
       id="g_id_onload"
-      :data-client_id="config.public.auth.google.clientId"
+      :data-client_id="$config.public.auth.google.clientId"
       data-context="signin"
       data-ux_mode="popup"
-      :data-login_uri="config.public.auth.google.loginUri"
+      :data-login_uri="$config.public.auth.google.loginUri"
       data-nonce=""
       data-auto_prompt="false"
-    ></div>
+    />
 
     <div
       class="g_id_signin"
@@ -23,6 +29,6 @@ const config = useRuntimeConfig();
       data-text="signin_with"
       data-size="large"
       data-logo_alignment="left"
-    ></div>
+    />
   </div>
 </template>

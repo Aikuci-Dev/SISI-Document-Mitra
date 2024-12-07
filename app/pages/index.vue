@@ -1,6 +1,6 @@
 <template>
   <div
-    class="tw-container tw-grid tw-h-screen tw-items-center tw-justify-center"
+    class="container flex h-screen items-center justify-center"
   >
     <div><AuthGoogleButton /></div>
   </div>

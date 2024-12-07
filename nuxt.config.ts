@@ -1,29 +1,49 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: "2024-04-03",
-  devtools: { enabled: true },
-
+  modules: [
+    '@nuxtjs/tailwindcss',
+    'shadcn-nuxt',
+    '@nuxt/eslint',
+    'nuxt-signature-pad',
+  ],
+  devtools: { enabled: false },
   runtimeConfig: {
     public: {
       auth: {
         google: {
-          clientId: "",
-          loginUri: "",
+          clientId: '',
+          loginUri: '',
         },
       },
     },
+    google: {
+      apiKey: '',
+      sheet: {
+        id: '',
+        range: '',
+      },
+    },
     session: {
-      password: "",
+      password: '',
+    },
+    user: {
+      admin: {
+        email: '',
+      },
     },
   },
-
   future: {
     compatibilityVersion: 4,
   },
-
-  modules: ["@nuxtjs/tailwindcss", "shadcn-nuxt"],
+  compatibilityDate: '2024-04-03',
+  eslint: {
+    config: {
+      stylistic: {
+        semi: true,
+      },
+    },
+  },
   shadcn: {
-    prefix: "shadcn",
-    componentDir: "./app/components/shadcn/ui",
+    prefix: 'shadcn',
+    componentDir: './app/components/shadcn/ui',
   },
 });
