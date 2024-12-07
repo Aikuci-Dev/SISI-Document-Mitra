@@ -52,7 +52,7 @@ const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', {
         </p>
       </div>
 
-      <DocumentContentParticipant :employee="data.employee">
+      <DocumentContentSectionParticipant :employee="data.employee">
         <template #supervisor-name="{ value }">
           <slot
             name="supervisor-name"
@@ -85,7 +85,7 @@ const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', {
             {{ value }}
           </slot>
         </template>
-      </DocumentContentParticipant>
+      </DocumentContentSectionParticipant>
 
       <div>
         <p>Dengan berdasarkan:</p>
@@ -152,7 +152,7 @@ const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', {
       <div />
       <div />
 
-      <DocumentContentSign :employee="data.employee">
+      <DocumentContentSectionSign :employee="data.employee">
         <template #supervisor-alias="{ value }">
           <slot
             name="supervisor-alias"
@@ -217,7 +217,7 @@ const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', {
             {{ value }}
           </slot>
         </template>
-      </DocumentContentSign>
+      </DocumentContentSectionSign>
     </template>
   </Document>
 </template>

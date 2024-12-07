@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { formatDate } from '@vueuse/core';
 import { toast } from '~/components/shadcn/ui/toast';
-import { isString, formatCurrency } from '~/lib/utils';
-import { highlightLevel } from '~/components/base/field/const';
+import { isString } from '~/lib/utils';
 
 definePageMeta({
   layout: false,
@@ -12,7 +10,6 @@ const route = useRoute();
 const routeType = computed<string>(() => isString(route.params.type) ? route.params.type.toLowerCase() : '');
 if (!['bapp', 'bast'].includes(routeType.value)) navigateTo('/documents');
 
-// CORE
 const { user } = useUserSession();
 const { data, error, refresh } = await useFetch(
   `/api/documents/type/${routeType.value}/${route.params.id}`,
@@ -21,7 +18,7 @@ if (error.value) throw createError({ ...error.value, fatal: true });
 const hasAdmin = computed(() => user.value?.role?.includes('admin'));
 const supervisorName = computed(() => data.value?.value.employee.supervisor.name);
 
-// REVIEW
+// REVIEW by Admin
 const isLoading = ref(false);
 async function handleApproveOrReject(type: 'approve' | 'reject') {
   isLoading.value = true;
@@ -51,7 +48,7 @@ async function handleReject() {
   handleApproveOrReject('reject');
 }
 
-// SIGN
+// SIGN by SPV
 const formSign = ref();
 const showDialogSign = ref(false);
 async function handleSign() {
@@ -145,233 +142,30 @@ async function handleSign() {
             v-model="formSign"
             @sign="handleSign"
           />
+
           <div class="grid place-content-center">
-            <DocumentContentBAPP
-              v-if="routeType === 'bapp'"
-              :data="data.value"
-            >
-              <template
+            <template v-if="routeType === 'bapp'">
+              <DocumentContentBAPPHighlighted
                 v-if="hasAdmin"
-                #details-title="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.title, data.value.details.title)]"
-                />
-              </template>
-              <template
+                :original="data.original"
+                :data="data.value"
+              />
+              <DocumentContentBAPP
+                v-else
+                :data="data.value"
+              />
+            </template>
+            <template v-else>
+              <DocumentContentBASTHighlighted
                 v-if="hasAdmin"
-                #details-date-start="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.date.ts.start, data.value.details.date.ts.start)]"
-                >
-                  {{ formatDate(new Date(value), 'DD MMMM YYYY', { locales: 'id-ID' }) }}
-                </BaseFieldHighlight>
-              </template>
-              <template
-                v-if="hasAdmin"
-                #details-date-end="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.date.ts.end, data.value.details.date.ts.end)]"
-                >
-                  {{ formatDate(new Date(value), 'DD MMMM YYYY', { locales: 'id-ID' }) }}
-                </BaseFieldHighlight>
-              </template>
-              <template
-                v-if="hasAdmin"
-                #details-day-end="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.date.ts.end, data.value.details.date.ts.end)]"
-                >
-                  {{ formatDate(new Date(value), 'dddd', { locales: 'id-ID' }) }}
-                </BaseFieldHighlight>
-              </template>
-
-              <template
-                v-if="hasAdmin"
-                #bapp-number="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.bapp.number, data.value.bapp.number)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #po-number="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.po.number, data.value.po.number)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #invoice-number="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.invoice.number, data.value.invoice.number)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #invoice-nominal="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.invoice.nominal, data.value.invoice.nominal)]"
-                >
-                  {{ formatCurrency(value) }}
-                </BaseFieldHighlight>
-              </template>
-
-              <!-- Employee Info -->
-              <template
-                v-if="hasAdmin"
-                #supervisor-name="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.supervisor.name, data.value.employee.supervisor.name)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #supervisor-role="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.supervisor.role, data.value.employee.supervisor.role)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #employee-name="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.name, data.value.employee.name)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #employee-role="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.role, data.value.employee.role)]"
-                />
-              </template>
-            </DocumentContentBAPP>
-            <DocumentContentBAST
-              v-else
-              :data="data.value"
-            >
-              <template
-                v-if="hasAdmin"
-                #details-title="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.title, data.value.details.title)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #details-date-end="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.date.ts.end, data.value.details.date.ts.end)]"
-                >
-                  {{ formatDate(new Date(value), 'DD MMMM YYYY', { locales: 'id-ID' }) }}
-                </BaseFieldHighlight>
-              </template>
-              <template
-                v-if="hasAdmin"
-                #details-day-end="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.details.date.ts.end, data.value.details.date.ts.end)]"
-                >
-                  {{ formatDate(new Date(value), 'dddd', { locales: 'id-ID' }) }}
-                </BaseFieldHighlight>
-              </template>
-
-              <template
-                v-if="hasAdmin"
-                #bapp-number="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.bapp.number, data.value.bapp.number)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #bast-number="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.bast!.number, data.value.bast!.number)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #po-number="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.po.number, data.value.po.number)]"
-                />
-              </template>
-
-              <!-- Employee Info -->
-              <template
-                v-if="hasAdmin"
-                #supervisor-name="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.supervisor.name, data.value.employee.supervisor.name)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #supervisor-role="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.supervisor.role, data.value.employee.supervisor.role)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #employee-name="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.name, data.value.employee.name)]"
-                />
-              </template>
-              <template
-                v-if="hasAdmin"
-                #employee-role="{ value }"
-              >
-                <BaseFieldHighlight
-                  :value
-                  :class="[highlightLevel(data.original.employee.role, data.value.employee.role)]"
-                />
-              </template>
-            </DocumentContentBAST>
+                :original="data.original"
+                :data="data.value"
+              />
+              <DocumentContentBAST
+                v-else
+                :data="data.value"
+              />
+            </template>
           </div>
         </div>
       </template>
