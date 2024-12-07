@@ -3,21 +3,25 @@ import { workDocumentSchema } from '~~/types/schema/document';
 
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');
+  const type = decodeURI(getRouterParam(event, 'type') || '');
+  const workDocument = await useValidatedBody(event, workDocumentSchema);
+
+  if (!['bapp', 'bast'].includes(type.toLowerCase())) throw createError({ statusCode: 404 });
   const user = await verifyUserAuthorizationByName(event);
 
-  const workDocument = await useValidatedBody(event, workDocumentSchema);
   const original = await getMyWorkDocumentById(event, { name: user.name!, id });
 
   await useDB()
-    .insert(tables.documentBapp)
+    .insert(tables.documentMitra)
     .values({
       id,
+      type,
       original,
       value: workDocument,
       createdAt: new Date(),
     })
     .onConflictDoUpdate({
-      target: tables.documentBapp.id,
+      target: [tables.documentMitra.id, tables.documentMitra.type],
       set: {
         original,
         value: workDocument,
