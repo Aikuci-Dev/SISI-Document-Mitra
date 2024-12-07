@@ -67,29 +67,16 @@ defineProps<{ original: WorkDocument; data: WorkDocument }>();
       </BaseFieldHighlight>
     </template>
 
-    <!-- Employee Info -->
-    <template #supervisor-name="{ value }">
-      <BaseFieldHighlight
-        :value
-        :class="[highlightLevel(original.employee.supervisor.name, data.employee.supervisor.name)]"
+    <template #section-sign>
+      <DocumentContentSectionSignHighlighted
+        :original="original.employee"
+        :employee="data.employee"
       />
     </template>
-    <template #supervisor-role="{ value }">
-      <BaseFieldHighlight
-        :value
-        :class="[highlightLevel(original.employee.supervisor.role, data.employee.supervisor.role)]"
-      />
-    </template>
-    <template #employee-name="{ value }">
-      <BaseFieldHighlight
-        :value
-        :class="[highlightLevel(original.employee.name, data.employee.name)]"
-      />
-    </template>
-    <template #employee-role="{ value }">
-      <BaseFieldHighlight
-        :value
-        :class="[highlightLevel(original.employee.role, data.employee.role)]"
+    <template #section-participant>
+      <DocumentContentSectionParticipantHighlighted
+        :original="original.employee"
+        :employee="data.employee"
       />
     </template>
   </DocumentContentBAPP>

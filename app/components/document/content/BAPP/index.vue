@@ -54,40 +54,12 @@ const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', {
         </p>
       </div>
 
-      <DocumentContentSectionParticipant :employee="data.employee">
-        <template #supervisor-name="{ value }">
-          <slot
-            name="supervisor-name"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #supervisor-role="{ value }">
-          <slot
-            name="supervisor-role"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #employee-name="{ value }">
-          <slot
-            name="employee-name"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #employee-role="{ value }">
-          <slot
-            name="employee-role"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-      </DocumentContentSectionParticipant>
+      <slot
+        name="section-participant"
+        :value="data.employee"
+      >
+        <DocumentContentSectionParticipantDefault :employee="data.employee" />
+      </slot>
 
       <div>
         <p>Dengan berdasarkan:</p>
@@ -204,72 +176,12 @@ const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', {
       <div />
       <div />
 
-      <DocumentContentSectionSign :employee="data.employee">
-        <template #supervisor-alias="{ value }">
-          <slot
-            name="supervisor-alias"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #supervisor-company="{ value }">
-          <slot
-            name="supervisor-company"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #supervisor-name="{ value }">
-          <slot
-            name="supervisor-name"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #supervisor-role="{ value }">
-          <slot
-            name="supervisor-role"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #employee-alias="{ value }">
-          <slot
-            name="employee-alias"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #employee-company="{ value }">
-          <slot
-            name="employee-company"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #employee-name="{ value }">
-          <slot
-            name="employee-name"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-        <template #employee-role="{ value }">
-          <slot
-            name="employee-role"
-            :value
-          >
-            {{ value }}
-          </slot>
-        </template>
-      </DocumentContentSectionSign>
+      <slot
+        name="section-sign"
+        :value="data.employee"
+      >
+        <DocumentContentSectionSignDefault :employee="data.employee" />
+      </slot>
     </template>
   </Document>
 </template>
