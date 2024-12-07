@@ -2,9 +2,7 @@
 import { useDateFormat } from '@vueuse/core';
 import type { WorkDocument } from '~~/types/schema/document';
 
-const props = defineProps<{
-  data: WorkDocument & { bast: { number: string } };
-}>();
+const props = defineProps<{ data: WorkDocument }>();
 
 const dateEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'DD MMMM YYYY', { locales: 'id-ID' });
 const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', { locales: 'id-ID' });

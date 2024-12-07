@@ -1,36 +1,32 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
 import { toast } from '~/components/shadcn/ui/toast';
-import type { WorkDocument } from '~~/types/schema/document';
+import { isString } from '~/lib/utils';
 
 definePageMeta({
   layout: false,
-  middleware: 'document-child',
 });
 
-const page = 'BAST';
+const route = useRoute();
+const routeType = computed<string>(() => {
+  if (isString(route.params.type)) return route.params.type.toLowerCase();
+  return '';
+});
+if (!['bapp', 'bast'].includes(routeType.value)) {
+  navigateTo('/documents');
+}
 
 const { work, workKey } = useDocument();
-const document = computed<(WorkDocument & { bast: { number: string } }) | undefined>(
-  () => {
-    if (work.value && work.value.bast && work.value.bast.number)
-      return work.value as WorkDocument & { bast: { number: string } };
-
-    return undefined;
-  },
-);
-const form = ref(document);
+const form = ref(work);
 const formSign = ref();
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
 
 function handleSign() {
-  if (!form.value) return;
-  form.value.employee.sign.url = formSign.value;
+  form.value!.employee.sign.url = formSign.value;
   handleGenerate();
 }
-
 async function handleGenerate(skipStore?: boolean) {
   isLoading.value = true;
   showDialogSign.value = false;
@@ -44,7 +40,7 @@ async function handleGenerate(skipStore?: boolean) {
 
   if (skipStore) handlePrint();
   else {
-    await $fetch(`/api/documents/mitra/bast/${workKey.value}`, {
+    await $fetch(`/api/documents/type-${routeType.value}`, {
       method: 'POST',
       params: { name: form.value!.employee.name },
       body: form.value,
@@ -69,10 +65,15 @@ async function handleGenerate(skipStore?: boolean) {
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
-  documentTitle: `BAST_${form.value?.bast.number}`,
+  documentTitle: routeType.value === 'bapp'
+    ? `BAPP_${form.value?.bapp.number}`
+    : `BAST_${form.value?.bast.number}`,
   removeAfterPrint: true,
 });
 
+function handleCreateBAST() {
+  navigateTo('/documents/bast');
+}
 function handleViewBAPP() {
   navigateTo(`/documents/bapp/${workKey.value}`, { open: { target: '_blank' } });
 }
@@ -82,16 +83,22 @@ function handleViewBAPP() {
   <div>
     <NuxtLayout name="documents">
       <template #bodyHeader>
-        <DocumentBreadcrumb :page />
+        <DocumentBreadcrumb :page="routeType.toUpperCase()" />
       </template>
-      <template #bodyLeft>
+      <template
+        v-if="form"
+        #bodyLeft
+      >
         <DocumentForm
           v-model="form"
           :is-disabled-action="isDisabledAction"
           @generate="handleGenerate"
         />
       </template>
-      <template #bodyContent>
+      <template
+        v-if="form"
+        #bodyContent
+      >
         <div>
           <DocumentDialogSign
             v-model:open="showDialogSign"
@@ -99,19 +106,36 @@ function handleViewBAPP() {
             @sign="handleSign"
           />
         </div>
+        <DocumentContentBAPP
+          v-if="routeType === 'bapp'"
+          ref="documentComponentRef"
+          :data="form"
+        />
         <DocumentContentBAST
-          v-if="form"
+          v-else
           ref="documentComponentRef"
           :data="form"
         />
       </template>
-      <template #bodyRight>
+      <template
+        v-if="form"
+        #bodyRight
+      >
         <DocumentAction>
           <ShadcnButton @click="() => handleGenerate(true)">
             Print
           </ShadcnButton>
-          <ShadcnButton @click="handleViewBAPP">
+          <ShadcnButton
+            v-if="routeType === 'bast'"
+            @click="handleViewBAPP"
+          >
             View BAPP
+          </ShadcnButton>
+          <ShadcnButton
+            v-else-if="form.bast.number"
+            @click="handleCreateBAST"
+          >
+            Create BAST
           </ShadcnButton>
         </DocumentAction>
       </template>
