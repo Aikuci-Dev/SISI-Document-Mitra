@@ -5,6 +5,7 @@ import type { WorkDocument } from '~~/types/schema/document';
 
 definePageMeta({
   layout: false,
+  middleware: ['redirect'],
 });
 
 const page = 'Documents';

@@ -32,7 +32,10 @@ function gotoValidatePage() {
         >
           <DocumentAction class="absolute right-5 top-5">
             <ShadcnTooltipProvider>
-              <ShadcnTooltip>
+              <ShadcnTooltip
+                open
+                disable-closing-trigger
+              >
                 <ShadcnTooltipTrigger as-child>
                   <ShadcnButton
                     @click="gotoValidatePage"

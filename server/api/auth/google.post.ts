@@ -32,5 +32,5 @@ export default defineEventHandler(async (event) => {
     },
   });
 
-  return sendRedirect(event, '/documents');
+  return sendRedirect(event, '/dashboard');
 });
