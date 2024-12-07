@@ -5,21 +5,20 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { toast } from '~/components/shadcn/ui/toast';
 
 const { user, fetch: refetchUserSession } = useUserSession();
-const loading = ref(false);
 
+const loading = ref(false);
+const showAlertDialog = ref(false);
+
+// FORM
 const schema = z.object({
   name: z
     .string({ required_error: 'Name is required.' })
     .min(2, { message: 'Name must be at least 2 characters.' }),
 });
-
 const form = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: { name: user.value!.oauth!.name },
 });
-
-const showAlertDialog = ref(false);
-
 async function handleSubmit() {
   showAlertDialog.value = false;
   loading.value = true;

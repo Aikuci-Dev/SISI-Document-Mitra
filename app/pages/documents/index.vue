@@ -11,17 +11,12 @@ definePageMeta({
 const page = 'Documents';
 
 const { user } = useUserSession();
-
 const { data: mitraTableData, error } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
-  { watch: [user], immediate: true },
 );
 const columns = computed(() => mitraTableData.value?.columns);
 const rows = computed(() => mitraTableData.value?.rows);
-
-if (error.value) {
-  throw createError({ ...error.value, fatal: true });
-}
+if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { setWork } = useDocument();
 function handleCreateBAPP(data: WorkAndKey) {
@@ -38,7 +33,6 @@ function handleCreateBAST(data: WorkAndKey) {
 function handleViewBAST(id: string) {
   navigateTo(`/documents/bast/${id}`, { open: { target: '_blank' } });
 }
-
 function handleFillForm(data: WorkDocument) {
   console.log('handleFillForm', data);
 }

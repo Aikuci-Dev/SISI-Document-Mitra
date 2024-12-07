@@ -18,15 +18,27 @@ if (!['bapp', 'bast'].includes(routeType.value)) {
 
 const { work, workKey } = useDocument();
 const form = ref(work);
+
+// VueToPrint
+const documentComponentRef = ref();
+const { handlePrint } = useVueToPrint({
+  content: documentComponentRef,
+  documentTitle: routeType.value === 'bapp'
+    ? `BAPP_${form.value?.bapp.number}`
+    : `BAST_${form.value?.bast.number}`,
+  removeAfterPrint: true,
+});
+
+// SIGN by User
 const formSign = ref();
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
-
 function handleSign() {
   form.value!.employee.sign.url = formSign.value;
   handleGenerate();
 }
+
 async function handleGenerate(skipStore?: boolean) {
   isLoading.value = true;
   showDialogSign.value = false;
@@ -61,16 +73,6 @@ async function handleGenerate(skipStore?: boolean) {
 
   isLoading.value = false;
 }
-
-const documentComponentRef = ref();
-const { handlePrint } = useVueToPrint({
-  content: documentComponentRef,
-  documentTitle: routeType.value === 'bapp'
-    ? `BAPP_${form.value?.bapp.number}`
-    : `BAST_${form.value?.bast.number}`,
-  removeAfterPrint: true,
-});
-
 function handleCreateBAST() {
   navigateTo('/documents/bast');
 }
