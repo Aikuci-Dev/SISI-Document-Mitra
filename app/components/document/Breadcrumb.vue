@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Home } from 'lucide-vue-next';
-import type { Item } from '@/components/base/Breadcrumb.vue';
+import type { Item } from '~/components/base/Breadcrumb.vue';
 
 withDefaults(defineProps<{
   page: string;
