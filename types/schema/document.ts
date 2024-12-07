@@ -49,8 +49,7 @@ export const workDocumentSchema = z.object({
   }),
   bast: z
     .object({
-      number: z.string(),
-    })
-    .optional(),
+      number: z.string().optional(),
+    }),
 });
 export type WorkDocument = z.infer<typeof workDocumentSchema>;

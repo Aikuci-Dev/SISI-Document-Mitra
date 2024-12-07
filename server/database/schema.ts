@@ -1,4 +1,4 @@
-import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import type { WorkDocument } from '~~/types/schema/document';
 
 export const userGoogle = sqliteTable('user_google', {
@@ -11,8 +11,9 @@ export const userGoogle = sqliteTable('user_google', {
   deletedAt: integer('deleted_at', { mode: 'timestamp' }),
 });
 
-export const documentBapp = sqliteTable('document_bapp', {
-  id: text().unique(),
+export const documentMitra = sqliteTable('document_mitra', {
+  id: text().notNull(),
+  type: text().notNull(),
   original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
@@ -21,16 +22,8 @@ export const documentBapp = sqliteTable('document_bapp', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }),
   validatedAt: integer('validated_at', { mode: 'timestamp' }),
   signedAt: integer('signed_at', { mode: 'timestamp' }),
-});
-
-export const documentBast = sqliteTable('document_bast', {
-  id: text().unique(),
-  original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
-  value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
-  isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
-  isApproved: integer('is_approved', { mode: 'boolean' }).default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }),
-  validatedAt: integer('validated_at', { mode: 'timestamp' }),
-  signedAt: integer('signed_at', { mode: 'timestamp' }),
+}, (table) => {
+  return {
+    typeAndId: uniqueIndex('type_and_id').on(table.type, table.id),
+  };
 });
