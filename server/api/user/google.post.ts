@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
   const existingUser = await useDB()
     .select({ email: tables.userGoogle.email })
     .from(tables.userGoogle)
-    .where(eq(columnLower(tables.userGoogle.name), name)).get();
+    .where(eq(columnLower(tables.userGoogle.name), name.toLowerCase())).get();
 
   if (existingUser?.email) throw createError({
     statusCode: 409,
