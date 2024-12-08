@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
 import type { WorkAndKey } from '~~/types/document';
-import type { WorkDocument } from '~~/types/schema/document';
+import { toast } from '~/components/shadcn/ui/toast';
+import { catchFetchError } from '~/lib/exceptions';
 
 definePageMeta({
   layout: false,
@@ -33,8 +34,22 @@ function handleCreateBAST(data: WorkAndKey) {
 function handleViewBAST(id: string) {
   navigateTo(`/documents/bast/${id}`, { open: { target: '_blank' } });
 }
-function handleFillForm(data: WorkDocument) {
-  console.log('handleFillForm', data);
+async function handleFillForm(id: string) {
+  const formUrl = await $fetch('/api/documents/form/generate-url', {
+    params: { id, name: user.value?.name },
+    onResponseError: ({ response }) => {
+      const messages = response.statusText.split('>>');
+      toast({
+        title: messages[0]?.trim(),
+        description: messages[1]?.trim(),
+        variant: 'destructive',
+      });
+    },
+  })
+    .catch(catchFetchError);
+
+  if (formUrl)
+    navigateTo(formUrl, { open: { target: '_blank' } });
 }
 </script>
 
@@ -125,7 +140,7 @@ function handleFillForm(data: WorkDocument) {
                               Others
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleFillForm(row.meta.mapped_work)"
+                              @click="() => handleFillForm(row.key)"
                             >
                               Fill Form
                             </ShadcnDropdownMenuItem>
