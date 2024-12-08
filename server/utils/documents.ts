@@ -76,7 +76,7 @@ export const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async 
   const { headers } = await getSpreadsheetData(event);
 
   return headers.map((column) => {
-    const key = snakeCase(column);
+    const key = snakeCase(column) as MAPPED_COLUMNS_KEYS;
     return { key, label: column, meta: { mapped_key: MAPPED_COLUMNS[key] } };
   });
 }, {
@@ -142,7 +142,7 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 });
 
 // Get WorkDocument by a specific name and ID
-export async function getMyWorkDocumentById(event: H3Event, context: { name: string; id: string }): Promise<WorkDocument> {
+export async function getWorkDocumentByNameAndId(event: H3Event, context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
   const dataTables = await getDataTableByName(event, name);
@@ -162,7 +162,7 @@ export async function getMyWorkDocumentById(event: H3Event, context: { name: str
 // The current hardcoded mapping should be made customizable, allowing users to define mappings.
 // Consider implementing a feature where users can map data from various sources to properties in the WorkDocument interface.
 // The mapping could be stored in a configuration file (e.g., JSON) or a user interface for easy customization.
-const MAPPED_COLUMNS: Record<string, string> = {
+export const MAPPED_COLUMNS = {
   freelancer: 'employee.name',
   role: 'employee.role',
   start_kontrak: 'details.date.date.start',
@@ -176,4 +176,17 @@ const MAPPED_COLUMNS: Record<string, string> = {
   nomor_b_a_p_p: 'bapp.number',
   nomor_b_a_s_t: 'bast.number',
   nomor_invoice: 'invoice.number',
-};
+} as const;
+export type MAPPED_COLUMNS_KEYS = keyof typeof MAPPED_COLUMNS;
+
+// TODO-Next: Make MAPPED_FORMS dynamic and configurable.
+export const MAPPED_FORMS = {
+  'entry.1424391317': 'employee.name',
+  'entry.2068564928': 'employee.supervisor.name',
+  'entry.1805086296': 'details.title',
+  'entry.741837358': '', // document links
+  'entry.283497930_year': 'details.date.date.end',
+  'entry.283497930_month': 'details.date.date.end',
+  'entry.283497930_day': 'details.date.date.end',
+} as const;
+export type MAPPED_FORMS_KEYS = keyof typeof MAPPED_FORMS;

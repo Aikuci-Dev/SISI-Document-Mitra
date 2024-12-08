@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
 import { toast } from '~/components/shadcn/ui/toast';
+import { catchFetchError } from '~/lib/exceptions';
 import { isString } from '~/lib/utils';
 
 definePageMeta({
@@ -52,7 +53,7 @@ async function handleGenerate(skipStore?: boolean) {
 
   if (skipStore) handlePrint();
   else {
-    await $fetch(`/api/documents/type-${routeType.value}`, {
+    await $fetch(`/api/documents/type/${routeType.value}/${workKey.value}`, {
       method: 'POST',
       params: { name: form.value!.employee.name },
       body: form.value,
@@ -64,7 +65,8 @@ async function handleGenerate(skipStore?: boolean) {
           variant: 'destructive',
         });
       },
-    });
+    })
+      .catch(catchFetchError);
     // TODO: Implement PDF generation on the server (similar to `handlePrint`)
 
     // Remove when server-side implementation is done

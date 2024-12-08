@@ -17,5 +17,7 @@ export async function verifyCredential(idToken: string) {
       const [message, _detail] = error.message.split(':');
       throw createError({ statusCode: 401, statusMessage: message });
     }
+
+    console.error('unexpected error', error);
   }
 }

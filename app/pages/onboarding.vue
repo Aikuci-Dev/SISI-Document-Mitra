@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { toast } from '~/components/shadcn/ui/toast';
+import { catchFetchError } from '~/lib/exceptions';
 
 const { user, fetch: refetchUserSession } = useUserSession();
 
@@ -37,7 +38,8 @@ async function handleSubmit() {
 
       loading.value = false;
     },
-  });
+  })
+    .catch(catchFetchError);
 
   await refetchUserSession();
   navigateTo('/documents');

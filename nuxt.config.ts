@@ -21,6 +21,9 @@ export default defineNuxtConfig({
         id: '',
         range: '',
       },
+      form: {
+        id: '',
+      },
     },
     session: {
       password: '',
