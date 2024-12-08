@@ -1,3 +1,4 @@
+import { catchFetchError } from '~/lib/exceptions';
 import type { UserSession, UserSessionComposable } from '~~/types/session';
 
 const useSessionState = () => useState<UserSession>('nuxt-session', () => ({}));
@@ -20,6 +21,7 @@ async function fetch() {
 }
 
 async function clear() {
-  await $fetch('/api/auth/session', { method: 'DELETE' });
+  await $fetch('/api/auth/session', { method: 'DELETE' })
+    .catch(catchFetchError);
   useSessionState().value = {};
 }

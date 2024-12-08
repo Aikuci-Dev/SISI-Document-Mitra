@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toast } from '~/components/shadcn/ui/toast';
+import { catchFetchError } from '~/lib/exceptions';
 import { isString } from '~/lib/utils';
 
 definePageMeta({
@@ -35,7 +36,8 @@ async function handleApproveOrReject(type: 'approve' | 'reject') {
 
       isLoading.value = false;
     },
-  });
+  })
+    .catch(catchFetchError);
 
   refresh();
 
@@ -63,7 +65,8 @@ async function handleSign() {
         variant: 'destructive',
       });
     },
-  });
+  })
+    .catch(catchFetchError);
 
   refresh();
 

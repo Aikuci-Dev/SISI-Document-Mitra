@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
 import { toast } from '~/components/shadcn/ui/toast';
+import { catchFetchError } from '~/lib/exceptions';
 import { isString } from '~/lib/utils';
 
 definePageMeta({
@@ -64,7 +65,8 @@ async function handleGenerate(skipStore?: boolean) {
           variant: 'destructive',
         });
       },
-    });
+    })
+      .catch(catchFetchError);
     // TODO: Implement PDF generation on the server (similar to `handlePrint`)
 
     // Remove when server-side implementation is done
