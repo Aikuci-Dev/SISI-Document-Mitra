@@ -53,7 +53,7 @@ async function handleGenerate(skipStore?: boolean) {
 
   if (skipStore) handlePrint();
   else {
-    await $fetch(`/api/documents/type-${routeType.value}`, {
+    await $fetch(`/api/documents/type/${routeType.value}/${workKey.value}`, {
       method: 'POST',
       params: { name: form.value!.employee.name },
       body: form.value,
