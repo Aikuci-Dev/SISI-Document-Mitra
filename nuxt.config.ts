@@ -20,6 +20,7 @@ export default defineNuxtConfig({
       sheet: {
         id: '',
         range: '',
+        freelancerKey: 'freelancer',
       },
       form: {
         id: '',
