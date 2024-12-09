@@ -23,7 +23,8 @@ const { setWork } = useDocument();
 async function handleCreateBAPP(data: WorkAndKey) {
   const bapp = await $fetch(
     `/api/documents/type/bapp/${data.key}`,
-  );
+  )
+    .catch(catchFetchError);
 
   if (bapp) setWork({ ...bapp.value, key: data.key });
   else setWork(data);
@@ -36,7 +37,8 @@ function handleViewBAPP(id: string) {
 async function handleCreateBAST(data: WorkAndKey) {
   const bast = await $fetch(
     `/api/documents/type/bast/${data.key}`,
-  );
+  )
+    .catch(catchFetchError);
 
   if (bast) setWork({ ...bast.value, key: data.key });
   else setWork(data);
