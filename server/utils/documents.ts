@@ -89,8 +89,9 @@ export const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async 
 
 // Get raw data for a specific name (e.g., freelancer)
 export const getRawDataByName = defineCachedFunction<SheetValues>(async (event: H3Event, name: string) => {
+  const { freelancerKey } = useRuntimeConfig().google.sheet;
   const { headers, values } = await getSpreadsheetData(event);
-  const freelancerIndex = headers.findIndex(header => header.trim().toLowerCase() == 'freelancer');
+  const freelancerIndex = headers.findIndex(header => header.trim().toLowerCase() == freelancerKey);
   return {
     headers,
     values: freelancerIndex === -1
