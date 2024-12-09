@@ -30,6 +30,8 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
+const showAlertDialog = ref(false);
+
 // SIGN by User
 const formSign = ref();
 const showDialogSign = ref(false);
@@ -41,6 +43,7 @@ function handleSign() {
 }
 
 async function handleGenerate(skipStore?: boolean) {
+  showAlertDialog.value = false;
   isLoading.value = true;
   showDialogSign.value = false;
 
@@ -96,7 +99,7 @@ function handleViewBAPP() {
         <DocumentForm
           v-model="form"
           :is-disabled-action="isDisabledAction"
-          @generate="handleGenerate"
+          @generate="() => showAlertDialog = true"
         />
       </template>
       <template
@@ -104,6 +107,24 @@ function handleViewBAPP() {
         #bodyContent
       >
         <div>
+          <ShadcnAlertDialog v-model:open="showAlertDialog">
+            <ShadcnAlertDialogContent>
+              <ShadcnAlertDialogHeader>
+                <ShadcnAlertDialogTitle>Warning</ShadcnAlertDialogTitle>
+                <ShadcnAlertDialogDescription>
+                  This action will save your data to the database.
+                  <p>If you only wish to generate a document without saving, please use the "Print" button instead.</p>
+                </ShadcnAlertDialogDescription>
+              </ShadcnAlertDialogHeader>
+              <ShadcnAlertDialogFooter>
+                <ShadcnAlertDialogCancel>Cancel</ShadcnAlertDialogCancel>
+                <ShadcnAlertDialogAction @click="() => handleGenerate()">
+                  Continue
+                </ShadcnAlertDialogAction>
+              </ShadcnAlertDialogFooter>
+            </ShadcnAlertDialogContent>
+          </ShadcnAlertDialog>
+
           <DocumentDialogSign
             v-model:open="showDialogSign"
             v-model="formSign"
