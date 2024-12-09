@@ -4,8 +4,10 @@ import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dateEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'DD MMMM YYYY', { locales: 'id-ID' });
-const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', { locales: 'id-ID' });
+const dataDateEnd = computed(() => new Date(props.data.details.date.ts.end));
+
+const dateEnd = useDateFormat(dataDateEnd, 'DD MMMM YYYY', { locales: 'id-ID' });
+const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
 </script>
 
 <template>
