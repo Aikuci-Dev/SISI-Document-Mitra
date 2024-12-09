@@ -25,6 +25,9 @@ export default defineEventHandler(async (event) => {
       set: {
         original,
         value: workDocument,
+        isValidated: false,
+        isApproved: false,
+        validatedAt: null,
         updatedAt: new Date(),
       },
     });

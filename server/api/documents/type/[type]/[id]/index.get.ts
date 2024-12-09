@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
     })
     .from(tables.documentMitra)
     .where(
-      or(
+      and(
         eq(tables.documentMitra.type, type),
         eq(tables.documentMitra.id, id),
       ),

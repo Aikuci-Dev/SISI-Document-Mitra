@@ -20,15 +20,29 @@ const rows = computed(() => mitraTableData.value?.rows);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { setWork } = useDocument();
-function handleCreateBAPP(data: WorkAndKey) {
-  setWork(data);
+async function handleCreateBAPP(data: WorkAndKey) {
+  const bapp = await $fetch(
+    `/api/documents/type/bapp/${data.key}`,
+  )
+    .catch(catchFetchError);
+
+  if (bapp) setWork({ ...bapp.value, key: data.key });
+  else setWork(data);
+
   navigateTo('/documents/bapp');
 }
 function handleViewBAPP(id: string) {
   navigateTo(`/documents/bapp/${id}`, { open: { target: '_blank' } });
 }
-function handleCreateBAST(data: WorkAndKey) {
-  setWork(data);
+async function handleCreateBAST(data: WorkAndKey) {
+  const bast = await $fetch(
+    `/api/documents/type/bast/${data.key}`,
+  )
+    .catch(catchFetchError);
+
+  if (bast) setWork({ ...bast.value, key: data.key });
+  else setWork(data);
+
   navigateTo('/documents/bast');
 }
 function handleViewBAST(id: string) {

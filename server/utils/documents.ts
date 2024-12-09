@@ -120,8 +120,12 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 
       const [startDay, startMonth, startYear] = workDocument.details.date.date.start.split('/');
       const [endDay, endMonth, endYear] = workDocument.details.date.date.end.split('/');
-      workDocument.details.date.ts.start = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay)).getTime();
-      workDocument.details.date.ts.end = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay)).getTime();
+      const dateStart = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay));
+      const dateEnd = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay));
+      workDocument.details.date.ts.start = dateStart.getTime();
+      workDocument.details.date.ts.end = dateEnd.getTime();
+      workDocument.details.date.date.start = dateStart.toISOString(); // Reformat
+      workDocument.details.date.date.end = dateEnd.toISOString(); // Reformat
 
       const [bappDay, bappMonth, bappYear] = workDocument.bapp.date.split('/');
       const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoice.date.split('/');
@@ -130,7 +134,7 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 
       workDocument.employee.supervisor.role = 'Project Manager';
 
-      return { key: `${workDocument.details.date.ts.end}-${workDocument.po.number}`, value, meta: { mapped_work: workDocument } };
+      return { key: `${workDocument.po.number}${workDocument.details.date.ts.end}`, value, meta: { mapped_work: workDocument } };
     })
     .filter(value => value.meta.mapped_work.po.number)
     .sort((prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts);
@@ -156,6 +160,9 @@ export async function getWorkDocumentByNameAndId(event: H3Event, context: { name
 
   return dataTable.meta.mapped_work;
 };
+
+// TODO-Last: Implement this feature
+// Then, simplify WorkDocument Type (reduce nested object)
 
 // --- Static Column Mapping ---
 

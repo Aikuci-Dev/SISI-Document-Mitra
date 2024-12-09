@@ -8,7 +8,12 @@ export default defineEventHandler(async (event) => {
   const workDocument = await useDB()
     .update(tables.documentMitra)
     .set({ isValidated: true, isApproved: false, validatedAt: new Date() })
-    .where(eq(tables.documentMitra.id, id))
+    .where(
+      and(
+        eq(tables.documentMitra.type, type),
+        eq(tables.documentMitra.id, id),
+      ),
+    )
     .returning()
     .get();
 

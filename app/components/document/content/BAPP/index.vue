@@ -5,9 +5,12 @@ import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dateStart = useDateFormat(new Date(props.data.details.date.ts.start), 'DD MMMM YYYY', { locales: 'id-ID' });
-const dateEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'DD MMMM YYYY', { locales: 'id-ID' });
-const dayEnd = useDateFormat(new Date(props.data.details.date.ts.end), 'dddd', { locales: 'id-ID' });
+const dataDateStart = computed(() => new Date(props.data.details.date.ts.start));
+const dataDateEnd = computed(() => new Date(props.data.details.date.ts.end));
+
+const dateStart = useDateFormat(dataDateStart, 'DD MMMM YYYY', { locales: 'id-ID' });
+const dateEnd = useDateFormat(dataDateEnd, 'DD MMMM YYYY', { locales: 'id-ID' });
+const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
 </script>
 
 <template>
