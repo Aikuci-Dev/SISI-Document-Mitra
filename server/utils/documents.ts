@@ -130,7 +130,7 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 
       workDocument.employee.supervisor.role = 'Project Manager';
 
-      return { key: `${workDocument.details.date.ts.end}-${workDocument.po.number}`, value, meta: { mapped_work: workDocument } };
+      return { key: `${workDocument.po.number}${workDocument.details.date.ts.end}`, value, meta: { mapped_work: workDocument } };
     })
     .filter(value => value.meta.mapped_work.po.number)
     .sort((prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts);
