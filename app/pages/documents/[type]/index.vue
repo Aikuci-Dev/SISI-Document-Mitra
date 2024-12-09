@@ -6,6 +6,13 @@ import { isString } from '~/lib/utils';
 
 definePageMeta({
   layout: false,
+  middleware: [
+    function (to, from) {
+      if (from.name !== 'documents') return abortNavigation();
+
+      return;
+    },
+  ],
 });
 
 const route = useRoute();
