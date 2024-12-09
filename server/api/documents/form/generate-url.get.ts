@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
   if (!document) throw createError({ statusCode: 404 });
 
-  const [endDay, endMonth, endYear] = document.details.date.date.end.split('/');
+  const dateEnd = new Date(document.details.date.date.end);
   const payload = Object.entries(MAPPED_FORMS)
     .reduce((prev, [k, v]) => {
       switch (k) {
@@ -43,13 +43,13 @@ export default defineEventHandler(async (event) => {
           prev[k as MAPPED_FORMS_KEYS] = links;
           break;
         case 'entry.283497930_year':
-          prev[k as MAPPED_FORMS_KEYS] = endYear;
+          prev[k as MAPPED_FORMS_KEYS] = String(dateEnd.getFullYear());
           break;
         case 'entry.283497930_month':
-          prev[k as MAPPED_FORMS_KEYS] = endMonth;
+          prev[k as MAPPED_FORMS_KEYS] = String(dateEnd.getMonth() + 1);
           break;
         case 'entry.283497930_day':
-          prev[k as MAPPED_FORMS_KEYS] = endDay;
+          prev[k as MAPPED_FORMS_KEYS] = String(dateEnd.getDate());
           break;
 
         default:

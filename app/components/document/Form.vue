@@ -53,10 +53,18 @@ const form = useForm({
 });
 
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
-  if (date) formValue.value!.details.date.ts.start = date.toDate(getLocalTimeZone()).getTime();
+  if (date) {
+    const dateValue = date.toDate(getLocalTimeZone());
+    formValue.value!.details.date.ts.start = dateValue.getTime();
+    formValue.value!.details.date.date.start = dateValue.toISOString();
+  }
 });
 watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
-  if (date) formValue.value!.details.date.ts.end = date.toDate(getLocalTimeZone()).getTime();
+  if (date) {
+    const dateValue = date.toDate(getLocalTimeZone());
+    formValue.value!.details.date.ts.end = dateValue.getTime();
+    formValue.value!.details.date.date.end = dateValue.toISOString();
+  }
 });
 watch(() => form.values.supervisorPhone, (phone) => {
   if (phone) formValue.value!.employee.supervisor.phone = +phone.replace(/\D+/g, '');
