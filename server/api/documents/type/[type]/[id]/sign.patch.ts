@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
     .select({ value: tables.documentMitra.value })
     .from(tables.documentMitra)
     .where(
-      or(
+      and(
         eq(tables.documentMitra.type, type),
         eq(tables.documentMitra.id, id),
       ),
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
     .update(tables.documentMitra)
     .set({ value: workDocument.value, signedAt: new Date() })
     .where(
-      or(
+      and(
         eq(tables.documentMitra.type, type),
         eq(tables.documentMitra.id, id),
       ),
