@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
 
     document = workDocuments[0].value;
   }
-  else document = await getWorkDocumentByNameAndId(event, { name, id });
+  else document = await getWorkDocumentByNameAndId({ name, id });
 
   if (!document) throw createError({ statusCode: 404 });
 

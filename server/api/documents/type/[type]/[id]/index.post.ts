@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   if (!['bapp', 'bast'].includes(type.toLowerCase())) throw createError({ statusCode: 404 });
   const user = await verifyUserAuthorizationByName(event);
 
-  const original = await getWorkDocumentByNameAndId(event, { name: user.name!, id });
+  const original = await getWorkDocumentByNameAndId({ name: user.name!, id });
 
   await useDB()
     .insert(tables.documentMitra)
