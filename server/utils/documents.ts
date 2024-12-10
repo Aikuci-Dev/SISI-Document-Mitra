@@ -1,8 +1,8 @@
-import type { H3Event } from 'h3';
 import { overrideValues, snakeCase } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { DocumentTable, DocumentTableColumn } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn } from '~~/types/document';
+import { STATUSES } from '~~/types/document';
 
 // Function to construct the initial WorkDocument structure
 function makeWorkDocument(): WorkDocument {
@@ -58,7 +58,7 @@ function makeWorkDocument(): WorkDocument {
 // --- Core Data Fetching Functions ---
 
 // Fetch spreadsheet data from Google Sheets
-export const getSpreadsheetData = defineCachedFunction<SheetValues>(async (_event: H3Event) => {
+const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
   const { apiKey, sheet } = useRuntimeConfig().google;
   const spreadsheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheet.id}/values/${sheet.range}?key=${apiKey}`;
   const data: ValueRange = await $fetch(spreadsheetUrl);
@@ -72,8 +72,8 @@ export const getSpreadsheetData = defineCachedFunction<SheetValues>(async (_even
 });
 
 // Fetch data columns based on spreadsheet headers
-export const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async (event: H3Event) => {
-  const { headers } = await getSpreadsheetData(event);
+const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
+  const { headers } = await getSpreadsheetData();
 
   return headers.map((column) => {
     const key = snakeCase(column) as MAPPED_COLUMNS_KEYS;
@@ -87,10 +87,10 @@ export const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async 
 
 // --- Data Retrieval Functions ---
 
-// Get raw data for a specific name (e.g., freelancer)
-export const getRawDataByName = defineCachedFunction<SheetValues>(async (event: H3Event, name: string) => {
+// Get raw data for a specific name
+async function getRawDataByName(name: string) {
   const { freelancerKey } = useRuntimeConfig().google.sheet;
-  const { headers, values } = await getSpreadsheetData(event);
+  const { headers, values } = await getSpreadsheetData();
   const freelancerIndex = headers.findIndex(header => header.trim().toLowerCase() == freelancerKey);
   return {
     headers,
@@ -98,16 +98,12 @@ export const getRawDataByName = defineCachedFunction<SheetValues>(async (event: 
       ? []
       : values.filter(mitra => mitra[freelancerIndex].trim().toLowerCase() == name.trim().toLowerCase()),
   };
-}, {
-  maxAge: 5 * 60,
-  group: 'sheetData',
-  getKey: (_event: H3Event, name: string) => `raw_${name.trim()}`,
-});
+}
 
 // Get transformed data for a specific name, converting the raw data into structured "WorkDocument" objects.
-export const getDataTableByName = defineCachedFunction<DocumentTable>(async (event: H3Event, name: string) => {
-  const { values } = await getRawDataByName(event, name);
-  const columns = await getDataColumns(event);
+async function getDataTableByName(name: string): Promise<DocumentTable> {
+  const { values } = await getRawDataByName(name);
+  const columns = await getDataColumns();
 
   const rows = values
     .map((value) => {
@@ -134,23 +130,84 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 
       workDocument.employee.supervisor.role = 'Project Manager';
 
-      return { key: `${workDocument.po.number}${workDocument.details.date.ts.end}`, value, meta: { mapped_work: workDocument } };
+      const workKey = `${workDocument.po.number}${workDocument.details.date.ts.end}`;
+      return {
+        key: workKey,
+        value,
+        meta: {
+          mapped_work: workDocument,
+          key: workKey,
+          status: STATUSES.initiated,
+        },
+      };
     })
     .filter(value => value.meta.mapped_work.po.number)
     .sort((prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts);
 
   return { columns, rows };
+}
+
+// Get the status of multiple work documents based on their ID
+export function getWorkDocumentStatus(
+  ids: string[],
+  data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
+): { id: string; status: STATUSES_TYPE }[] {
+  const dataMap = new Map(data.map(item => [item.id, item]));
+
+  return ids.map((id) => {
+    const item = dataMap.get(id);
+    if (!item) return { id, status: STATUSES.initiated };
+
+    if (!item.isValidated) return { id, status: STATUSES.created };
+    if (!item.isApproved) return { id, status: STATUSES.rejected };
+    if (item.signedAt) return { id, status: STATUSES.signed };
+
+    return { id, status: STATUSES.approved };
+  });
+}
+
+// Get "WorkDocument" objects and add status information.
+export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(async (name: string) => {
+  const datatables = await getDataTableByName(name);
+
+  const ids = datatables.rows.map(row => row.key);
+  const workDocuments = await useDB()
+    .select({
+      id: tables.documentMitra.id,
+      isValidated: tables.documentMitra.isValidated,
+      isApproved: tables.documentMitra.isApproved,
+      signedAt: tables.documentMitra.signedAt,
+    })
+    .from(tables.documentMitra)
+    .where(inArray(tables.documentMitra.id, ids));
+
+  const statuses = getWorkDocumentStatus(ids, workDocuments);
+  const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
+  datatables.rows = datatables.rows.map((row) => {
+    const { meta, ...rest } = row;
+    const { status, ...restMeta } = meta;
+
+    return {
+      ...rest,
+      meta: {
+        ...restMeta,
+        status: statusesMap.get(row.key) as STATUSES_TYPE,
+      },
+    };
+  });
+
+  return datatables;
 }, {
   maxAge: 5 * 60,
   group: 'sheetData',
-  getKey: (_event: H3Event, name: string) => `datatable_${name.trim()}`,
+  getKey: (name: string) => `datatable-${name.trim()}`,
 });
 
 // Get WorkDocument by a specific name and ID
-export async function getWorkDocumentByNameAndId(event: H3Event, context: { name: string; id: string }): Promise<WorkDocument> {
+export async function getWorkDocumentByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
-  const dataTables = await getDataTableByName(event, name);
+  const dataTables = await getDataTableWithStatusByName(name);
   const dataTable = dataTables.rows.find(row => row.key === id);
   if (!dataTable)
     throw createError({
@@ -171,7 +228,7 @@ export async function getWorkDocumentByNameAndId(event: H3Event, context: { name
 // Consider implementing a feature where users can map data from various sources to properties in the WorkDocument interface.
 // The mapping could be stored in a configuration file (e.g., JSON) or a user interface for easy customization.
 export const MAPPED_COLUMNS = {
-  freelancer: 'employee.name',
+  inti: 'employee.name',
   role: 'employee.role',
   start_kontrak: 'details.date.date.start',
   end_kontrak: 'details.date.date.end',

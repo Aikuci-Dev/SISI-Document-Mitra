@@ -8,7 +8,7 @@ export interface DocumentTableColumn extends TableColumn {
 }
 
 export interface DocumentTableRow extends TableRow {
-  meta: {
+  meta: WorkMeta & {
     mapped_work: WorkDocument;
   };
 }
@@ -24,11 +24,26 @@ export interface DocumentState {
   [key: string]: unknown;
 }
 
-export type WorkAndKey = WorkDocument & { key: string };
+export type WorkMeta = {
+  key: string;
+  status: STATUSES_TYPE;
+};
+export type WorkWithMeta = WorkDocument & {
+  meta: WorkMeta;
+};
 
 export interface WorkDocumentComposable {
   document: Ref<DocumentState>;
   work: ComputedRef<WorkDocument | undefined>;
   workKey: ComputedRef<string | undefined>;
-  setWork: (data: WorkAndKey) => void;
+  setWork: (data: WorkWithMeta) => void;
 }
+
+export const STATUSES = {
+  initiated: 'initiated',
+  created: 'created',
+  rejected: 'rejected',
+  approved: 'approved',
+  signed: 'signed',
+} as const;
+export type STATUSES_TYPE = typeof STATUSES[keyof typeof STATUSES];

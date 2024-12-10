@@ -1,4 +1,4 @@
-import type { DocumentState, WorkDocumentComposable, WorkAndKey } from '~~/types/document';
+import type { DocumentState, WorkDocumentComposable, WorkWithMeta } from '~~/types/document';
 
 const useDocumentState = () => useState<DocumentState>('document', () => ({}));
 
@@ -12,8 +12,8 @@ export function useDocument(): WorkDocumentComposable {
   };
 }
 
-function setWork(data: WorkAndKey) {
-  const { key, ...rest } = data;
-  useDocumentState().value.workKey = key;
+function setWork(data: WorkWithMeta) {
+  const { meta, ...rest } = data;
+  useDocumentState().value.workKey = meta.key;
   useDocumentState().value.work = rest;
 }
