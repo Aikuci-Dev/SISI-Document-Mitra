@@ -101,7 +101,7 @@ export const getRawDataByName = defineCachedFunction<SheetValues>(async (event: 
 }, {
   maxAge: 5 * 60,
   group: 'sheetData',
-  getKey: (_event: H3Event, name: string) => `raw_${name.trim()}`,
+  getKey: (_event: H3Event, name: string) => `raw-${name.trim()}`,
 });
 
 // Get transformed data for a specific name, converting the raw data into structured "WorkDocument" objects.
@@ -134,7 +134,18 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 
       workDocument.employee.supervisor.role = 'Project Manager';
 
-      return { key: `${workDocument.po.number}${workDocument.details.date.ts.end}`, value, meta: { mapped_work: workDocument } };
+      const workKey = `${workDocument.po.number}${workDocument.details.date.ts.end}`;
+      return {
+        key: workKey,
+        value,
+        meta: {
+          mapped_work: workDocument,
+          meta_work: {
+            key: workKey,
+            status: STATUSES.initiated,
+          },
+        },
+      };
     })
     .filter(value => value.meta.mapped_work.po.number)
     .sort((prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts);
@@ -143,7 +154,44 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
 }, {
   maxAge: 5 * 60,
   group: 'sheetData',
-  getKey: (_event: H3Event, name: string) => `datatable_${name.trim()}`,
+  getKey: (_event: H3Event, name: string) => `datatable-${name.trim()}`,
+});
+
+// Get "WorkDocument" objects and add status information.
+export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(async (event: H3Event, name: string) => {
+  const datatables = await getDataTableByName(event, name);
+
+  const ids = datatables.rows.map(row => row.key);
+  const workDocuments = await useDB()
+    .select({
+      id: tables.documentMitra.id,
+      isValidated: tables.documentMitra.isValidated,
+      isApproved: tables.documentMitra.isApproved,
+      signedAt: tables.documentMitra.signedAt,
+    })
+    .from(tables.documentMitra)
+    .where(inArray(tables.documentMitra.id, ids));
+
+  const statuses = getWorkDocumentStatus(ids, workDocuments);
+  const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
+  datatables.rows = datatables.rows.map((row) => {
+    const { meta, ...rest } = row;
+    const { meta_work, ...restMeta } = meta;
+
+    return {
+      ...rest,
+      meta: {
+        ...restMeta,
+        meta_work: { key: row.key, status: statusesMap.get(row.key) as string },
+      },
+    };
+  });
+
+  return datatables;
+}, {
+  maxAge: 5 * 60,
+  group: 'sheetData',
+  getKey: (_event: H3Event, name: string) => `datatable_with_status-${name.trim()}`,
 });
 
 // Get WorkDocument by a specific name and ID
@@ -161,6 +209,25 @@ export async function getWorkDocumentByNameAndId(event: H3Event, context: { name
   return dataTable.meta.mapped_work;
 };
 
+// Get the status of multiple work documents based on their ID
+export function getWorkDocumentStatus(
+  ids: string[],
+  data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
+): { id: string; status: STATUSES }[] {
+  const dataMap = new Map(data.map(item => [item.id, item]));
+
+  return ids.map((id) => {
+    const item = dataMap.get(id);
+    if (!item) return { id, status: STATUSES.initiated };
+
+    if (!item.isValidated) return { id, status: STATUSES.created };
+    if (!item.isApproved) return { id, status: STATUSES.rejected };
+    if (item.signedAt) return { id, status: STATUSES.signed };
+
+    return { id, status: STATUSES.approved };
+  });
+}
+
 // TODO-Last: Implement this feature
 // Then, simplify WorkDocument Type (reduce nested object)
 
@@ -171,7 +238,7 @@ export async function getWorkDocumentByNameAndId(event: H3Event, context: { name
 // Consider implementing a feature where users can map data from various sources to properties in the WorkDocument interface.
 // The mapping could be stored in a configuration file (e.g., JSON) or a user interface for easy customization.
 export const MAPPED_COLUMNS = {
-  freelancer: 'employee.name',
+  inti: 'employee.name',
   role: 'employee.role',
   start_kontrak: 'details.date.date.start',
   end_kontrak: 'details.date.date.end',
@@ -198,3 +265,12 @@ export const MAPPED_FORMS = {
   'entry.283497930_day': 'details.date.date.end',
 } as const;
 export type MAPPED_FORMS_KEYS = keyof typeof MAPPED_FORMS;
+
+// ENUMS
+enum STATUSES {
+  initiated = 'initiated',
+  created = 'created',
+  rejected = 'rejected',
+  approved = 'approved',
+  signed = 'signed',
+}

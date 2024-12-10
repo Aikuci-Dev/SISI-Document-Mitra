@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import type { WorkAndKey } from '~~/types/document';
+import type { WorkWithMeta } from '~~/types/document';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 
@@ -20,13 +20,14 @@ const rows = computed(() => mitraTableData.value?.rows);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { setWork } = useDocument();
-async function handleCreateBAPP(data: WorkAndKey) {
+async function handleCreateBAPP(data: WorkWithMeta) {
+  const meta = data.meta;
   const bapp = await $fetch(
-    `/api/documents/type/bapp/${data.key}`,
+    `/api/documents/type/bapp/${meta.key}`,
   )
     .catch(catchFetchError);
 
-  if (bapp) setWork({ ...bapp.value, key: data.key });
+  if (bapp) setWork({ ...bapp.value, meta });
   else setWork(data);
 
   navigateTo('/documents/bapp');
@@ -34,13 +35,14 @@ async function handleCreateBAPP(data: WorkAndKey) {
 function handleViewBAPP(id: string) {
   navigateTo(`/documents/bapp/${id}`, { open: { target: '_blank' } });
 }
-async function handleCreateBAST(data: WorkAndKey) {
+async function handleCreateBAST(data: WorkWithMeta) {
+  const meta = data.meta;
   const bast = await $fetch(
-    `/api/documents/type/bast/${data.key}`,
+    `/api/documents/type/bast/${meta.key}`,
   )
     .catch(catchFetchError);
 
-  if (bast) setWork({ ...bast.value, key: data.key });
+  if (bast) setWork({ ...bast.value, meta });
   else setWork(data);
 
   navigateTo('/documents/bast');
@@ -95,6 +97,12 @@ async function handleFillForm(id: string) {
                       class="sticky left-0 z-20 bg-white"
                     />
                     <ShadcnTableHead
+                      v-if="columns"
+                      class="text-nowrap border"
+                    >
+                      STATUS
+                    </ShadcnTableHead>
+                    <ShadcnTableHead
                       v-for="column in columns"
                       :key="column.key"
                       class="text-nowrap border"
@@ -124,7 +132,7 @@ async function handleFillForm(id: string) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, key: row.key })"
+                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, meta: row.meta.meta_work })"
                             >
                               Create
                             </ShadcnDropdownMenuItem>
@@ -139,7 +147,7 @@ async function handleFillForm(id: string) {
                                 BAST
                               </ShadcnDropdownMenuLabel>
                               <ShadcnDropdownMenuItem
-                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, key: row.key })"
+                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, meta: row.meta.meta_work })"
                               >
                                 Create
                               </ShadcnDropdownMenuItem>
@@ -160,6 +168,9 @@ async function handleFillForm(id: string) {
                             </ShadcnDropdownMenuItem>
                           </ShadcnDropdownMenuContent>
                         </ShadcnDropdownMenu>
+                      </ShadcnTableCell>
+                      <ShadcnTableCell class="text-nowrap border">
+                        {{ row.meta.meta_work.status }}
                       </ShadcnTableCell>
                       <ShadcnTableCell
                         v-for="(value, index) in row.value"
