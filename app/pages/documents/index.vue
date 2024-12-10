@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import type { WorkWithMeta } from '~~/types/document';
+import type { STATUSES_TYPE, WorkWithMeta } from '~~/types/document';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 
@@ -132,7 +132,7 @@ async function handleFillForm(id: string) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, meta: row.meta.meta_work })"
+                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, meta: row.meta })"
                             >
                               Create
                             </ShadcnDropdownMenuItem>
@@ -147,7 +147,7 @@ async function handleFillForm(id: string) {
                                 BAST
                               </ShadcnDropdownMenuLabel>
                               <ShadcnDropdownMenuItem
-                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, meta: row.meta.meta_work })"
+                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, meta: row.meta })"
                               >
                                 Create
                               </ShadcnDropdownMenuItem>
@@ -169,8 +169,8 @@ async function handleFillForm(id: string) {
                           </ShadcnDropdownMenuContent>
                         </ShadcnDropdownMenu>
                       </ShadcnTableCell>
-                      <ShadcnTableCell class="text-nowrap border">
-                        {{ row.meta.meta_work.status }}
+                      <ShadcnTableCell class="text-nowrap border text-center">
+                        <DocumentBadgeStatus :status="row.meta.status as STATUSES_TYPE" />
                       </ShadcnTableCell>
                       <ShadcnTableCell
                         v-for="(value, index) in row.value"
