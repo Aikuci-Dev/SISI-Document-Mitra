@@ -26,7 +26,10 @@ export interface DocumentState {
 
 export type WorkMeta = {
   key: string;
-  status: STATUSES_TYPE;
+  statuses: {
+    type: DOCUMENTS_TYPE;
+    status: STATUSES_TYPE;
+  }[];
 };
 export type WorkWithMeta = WorkDocument & {
   meta: WorkMeta;

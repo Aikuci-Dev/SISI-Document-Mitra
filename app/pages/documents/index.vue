@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import type { STATUSES_TYPE, WorkWithMeta } from '~~/types/document';
+import type { WorkWithMeta } from '~~/types/document';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 
@@ -52,7 +52,7 @@ function handleViewBAST(id: string) {
 }
 async function handleFillForm(id: string) {
   const formUrl = await $fetch('/api/documents/form/generate-url', {
-    params: { id, name: user.value?.name },
+    params: { id, name: user.value!.name },
     onResponseError: ({ response }) => {
       const messages = response.statusText.split('>>');
       toast({
@@ -88,7 +88,7 @@ async function handleFillForm(id: string) {
             </ShadcnCardDescription>
           </ShadcnCardHeader>
           <ShadcnCardContent>
-            <div class="h-96 overflow-auto">
+            <div class="h-[480px] overflow-auto">
               <BaseTable v-if="mitraTableData">
                 <ShadcnTableHeader>
                   <ShadcnTableRow class="sticky top-0 z-10 divide-y-4 divide-y-reverse bg-white">
@@ -98,21 +98,21 @@ async function handleFillForm(id: string) {
                     />
                     <ShadcnTableHead
                       v-if="columns"
-                      class="text-nowrap border"
+                      class="text-nowrap"
                     >
                       STATUS
                     </ShadcnTableHead>
                     <ShadcnTableHead
                       v-for="column in columns"
                       :key="column.key"
-                      class="text-nowrap border"
+                      class="text-nowrap"
                     >
                       {{ column.label }}
                     </ShadcnTableHead>
                   </ShadcnTableRow>
                 </ShadcnTableHeader>
-                <ShadcnTableBody v-if="columns">
-                  <template v-if="rows?.length">
+                <ShadcnTableBody v-if="columns && rows">
+                  <template v-if="rows.length">
                     <ShadcnTableRow
                       v-for="row in rows"
                       :key="row.key"
@@ -141,7 +141,7 @@ async function handleFillForm(id: string) {
                             >
                               View
                             </ShadcnDropdownMenuItem>
-                            <div v-if="row.meta.mapped_work.bast?.number">
+                            <div v-if="row.meta.mapped_work.bast.number">
                               <ShadcnDropdownMenuSeparator />
                               <ShadcnDropdownMenuLabel>
                                 BAST
@@ -169,13 +169,18 @@ async function handleFillForm(id: string) {
                           </ShadcnDropdownMenuContent>
                         </ShadcnDropdownMenu>
                       </ShadcnTableCell>
-                      <ShadcnTableCell class="text-nowrap border text-center">
-                        <DocumentBadgeStatus :status="row.meta.status as STATUSES_TYPE" />
+                      <ShadcnTableCell class="flex flex-col space-y-4 text-nowrap text-center">
+                        <DocumentBadgeStatus
+                          v-for="{ type, status } in row.meta.statuses"
+                          :key="type"
+                          :type
+                          :status
+                        />
                       </ShadcnTableCell>
                       <ShadcnTableCell
                         v-for="(value, index) in row.value"
                         :key="`${row.key}-${index}`"
-                        class="text-nowrap border"
+                        class="text-nowrap"
                       >
                         {{ value }}
                       </ShadcnTableCell>
@@ -185,11 +190,11 @@ async function handleFillForm(id: string) {
                     <ShadcnTableCell />
                     <ShadcnTableCell
                       :colspan="columns.length"
-                      class="h-24 border text-center"
+                      class="h-24 text-center"
                     >
                       <ShadcnAlert>
                         <MessageCircleWarning class="size-4" />
-                        <ShadcnAlertTitle>No document found associated with your name '{{ user?.name }}'</ShadcnAlertTitle>
+                        <ShadcnAlertTitle>No document found associated with your name '{{ user!.name }}'</ShadcnAlertTitle>
                         <ShadcnAlertDescription>
                           Please contact admin to create a new one for you.
                         </ShadcnAlertDescription>

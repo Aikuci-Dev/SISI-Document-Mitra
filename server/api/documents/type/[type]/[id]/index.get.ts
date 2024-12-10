@@ -16,13 +16,14 @@ export default defineEventHandler(async (event) => {
     .from(tables.documentMitra)
     .where(
       and(
-        eq(tables.documentMitra.type, type),
+        eq(tables.documentMitra.type, type as DOCUMENTS_TYPE),
         eq(tables.documentMitra.id, id),
       ),
     );
 
   const workDocument = catchFirst(workDocuments);
   const { isValidated, isApproved, signedAt } = workDocument;
-  const status = getWorkDocumentStatus([id], [{ id, isValidated, isApproved, signedAt }]);
-  return { ...workDocument, status: status[0].status as STATUSES_TYPE };
+  const statuses = getWorkDocumentStatus([id], [{ id, type, isValidated, isApproved, signedAt }]);
+  const status = statuses.find(status => status.type === type);
+  return { ...workDocument, status: status!.status as STATUSES_TYPE };
 });
