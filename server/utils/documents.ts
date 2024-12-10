@@ -2,7 +2,8 @@ import type { H3Event } from 'h3';
 import { overrideValues, snakeCase } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { DocumentTable, DocumentTableColumn } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn } from '~~/types/document';
+import { STATUSES } from '~~/types/document';
 
 // Function to construct the initial WorkDocument structure
 function makeWorkDocument(): WorkDocument {
@@ -140,10 +141,8 @@ export const getDataTableByName = defineCachedFunction<DocumentTable>(async (eve
         value,
         meta: {
           mapped_work: workDocument,
-          meta_work: {
-            key: workKey,
-            status: STATUSES.initiated,
-          },
+          key: workKey,
+          status: STATUSES.initiated,
         },
       };
     })
@@ -176,13 +175,13 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
   const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { meta_work, ...restMeta } = meta;
+    const { status, ...restMeta } = meta;
 
     return {
       ...rest,
       meta: {
         ...restMeta,
-        meta_work: { key: row.key, status: statusesMap.get(row.key) as string },
+        status: String(statusesMap.get(row.key)),
       },
     };
   });
@@ -213,7 +212,7 @@ export async function getWorkDocumentByNameAndId(event: H3Event, context: { name
 export function getWorkDocumentStatus(
   ids: string[],
   data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
-): { id: string; status: STATUSES }[] {
+): { id: string; status: STATUSES_TYPE }[] {
   const dataMap = new Map(data.map(item => [item.id, item]));
 
   return ids.map((id) => {
@@ -265,12 +264,3 @@ export const MAPPED_FORMS = {
   'entry.283497930_day': 'details.date.date.end',
 } as const;
 export type MAPPED_FORMS_KEYS = keyof typeof MAPPED_FORMS;
-
-// ENUMS
-enum STATUSES {
-  initiated = 'initiated',
-  created = 'created',
-  rejected = 'rejected',
-  approved = 'approved',
-  signed = 'signed',
-}
