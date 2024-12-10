@@ -18,9 +18,11 @@ const { data, error, refresh } = await useFetch(
 if (error.value) throw createError({ ...error.value, fatal: true });
 const hasAdmin = computed(() => user.value?.role?.includes('admin'));
 const supervisorName = computed(() => data.value?.value.employee.supervisor.name);
+const isSupervisor = computed(() => user.value?.name === supervisorName.value);
+
+const isLoading = ref(false);
 
 // REVIEW by Admin
-const isLoading = ref(false);
 async function handleApproveOrReject(type: 'approve' | 'reject') {
   isLoading.value = true;
 
@@ -103,7 +105,7 @@ async function handleSign() {
             </div>
 
             <ShadcnTooltipProvider
-              v-if="user?.name === supervisorName"
+              v-if="isSupervisor"
               :disabled="!data.isValidated && !data.isApproved"
             >
               <ShadcnTooltip
@@ -146,6 +148,9 @@ async function handleSign() {
             @sign="handleSign"
           />
 
+          <div class="container">
+            <DocumentAlertStatus :status="data.status" />
+          </div>
           <div class="grid place-content-center">
             <template v-if="routeType === 'bapp'">
               <DocumentContentBAPPHighlighted

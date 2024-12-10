@@ -148,7 +148,7 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
 }
 
 // Get the status of multiple work documents based on their ID
-function getWorkDocumentStatus(
+export function getWorkDocumentStatus(
   ids: string[],
   data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
 ): { id: string; status: STATUSES_TYPE }[] {
