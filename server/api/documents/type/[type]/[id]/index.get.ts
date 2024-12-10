@@ -1,14 +1,13 @@
-import type { STATUSES_TYPE } from '~~/types/document';
+import type { DOCUMENTS_TYPE, STATUSES_TYPE } from '~~/types/document';
 
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');
-  const type = decodeURI(getRouterParam(event, 'type') || '');
+  const type = decodeURI(getRouterParam(event, 'type') || '').toLowerCase();
 
-  if (!['bapp', 'bast'].includes(type.toLowerCase())) throw createError({ statusCode: 404 });
+  if (!isValidDocumentType(type)) throw createError({ statusCode: 404 });
 
   const workDocuments = await useDB()
     .select({
-      original: tables.documentMitra.original,
       value: tables.documentMitra.value,
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,

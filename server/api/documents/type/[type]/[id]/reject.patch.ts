@@ -1,8 +1,8 @@
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');
-  const type = decodeURI(getRouterParam(event, 'type') || '');
+  const type = decodeURI(getRouterParam(event, 'type') || '').toLowerCase();
 
-  if (!['bapp', 'bast'].includes(type.toLowerCase())) throw createError({ statusCode: 404 });
+  if (!isValidDocumentType(type)) throw createError({ statusCode: 404 });
   await verifyUserAuthorizationByRole(event, { role: ['admin'] });
 
   const workDocument = await useDB()

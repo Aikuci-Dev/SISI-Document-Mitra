@@ -2,6 +2,7 @@
 import { useVueToPrint } from 'vue-to-print';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
+import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
 
 definePageMeta({
@@ -20,9 +21,7 @@ const routeType = computed<string>(() => {
   if (isString(route.params.type)) return route.params.type.toLowerCase();
   return '';
 });
-if (!['bapp', 'bast'].includes(routeType.value)) {
-  navigateTo('/documents');
-}
+if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
 const { work, workKey } = useDocument();
 const form = ref(work);

@@ -2,13 +2,13 @@ import { useValidatedBody, z } from 'h3-zod';
 
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');
-  const type = decodeURI(getRouterParam(event, 'type') || '');
+  const type = decodeURI(getRouterParam(event, 'type') || '').toLowerCase();
   const { sign, name } = await useValidatedBody(event, z.object({
     sign: z.string(),
     name: z.string(),
   }));
 
-  if (!['bapp', 'bast'].includes(type.toLowerCase())) throw createError({ statusCode: 404 });
+  if (!isValidDocumentType(type)) throw createError({ statusCode: 404 });
   await verifyUserAuthorizationByName(event, {
     name,
     errorMessage: 'Forbidden. >> You do not have the necessary permissions to perform this action because you are not the supervisor of this employee.',

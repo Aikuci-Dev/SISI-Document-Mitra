@@ -1,4 +1,5 @@
 import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import type { DOCUMENTS_TYPE } from '~~/types/document';
 import type { WorkDocument } from '~~/types/schema/document';
 
 export const userGoogle = sqliteTable('user_google', {
@@ -13,8 +14,7 @@ export const userGoogle = sqliteTable('user_google', {
 
 export const documentMitra = sqliteTable('document_mitra', {
   id: text().notNull(),
-  type: text().notNull(),
-  original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
+  type: text().$type<DOCUMENTS_TYPE>().notNull(),
   value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
   isApproved: integer('is_approved', { mode: 'boolean' }).default(false),

@@ -1,0 +1,1 @@
+ALTER TABLE `document_mitra` DROP COLUMN `original`;

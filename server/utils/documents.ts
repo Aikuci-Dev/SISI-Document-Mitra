@@ -1,8 +1,8 @@
 import { overrideValues, snakeCase } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn } from '~~/types/document';
-import { STATUSES } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DOCUMENTS_TYPE } from '~~/types/document';
+import { DOCUMENTS, STATUSES } from '~~/types/document';
 
 // Function to construct the initial WorkDocument structure
 function makeWorkDocument(): WorkDocument {
@@ -217,6 +217,18 @@ export async function getWorkDocumentByNameAndId(context: { name: string; id: st
 
   return dataTable.meta.mapped_work;
 };
+
+// --- Utility Function ---
+
+// Checks if a type is one of the accepted document types.
+export function isValidDocumentType(type: string): type is DOCUMENTS_TYPE {
+  return Object.values(DOCUMENTS).includes(type as DOCUMENTS_TYPE);
+}
+
+// Checks if a type is one of the accepted document statuses.
+export function isValidStatusType(type: string): type is STATUSES_TYPE {
+  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
+}
 
 // TODO-Last: Implement this feature
 // Then, simplify WorkDocument Type (reduce nested object)

@@ -39,6 +39,13 @@ export interface WorkDocumentComposable {
   setWork: (data: WorkWithMeta) => void;
 }
 
+export const DOCUMENTS = {
+  original: 'original',
+  bapp: 'bapp',
+  bast: 'bast',
+} as const;
+export type DOCUMENTS_TYPE = typeof DOCUMENTS[keyof typeof DOCUMENTS];
+
 export const STATUSES = {
   initiated: 'initiated',
   created: 'created',
