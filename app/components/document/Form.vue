@@ -12,6 +12,7 @@ const emits = defineEmits<FormEmits>();
 
 defineProps<{
   isDisabledAction?: boolean;
+  isDisabledInput?: boolean;
 }>();
 
 const formValue = defineModel<WorkDocument>();
@@ -99,12 +100,14 @@ async function handleSubmit() {
             v-model="formValue.details.title"
             v-bind="slotProps"
             class="col-span-2"
+            :disabled="isDisabledInput"
           />
         </template>
         <template #dateStart="slotProps">
           <ShadcnAutoFormFieldDate
             v-bind="slotProps"
             label="Start Date (per period)"
+            :disabled="isDisabledInput"
             required
           />
         </template>
@@ -112,6 +115,7 @@ async function handleSubmit() {
           <ShadcnAutoFormFieldDate
             v-bind="slotProps"
             label="End Date (per period)"
+            :disabled="isDisabledInput"
             required
           />
         </template>
@@ -177,6 +181,7 @@ async function handleSubmit() {
           <DocumentFormDetail
             v-model="formValue"
             v-bind="slotProps"
+            :is-disabled-input
             class="col-span-2 m-4"
           />
         </template>

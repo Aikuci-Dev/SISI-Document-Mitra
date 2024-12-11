@@ -40,7 +40,7 @@ const { handlePrint } = useVueToPrint({
 const showAlertDialog = ref(false);
 
 // SIGN by User
-const formSign = ref();
+const formSign = ref(work.value?.employee.sign.url || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => {
@@ -55,6 +55,7 @@ const isDisabledAction = computed(() => {
 
   return isLoading.value && showDialogSign.value;
 });
+const isDisabledInput = routeType.value === DOCUMENTS.bast && workRelated.value?.some(work => work.type === DOCUMENTS.bapp);
 function handleSign() {
   form.value!.employee.sign.url = formSign.value;
   handleGenerate();
@@ -117,6 +118,7 @@ function handleViewBAPP() {
         <DocumentForm
           v-model="form"
           :is-disabled-action="isDisabledAction"
+          :is-disabled-input="isDisabledInput"
           @generate="() => showAlertDialog = true"
         />
       </template>

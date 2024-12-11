@@ -6,6 +6,7 @@ import type { WorkDocument } from '~~/types/schema/document';
 const props = defineProps<{
   fieldName: string;
   shape: Shape;
+  isDisabledInput?: boolean;
 }>();
 
 const formValue = defineModel<WorkDocument>();
@@ -63,6 +64,7 @@ const delegatedProps = computed(() => {
           <ShadcnAutoFormFieldInput
             v-bind="slotProps"
             label="Invoice Nominal"
+            :disabled="isDisabledInput"
             required
           />
         </template>
