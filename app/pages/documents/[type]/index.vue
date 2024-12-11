@@ -4,6 +4,7 @@ import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
+import { DOCUMENTS } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -23,7 +24,7 @@ const routeType = computed<string>(() => {
 });
 if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
-const { work, workKey } = useDocument();
+const { work, workKey, workRelated } = useDocument();
 const form = ref(work);
 
 // VueToPrint
@@ -42,7 +43,18 @@ const showAlertDialog = ref(false);
 const formSign = ref();
 const showDialogSign = ref(false);
 const isLoading = ref(false);
-const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
+const isDisabledAction = computed(() => {
+  switch (routeType.value) {
+    case DOCUMENTS.bast:
+      if (!workRelated.value?.some(work => work.type === DOCUMENTS.bapp)) return true;
+      break;
+
+    default:
+      break;
+  }
+
+  return isLoading.value && showDialogSign.value;
+});
 function handleSign() {
   form.value!.employee.sign.url = formSign.value;
   handleGenerate();

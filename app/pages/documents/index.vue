@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 
@@ -32,14 +32,21 @@ async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
   setWork(data);
 
   if (storedDocuments.size) {
-    const meta = data.meta;
+    const { meta, ...rest } = data;
+    const relatedWork: RelatedWork[] = [];
 
-    if (storedDocuments.get(`${type}-${meta.key}`)) {
-      const document = await $fetch(`/api/documents/type/${type}/${meta.key}`)
-        .catch(catchFetchError);
-
-      if (document) setWork({ ...document.value, meta });
+    // If type is 'bast', fetch related 'bapp' document
+    if (type === DOCUMENTS.bast && storedDocuments.has(`${DOCUMENTS.bapp}-${meta.key}`)) {
+      const document = await $fetch(`/api/documents/type/${DOCUMENTS.bapp}/${meta.key}`).catch(catchFetchError);
+      if (document) relatedWork.push({ type: DOCUMENTS.bapp, value: document.value });
     }
+
+    let document;
+    if (storedDocuments.has(`${type}-${meta.key}`))
+      document = await $fetch(`/api/documents/type/${type}/${meta.key}`).catch(catchFetchError);
+
+    if (document) setWork({ ...document.value, related: relatedWork, meta });
+    else setWork({ ...rest, related: relatedWork, meta });
   }
 
   navigateTo(`/documents/${type}`);
@@ -128,7 +135,7 @@ async function handleFillForm(id: string) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              v-if="storedDocuments.get(`${DOCUMENTS.bapp}-${row.key}`)"
+                              v-if="storedDocuments.has(`${DOCUMENTS.bapp}-${row.key}`)"
                               @click="() => handleViewDocument(DOCUMENTS.bapp, row.key)"
                             >
                               View
@@ -145,7 +152,7 @@ async function handleFillForm(id: string) {
                                 BAST
                               </ShadcnDropdownMenuLabel>
                               <ShadcnDropdownMenuItem
-                                v-if="storedDocuments.get(`${DOCUMENTS.bast}-${row.key}`)"
+                                v-if="storedDocuments.has(`${DOCUMENTS.bast}-${row.key}`)"
                                 @click="() => handleViewDocument(DOCUMENTS.bast, row.key)"
                               >
                                 View

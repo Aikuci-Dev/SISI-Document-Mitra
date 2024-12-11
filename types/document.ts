@@ -20,24 +20,32 @@ export interface DocumentTable {
 
 export interface DocumentState {
   work?: WorkDocument;
+  workRelated?: RelatedWork[];
   workKey?: string;
   [key: string]: unknown;
 }
 
+export type RelatedWork = {
+  type: DOCUMENTS_TYPE;
+  value: WorkDocument;
+};
+export type WorkMetaStatus = {
+  type: DOCUMENTS_TYPE;
+  status: STATUSES_TYPE;
+};
 export type WorkMeta = {
   key: string;
-  statuses: {
-    type: DOCUMENTS_TYPE;
-    status: STATUSES_TYPE;
-  }[];
+  statuses: WorkMetaStatus[];
 };
 export type WorkWithMeta = WorkDocument & {
   meta: WorkMeta;
+  related?: RelatedWork[];
 };
 
 export interface WorkDocumentComposable {
   document: Ref<DocumentState>;
   work: ComputedRef<WorkDocument | undefined>;
+  workRelated: ComputedRef<RelatedWork[] | undefined>;
   workKey: ComputedRef<string | undefined>;
   setWork: (data: WorkWithMeta) => void;
 }
