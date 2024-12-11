@@ -44,23 +44,9 @@ async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
 
   navigateTo(`/documents/${type}`);
 }
-async function handleCreateBAPP(data: WorkWithMeta) {
-  handleCreateDocument(DOCUMENTS.bapp, data);
-}
-async function handleCreateBAST(data: WorkWithMeta) {
-  handleCreateDocument(DOCUMENTS.bast, data);
-}
-
 function handleViewDocument(type: DOCUMENTS_TYPE, id: string) {
   navigateTo(`/documents/${type}/${id}`, { open: { target: '_blank' } });
 }
-function handleViewBAPP(id: string) {
-  handleViewDocument(DOCUMENTS.bapp, id);
-}
-function handleViewBAST(id: string) {
-  handleViewDocument(DOCUMENTS.bast, id);
-}
-
 async function handleFillForm(id: string) {
   const formUrl = await $fetch('/api/documents/form/generate-url', {
     params: { id, name: user.value!.name },
@@ -142,14 +128,16 @@ async function handleFillForm(id: string) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, meta: row.meta })"
-                            >
-                              Create
-                            </ShadcnDropdownMenuItem>
-                            <ShadcnDropdownMenuItem
-                              @click="() => handleViewBAPP(row.key)"
+                              v-if="storedDocuments.get(`${DOCUMENTS.bapp}-${row.key}`)"
+                              @click="() => handleViewDocument(DOCUMENTS.bapp, row.key)"
                             >
                               View
+                            </ShadcnDropdownMenuItem>
+                            <ShadcnDropdownMenuItem
+                              v-else
+                              @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
+                            >
+                              Create
                             </ShadcnDropdownMenuItem>
                             <div v-if="row.meta.mapped_work.bast.number">
                               <ShadcnDropdownMenuSeparator />
@@ -157,14 +145,16 @@ async function handleFillForm(id: string) {
                                 BAST
                               </ShadcnDropdownMenuLabel>
                               <ShadcnDropdownMenuItem
-                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, meta: row.meta })"
-                              >
-                                Create
-                              </ShadcnDropdownMenuItem>
-                              <ShadcnDropdownMenuItem
-                                @click="() => handleViewBAST(row.key)"
+                                v-if="storedDocuments.get(`${DOCUMENTS.bast}-${row.key}`)"
+                                @click="() => handleViewDocument(DOCUMENTS.bast, row.key)"
                               >
                                 View
+                              </ShadcnDropdownMenuItem>
+                              <ShadcnDropdownMenuItem
+                                v-else
+                                @click="() => handleCreateDocument(DOCUMENTS.bast, { ...row.meta.mapped_work, meta: row.meta })"
+                              >
+                                Create
                               </ShadcnDropdownMenuItem>
                             </div>
                             <ShadcnDropdownMenuSeparator />
