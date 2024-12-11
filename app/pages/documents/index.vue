@@ -27,26 +27,30 @@ const storedDocuments = new Map(
   ),
 );
 
-const { setWork } = useDocument();
+const { setWork, setWorkKey, setWorkRelated } = useDocument();
 async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
-  setWork(data);
+  const { meta, ...rest } = data;
+  setWorkKey(meta.key);
+  setWork(rest); // Set original data
 
   if (storedDocuments.size) {
-    const { meta, ...rest } = data;
     const relatedWork: RelatedWork[] = [];
 
-    // If type is 'bast', fetch related 'bapp' document
-    if (type === DOCUMENTS.bast && storedDocuments.has(`${DOCUMENTS.bapp}-${meta.key}`)) {
-      const document = await $fetch(`/api/documents/type/${DOCUMENTS.bapp}/${meta.key}`).catch(catchFetchError);
-      if (document) relatedWork.push({ type: DOCUMENTS.bapp, value: document.value });
+    if (storedDocuments.has(`${type}-${meta.key}`)) {
+      const document = await $fetch(`/api/documents/type/${type}/${meta.key}`).catch(catchFetchError);
+      if (document) setWork(document.value); // Use stored data
     }
 
-    let document;
-    if (storedDocuments.has(`${type}-${meta.key}`))
-      document = await $fetch(`/api/documents/type/${type}/${meta.key}`).catch(catchFetchError);
+    // Fetch related 'bapp' document if type is 'bast'
+    if (type === DOCUMENTS.bast && storedDocuments.has(`${DOCUMENTS.bapp}-${meta.key}`)) {
+      const document = await $fetch(`/api/documents/type/${DOCUMENTS.bapp}/${meta.key}`).catch(catchFetchError);
+      if (document) {
+        setWork(document.value); // Use 'bapp' data for 'bast' type
 
-    if (document) setWork({ ...document.value, related: relatedWork, meta });
-    else setWork({ ...rest, related: relatedWork, meta });
+        relatedWork.push({ type: DOCUMENTS.bapp, value: document.value });
+        setWorkRelated(relatedWork);
+      }
+    }
   }
 
   navigateTo(`/documents/${type}`);

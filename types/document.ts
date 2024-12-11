@@ -47,7 +47,9 @@ export interface WorkDocumentComposable {
   work: ComputedRef<WorkDocument | undefined>;
   workRelated: ComputedRef<RelatedWork[] | undefined>;
   workKey: ComputedRef<string | undefined>;
-  setWork: (data: WorkWithMeta) => void;
+  setWork: (data: WorkDocument) => void;
+  setWorkKey: (data: string) => void;
+  setWorkRelated: (data: RelatedWork[]) => void;
 }
 
 export const DOCUMENTS = {

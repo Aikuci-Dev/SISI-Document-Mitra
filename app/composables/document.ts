@@ -1,4 +1,5 @@
-import type { DocumentState, WorkDocumentComposable, WorkWithMeta } from '~~/types/document';
+import type { DocumentState, RelatedWork, WorkDocumentComposable } from '~~/types/document';
+import type { WorkDocument } from '~~/types/schema/document';
 
 const useDocumentState = () => useState<DocumentState>('document', () => ({}));
 
@@ -10,12 +11,17 @@ export function useDocument(): WorkDocumentComposable {
     workRelated: computed(() => documentState.value.workRelated),
     workKey: computed(() => documentState.value.workKey),
     setWork,
+    setWorkKey,
+    setWorkRelated,
   };
 }
 
-function setWork(data: WorkWithMeta) {
-  const { meta, related, ...rest } = data;
-  useDocumentState().value.workKey = meta.key;
-  useDocumentState().value.work = rest;
-  useDocumentState().value.workRelated = related;
+function setWork(data: WorkDocument) {
+  useDocumentState().value.work = data;
+}
+function setWorkKey(data: string) {
+  useDocumentState().value.workKey = data;
+}
+function setWorkRelated(data: RelatedWork[]) {
+  useDocumentState().value.workRelated = data;
 }
