@@ -1,6 +1,6 @@
 <script setup lang="ts"  generic="T extends ZodRawShape">
 import type { ZodObject, ZodRawShape } from 'zod';
-import type { Shape } from '~/components/shadcn/ui/auto-form/interface';
+import type { Shape } from '../shadcn/ui/auto-form/interface';
 import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{
@@ -28,7 +28,7 @@ const delegatedProps = computed(() => {
     <ShadcnCardContent>
       <BaseInputAutoFormFieldObject
         v-if="formValue"
-        :field-name="fieldName"
+        :field-name
         v-bind="delegatedProps"
       >
         <template #po="slotProps">
@@ -36,6 +36,7 @@ const delegatedProps = computed(() => {
             v-model="formValue.po.number"
             v-bind="slotProps"
             label="PO"
+            disabled
             required
           />
         </template>
@@ -44,6 +45,7 @@ const delegatedProps = computed(() => {
             v-model="formValue.bapp.number"
             v-bind="slotProps"
             label="BAPP"
+            disabled
             required
           />
         </template>
@@ -52,6 +54,7 @@ const delegatedProps = computed(() => {
             v-model="formValue.invoice.number"
             v-bind="slotProps"
             label="Invoice"
+            disabled
             required
           />
         </template>
@@ -63,14 +66,12 @@ const delegatedProps = computed(() => {
             required
           />
         </template>
-        <template
-          v-if="formValue.bast"
-          #bast="slotProps"
-        >
+        <template #bast="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="formValue.bast.number.length"
+            v-if="formValue.bast.number?.length"
             v-model="formValue.bast.number"
             v-bind="slotProps"
+            disabled
             label="BAST"
           />
           <span v-else />

@@ -50,6 +50,7 @@ const form = useForm({
       invoiceNominal: formValue.value?.invoice.nominal?.toString(),
     },
   },
+  validateOnMount: true,
 });
 
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
@@ -128,6 +129,7 @@ async function handleSubmit() {
             v-model="formValue.employee.name"
             v-bind="slotProps"
             label="Name"
+            disabled
             required
           />
         </template>
@@ -136,6 +138,7 @@ async function handleSubmit() {
             v-model="formValue.employee.role"
             v-bind="slotProps"
             label="Role"
+            disabled
             required
           />
         </template>
@@ -149,6 +152,7 @@ async function handleSubmit() {
             v-model="formValue.employee.supervisor.name"
             v-bind="slotProps"
             label="Name"
+            disabled
             required
           />
         </template>
@@ -157,6 +161,7 @@ async function handleSubmit() {
             v-model="formValue.employee.supervisor.role"
             v-bind="slotProps"
             label="Role"
+            disabled
             required
           />
         </template>
@@ -179,7 +184,7 @@ async function handleSubmit() {
         <div class="col-span-2 mt-4 flex justify-end">
           <ShadcnButton
             type="submit"
-            :disabled="isDisabledAction"
+            :disabled="isDisabledAction || !form.meta.value.valid"
           >
             Generate
           </ShadcnButton>
