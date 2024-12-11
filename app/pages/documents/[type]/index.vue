@@ -9,7 +9,7 @@ definePageMeta({
   layout: false,
   middleware: [
     function (to, from) {
-      if (from.name !== 'documents') return abortNavigation();
+      if (from.name !== 'documents') return navigateTo('/documents');
 
       return;
     },

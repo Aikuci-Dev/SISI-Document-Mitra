@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import type { WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type WorkWithMeta } from '~~/types/document';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 
@@ -19,37 +19,46 @@ const columns = computed(() => mitraTableData.value?.columns);
 const rows = computed(() => mitraTableData.value?.rows);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
+const anyStoredDocument = computed(
+  () =>
+    rows.value?.some(row =>
+      row.meta.statuses.some(
+        ({ status }) => status !== STATUSES.initiated,
+      ),
+    ),
+);
+
 const { setWork } = useDocument();
-async function handleCreateBAPP(data: WorkWithMeta) {
-  const meta = data.meta;
-  const bapp = await $fetch(
-    `/api/documents/type/bapp/${meta.key}`,
-  )
-    .catch(catchFetchError);
+async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
+  setWork(data);
 
-  if (bapp) setWork({ ...bapp.value, meta });
-  else setWork(data);
+  if (anyStoredDocument.value) {
+    const meta = data.meta;
+    const document = await $fetch(`/api/documents/type/${type}/${meta.key}`)
+      .catch(catchFetchError);
 
-  navigateTo('/documents/bapp');
+    if (document) setWork({ ...document.value, meta });
+  }
+
+  navigateTo(`/documents/${type}`);
 }
-function handleViewBAPP(id: string) {
-  navigateTo(`/documents/bapp/${id}`, { open: { target: '_blank' } });
+async function handleCreateBAPP(data: WorkWithMeta) {
+  handleCreateDocument(DOCUMENTS.bapp, data);
 }
 async function handleCreateBAST(data: WorkWithMeta) {
-  const meta = data.meta;
-  const bast = await $fetch(
-    `/api/documents/type/bast/${meta.key}`,
-  )
-    .catch(catchFetchError);
+  handleCreateDocument(DOCUMENTS.bast, data);
+}
 
-  if (bast) setWork({ ...bast.value, meta });
-  else setWork(data);
-
-  navigateTo('/documents/bast');
+function handleViewDocument(type: DOCUMENTS_TYPE, id: string) {
+  navigateTo(`/documents/${type}/${id}`, { open: { target: '_blank' } });
+}
+function handleViewBAPP(id: string) {
+  handleViewDocument(DOCUMENTS.bapp, id);
 }
 function handleViewBAST(id: string) {
-  navigateTo(`/documents/bast/${id}`, { open: { target: '_blank' } });
+  handleViewDocument(DOCUMENTS.bast, id);
 }
+
 async function handleFillForm(id: string) {
   const formUrl = await $fetch('/api/documents/form/generate-url', {
     params: { id, name: user.value!.name },
