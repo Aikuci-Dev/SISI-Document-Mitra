@@ -19,25 +19,27 @@ const columns = computed(() => mitraTableData.value?.columns);
 const rows = computed(() => mitraTableData.value?.rows);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-const anyStoredDocument = computed(
-  () =>
-    rows.value?.some(row =>
-      row.meta.statuses.some(
-        ({ status }) => status !== STATUSES.initiated,
-      ),
-    ),
+const storedDocuments = new Map(
+  rows.value?.flatMap(
+    ({ meta }) => meta.statuses
+      .filter(({ status }) => status !== STATUSES.initiated)
+      .map(status => [`${status.type}-${meta.key}`, status]),
+  ),
 );
 
 const { setWork } = useDocument();
 async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
   setWork(data);
 
-  if (anyStoredDocument.value) {
+  if (storedDocuments.size) {
     const meta = data.meta;
-    const document = await $fetch(`/api/documents/type/${type}/${meta.key}`)
-      .catch(catchFetchError);
 
-    if (document) setWork({ ...document.value, meta });
+    if (storedDocuments.get(`${type}-${meta.key}`)) {
+      const document = await $fetch(`/api/documents/type/${type}/${meta.key}`)
+        .catch(catchFetchError);
+
+      if (document) setWork({ ...document.value, meta });
+    }
   }
 
   navigateTo(`/documents/${type}`);
@@ -92,8 +94,7 @@ async function handleFillForm(id: string) {
           <ShadcnCardHeader>
             <ShadcnCardTitle>Mitra Documents</ShadcnCardTitle>
             <ShadcnCardDescription>
-              Manage documents (BAPP, BAST) with automatically pre-filled
-              information.
+              Manage documents (BAPP, BAST) with automatically pre-filled information.
             </ShadcnCardDescription>
           </ShadcnCardHeader>
           <ShadcnCardContent>

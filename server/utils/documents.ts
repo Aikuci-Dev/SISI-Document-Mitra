@@ -160,6 +160,8 @@ export function getWorkDocumentStatus(
   return Object.values(DOCUMENTS)
     .flatMap(type =>
       ids.map((id) => {
+        if (type === DOCUMENTS.original) return { id, type, status: STATUSES.initiated };
+
         const item = dataMap.get(`${type}-${id}`);
         if (!item) return { id, type, status: STATUSES.initiated };
 
