@@ -1,4 +1,4 @@
-import { overrideValues, snakeCase } from './utils';
+import { isNotUndefined, overrideValues, snakeCase } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
 import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DOCUMENTS_TYPE } from '~~/types/document';
@@ -194,13 +194,22 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
   const statusesMap = new Map(statuses.map(status => [`${status.type}-${status.id}`, status.status]));
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { statuses, ...restMeta } = meta;
+    const { key, mapped_work } = meta;
+    const isBastExist = mapped_work.bast.number?.length;
 
     return {
       ...rest,
       meta: {
-        ...restMeta,
-        statuses: Object.values(DOCUMENTS).map(type => ({ type, status: statusesMap.get(`${type}-${row.key}`) as STATUSES_TYPE })),
+        mapped_work,
+        key,
+        statuses: Object.values(DOCUMENTS)
+          .map((type) => {
+            if (type === DOCUMENTS.original) return; // Comment if client needs status for 'original' type
+            if (type === DOCUMENTS.bast && !isBastExist) return;
+
+            return { type, status: statusesMap.get(`${type}-${key}`) as STATUSES_TYPE };
+          })
+          .filter(isNotUndefined),
       },
     };
   });

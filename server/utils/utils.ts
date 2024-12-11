@@ -17,6 +17,11 @@ export function overrideValues(obj: Record<string, unknown>, mapped_key: string,
   }, obj);
 }
 
+// Function to check if data is not undefined
+export function isNotUndefined<T>(data: T | undefined): data is T {
+  return typeof data !== 'undefined';
+}
+
 // Helper function to check if a key exists on an object
 function isKeyExistOnObject(data: unknown, key: string | number): boolean {
   return typeof data === 'object' && data !== null && key in data;

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { BadgeVariants } from '../shadcn/ui/badge';
-import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type STATUSES_TYPE } from '~~/types/document';
+import { STATUSES, type STATUSES_TYPE, type WorkMetaStatus } from '~~/types/document';
 
-defineProps<{ type: DOCUMENTS_TYPE; status: STATUSES_TYPE }>();
+defineProps<WorkMetaStatus>();
 
 const variantClassesByStatus: Record<STATUSES_TYPE, string> = {
   initiated: '',
@@ -22,7 +22,7 @@ const variantBadgeByStatus: Record<STATUSES_TYPE, BadgeVariants['variant']> = {
 </script>
 
 <template>
-  <ShadcnTooltipProvider v-if="type !== DOCUMENTS.original && status !== STATUSES.initiated">
+  <ShadcnTooltipProvider>
     <ShadcnTooltip>
       <ShadcnTooltipTrigger>
         <ShadcnBadge
@@ -34,7 +34,10 @@ const variantBadgeByStatus: Record<STATUSES_TYPE, BadgeVariants['variant']> = {
         </shadcnbadge>
       </ShadcnTooltipTrigger>
       <ShadcnTooltipContent>
-        <div v-if="status === STATUSES.created">
+        <div v-if="status === STATUSES.initiated">
+          Please fill in your information.
+        </div>
+        <div v-else-if="status === STATUSES.created">
           Waiting for admin validation.
         </div>
         <div v-else-if="status === STATUSES.approved">
