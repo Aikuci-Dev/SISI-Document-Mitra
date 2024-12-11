@@ -150,7 +150,7 @@ async function handleFillForm(id: string) {
                             >
                               Create
                             </ShadcnDropdownMenuItem>
-                            <div v-if="row.meta.mapped_work.bast.number">
+                            <div v-if="row.meta.mapped_work.bastNumber">
                               <ShadcnDropdownMenuSeparator />
                               <ShadcnDropdownMenuLabel>
                                 BAST

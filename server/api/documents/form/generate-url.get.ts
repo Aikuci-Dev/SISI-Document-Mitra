@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 
   if (!document) throw createError({ statusCode: 404 });
 
-  const dateEnd = new Date(document.details.date.date.end);
+  const dateEnd = new Date(document.detailsDateEnd);
   const payload = Object.entries(MAPPED_FORMS)
     .reduce((prev, [k, v]) => {
       switch (k) {

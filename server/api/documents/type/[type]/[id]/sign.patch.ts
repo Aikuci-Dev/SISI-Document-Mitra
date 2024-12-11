@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
     );
   const workDocument = catchFirst(workDocuments);
 
-  workDocument.value.employee.supervisor.sign.url = sign;
+  workDocument.value.supervisorSignUrl = sign;
   const workDocumentUpdated = await useDB()
     .update(tables.documentMitra)
     .set({ value: workDocument.value, signedAt: new Date() })

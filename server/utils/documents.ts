@@ -7,51 +7,28 @@ import { DOCUMENTS, STATUSES } from '~~/types/document';
 // Function to construct the initial WorkDocument structure
 function makeWorkDocument(): WorkDocument {
   return {
-    details: {
-      title: '',
-      date: {
-        ts: {
-          start: 0,
-          end: 0,
-        },
-        date: {
-          start: '',
-          end: '',
-        },
-      },
-    },
-    employee: {
-      name: '',
-      role: '',
-      sign: {
-        url: '',
-      },
-      supervisor: {
-        name: '',
-        role: '',
-        sign: {
-          url: '',
-        },
-        phone: 0,
-      },
-    },
-    po: {
-      number: '',
-    },
-    bapp: {
-      number: '',
-      date: '',
-      date_ts: 0,
-    },
-    invoice: {
-      number: '',
-      nominal: 0,
-      date: '',
-      date_ts: 0,
-    },
-    bast: {
-      number: '',
-    },
+    detailsTitle: '',
+    detailsDateStart: '',
+    detailsDateEnd: '',
+    detailsDateTsStart: 0,
+    detailsDateTsEnd: 0,
+
+    employeeName: '',
+    employeeRole: '',
+    employeeSignUrl: '',
+    supervisorName: '',
+    supervisorRole: '',
+    supervisorSignUrl: '',
+
+    poNumber: '',
+    bappNumber: '',
+    bappDate: '',
+    bappDateTs: 0,
+    invoiceNumber: '',
+    invoiceNominal: 0,
+    invoiceDate: '',
+    invoiceDateTs: 0,
+    bastNumber: '',
   };
 }
 
@@ -114,23 +91,23 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
           overrideValues(workDocument, columns[index].meta.mapped_key, item.trim());
       });
 
-      const [startDay, startMonth, startYear] = workDocument.details.date.date.start.split('/');
-      const [endDay, endMonth, endYear] = workDocument.details.date.date.end.split('/');
+      const [startDay, startMonth, startYear] = workDocument.detailsDateStart.split('/');
+      const [endDay, endMonth, endYear] = workDocument.detailsDateEnd.split('/');
       const dateStart = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay));
       const dateEnd = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay));
-      workDocument.details.date.ts.start = dateStart.getTime();
-      workDocument.details.date.ts.end = dateEnd.getTime();
-      workDocument.details.date.date.start = dateStart.toISOString(); // Reformat
-      workDocument.details.date.date.end = dateEnd.toISOString(); // Reformat
+      workDocument.detailsDateTsStart = dateStart.getTime();
+      workDocument.detailsDateTsEnd = dateEnd.getTime();
+      workDocument.detailsDateStart = dateStart.toISOString(); // Reformat
+      workDocument.detailsDateEnd = dateEnd.toISOString(); // Reformat
 
-      const [bappDay, bappMonth, bappYear] = workDocument.bapp.date.split('/');
-      const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoice.date.split('/');
-      workDocument.bapp.date_ts = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
-      workDocument.invoice.date_ts = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
+      const [bappDay, bappMonth, bappYear] = workDocument.bappDate.split('/');
+      const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoiceDate.split('/');
+      workDocument.bappDateTs = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
+      workDocument.invoiceDateTs = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
 
-      workDocument.employee.supervisor.role = 'Project Manager';
+      workDocument.supervisorRole = 'Project Manager';
 
-      const workKey = `${workDocument.po.number}${workDocument.details.date.ts.end}`;
+      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}`;
       return {
         key: workKey,
         value,
@@ -144,8 +121,8 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
         },
       };
     })
-    .filter(value => value.meta.mapped_work.po.number)
-    .sort((prev, curr) => curr.meta.mapped_work.bapp.date_ts - prev.meta.mapped_work.bapp.date_ts);
+    .filter(value => value.meta.mapped_work.poNumber)
+    .sort((prev, curr) => curr.meta.mapped_work.bappDateTs - prev.meta.mapped_work.bappDateTs);
 
   return { columns, rows };
 }
@@ -195,7 +172,7 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
     const { key, mapped_work } = meta;
-    const isBastExist = mapped_work.bast.number?.length;
+    const isBastExist = mapped_work.bastNumber?.length;
 
     return {
       ...rest,
@@ -246,9 +223,6 @@ export function isValidStatusType(type: string): type is STATUSES_TYPE {
   return Object.values(STATUSES).includes(type as STATUSES_TYPE);
 }
 
-// TODO-Last: Implement this feature
-// Then, simplify WorkDocument Type (reduce nested object)
-
 // --- Static Column Mapping ---
 
 // TODO-Next: Make MAPPED_COLUMNS dynamic and configurable.
@@ -256,30 +230,30 @@ export function isValidStatusType(type: string): type is STATUSES_TYPE {
 // Consider implementing a feature where users can map data from various sources to properties in the WorkDocument interface.
 // The mapping could be stored in a configuration file (e.g., JSON) or a user interface for easy customization.
 export const MAPPED_COLUMNS = {
-  inti: 'employee.name',
-  role: 'employee.role',
-  start_kontrak: 'details.date.date.start',
-  end_kontrak: 'details.date.date.end',
-  p_m: 'employee.supervisor.name',
-  // "no_project": "details.number",
-  nama_project: 'details.title',
-  n_o_p_o: 'po.number',
-  tgl_invoice_b_a_p_p: 'bapp.date',
-  j_t_pembayaran: 'invoice.date',
-  nomor_b_a_p_p: 'bapp.number',
-  nomor_b_a_s_t: 'bast.number',
-  nomor_invoice: 'invoice.number',
+  inti: 'employeeName',
+  role: 'employeeRole',
+  start_kontrak: 'detailsDateStart',
+  end_kontrak: 'detailsDateEnd',
+  p_m: 'supervisorName',
+  // "no_project": "detailsNumber",
+  nama_project: 'detailsTitle',
+  n_o_p_o: 'poNumber',
+  tgl_invoice_b_a_p_p: 'bappDate',
+  j_t_pembayaran: 'invoiceDate',
+  nomor_b_a_p_p: 'bappNumber',
+  nomor_b_a_s_t: 'bastNumber',
+  nomor_invoice: 'invoiceNumber',
 } as const;
 export type MAPPED_COLUMNS_KEYS = keyof typeof MAPPED_COLUMNS;
 
 // TODO-Next: Make MAPPED_FORMS dynamic and configurable.
 export const MAPPED_FORMS = {
-  'entry.1424391317': 'employee.name',
-  'entry.2068564928': 'employee.supervisor.name',
-  'entry.1805086296': 'details.title',
+  'entry.1424391317': 'employeeName',
+  'entry.2068564928': 'supervisorName',
+  'entry.1805086296': 'detailsTitle',
   'entry.741837358': '', // document links
-  'entry.283497930_year': 'details.date.date.end',
-  'entry.283497930_month': 'details.date.date.end',
-  'entry.283497930_day': 'details.date.date.end',
+  'entry.283497930_year': 'detailsDateEnd',
+  'entry.283497930_month': 'detailsDateEnd',
+  'entry.283497930_day': 'detailsDateEnd',
 } as const;
 export type MAPPED_FORMS_KEYS = keyof typeof MAPPED_FORMS;

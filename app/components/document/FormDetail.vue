@@ -34,7 +34,7 @@ const delegatedProps = computed(() => {
       >
         <template #po="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.po.number"
+            v-model="formValue.poNumber"
             v-bind="slotProps"
             label="PO"
             disabled
@@ -43,7 +43,7 @@ const delegatedProps = computed(() => {
         </template>
         <template #bapp="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.bapp.number"
+            v-model="formValue.bappNumber"
             v-bind="slotProps"
             label="BAPP"
             disabled
@@ -52,7 +52,7 @@ const delegatedProps = computed(() => {
         </template>
         <template #invoice="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.invoice.number"
+            v-model="formValue.invoiceNumber"
             v-bind="slotProps"
             label="Invoice"
             disabled
@@ -70,8 +70,8 @@ const delegatedProps = computed(() => {
         </template>
         <template #bast="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="formValue.bast.number?.length"
-            v-model="formValue.bast.number"
+            v-if="formValue.bastNumber?.length"
+            v-model="formValue.bastNumber"
             v-bind="slotProps"
             disabled
             label="BAST"

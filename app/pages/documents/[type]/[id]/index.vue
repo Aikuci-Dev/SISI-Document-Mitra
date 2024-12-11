@@ -26,7 +26,7 @@ if (errorOriginal.value) {
 
 const { user } = useUserSession();
 const hasAdmin = computed(() => user.value?.role?.includes('admin'));
-const supervisorName = computed(() => data.value?.value.employee.supervisor.name);
+const supervisorName = computed(() => data.value?.value.supervisorName);
 const isSupervisor = computed(() => user.value?.name === supervisorName.value);
 
 const isLoading = ref(false);
