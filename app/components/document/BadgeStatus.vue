@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { BadgeVariants } from '../shadcn/ui/badge';
-import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
+import { STATUSES, type STATUSES_TYPE, type WorkMetaStatus } from '~~/types/document';
 
-defineProps<{ status: STATUSES_TYPE }>();
+defineProps<WorkMetaStatus>();
 
 const variantClassesByStatus: Record<STATUSES_TYPE, string> = {
   initiated: '',
@@ -30,7 +30,7 @@ const variantBadgeByStatus: Record<STATUSES_TYPE, BadgeVariants['variant']> = {
           :class="variantClassesByStatus[status]"
           :variant="variantBadgeByStatus[status]"
         >
-          {{ status }}
+          <span class="uppercase">{{ type }}</span>&nbsp;{{ status }}
         </shadcnbadge>
       </ShadcnTooltipTrigger>
       <ShadcnTooltipContent>

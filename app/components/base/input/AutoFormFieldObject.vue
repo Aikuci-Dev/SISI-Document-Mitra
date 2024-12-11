@@ -2,13 +2,12 @@
 import type { ZodAny, ZodObject, ZodRawShape } from 'zod';
 import { FieldContextKey, useField } from 'vee-validate';
 import { computed, provide } from 'vue';
-import type { Config, ConfigItem, Shape } from '~/components/shadcn/ui/auto-form/interface';
+import type { Shape } from '~/components/shadcn/ui/auto-form/interface';
 import { getBaseSchema, getBaseType, getDefaultValueInZodStack } from '~/components/shadcn/ui/auto-form/utils';
 
 const props = defineProps<{
   fieldName: string;
   required?: boolean;
-  config?: Config<T>;
   schema?: ZodObject<T>;
   disabled?: boolean;
 }>();
@@ -53,12 +52,11 @@ provide(FieldContextKey, fieldContext);
         :key="key"
       >
         <slot
-          :shape="shape"
+          :shape
           :name="key.toString()"
           :field-name="`${fieldName}.${key.toString()}`"
         >
           <ShadcnAutoFormField
-            :config="config?.[key as keyof typeof config] as ConfigItem"
             :field-name="`${fieldName}.${key.toString()}`"
             :label="shape.schema?.description || key.toString()"
             :shape="shape"

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import type { STATUSES_TYPE, WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 
@@ -19,40 +19,48 @@ const columns = computed(() => mitraTableData.value?.columns);
 const rows = computed(() => mitraTableData.value?.rows);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-const { setWork } = useDocument();
-async function handleCreateBAPP(data: WorkWithMeta) {
-  const meta = data.meta;
-  const bapp = await $fetch(
-    `/api/documents/type/bapp/${meta.key}`,
-  )
-    .catch(catchFetchError);
+const storedDocuments = new Map(
+  rows.value?.flatMap(
+    ({ meta }) => meta.statuses
+      .filter(({ status }) => status !== STATUSES.initiated)
+      .map(status => [`${status.type}-${meta.key}`, status]),
+  ),
+);
 
-  if (bapp) setWork({ ...bapp.value, meta });
-  else setWork(data);
+const { setWork, setWorkKey, setWorkRelated } = useDocument();
+async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
+  const { meta, ...rest } = data;
+  setWorkKey(meta.key);
+  setWork(rest); // Set original data
 
-  navigateTo('/documents/bapp');
+  if (storedDocuments.size) {
+    const relatedWork: RelatedWork[] = [];
+
+    if (storedDocuments.has(`${type}-${meta.key}`)) {
+      const document = await $fetch(`/api/documents/type/${type}/${meta.key}`).catch(catchFetchError);
+      if (document) setWork(document.value); // Use stored data
+    }
+
+    // Fetch related 'bapp' document if type is 'bast'
+    if (type === DOCUMENTS.bast && storedDocuments.has(`${DOCUMENTS.bapp}-${meta.key}`)) {
+      const document = await $fetch(`/api/documents/type/${DOCUMENTS.bapp}/${meta.key}`).catch(catchFetchError);
+      if (document) {
+        setWork(document.value); // Use 'bapp' data for 'bast' type
+
+        relatedWork.push({ type: DOCUMENTS.bapp, value: document.value });
+        setWorkRelated(relatedWork);
+      }
+    }
+  }
+
+  navigateTo(`/documents/${type}`);
 }
-function handleViewBAPP(id: string) {
-  navigateTo(`/documents/bapp/${id}`, { open: { target: '_blank' } });
-}
-async function handleCreateBAST(data: WorkWithMeta) {
-  const meta = data.meta;
-  const bast = await $fetch(
-    `/api/documents/type/bast/${meta.key}`,
-  )
-    .catch(catchFetchError);
-
-  if (bast) setWork({ ...bast.value, meta });
-  else setWork(data);
-
-  navigateTo('/documents/bast');
-}
-function handleViewBAST(id: string) {
-  navigateTo(`/documents/bast/${id}`, { open: { target: '_blank' } });
+function handleViewDocument(type: DOCUMENTS_TYPE, id: string) {
+  navigateTo(`/documents/${type}/${id}`, { open: { target: '_blank' } });
 }
 async function handleFillForm(id: string) {
   const formUrl = await $fetch('/api/documents/form/generate-url', {
-    params: { id, name: user.value?.name },
+    params: { id, name: user.value!.name },
     onResponseError: ({ response }) => {
       const messages = response.statusText.split('>>');
       toast({
@@ -83,12 +91,11 @@ async function handleFillForm(id: string) {
           <ShadcnCardHeader>
             <ShadcnCardTitle>Mitra Documents</ShadcnCardTitle>
             <ShadcnCardDescription>
-              Manage documents (BAPP, BAST) with automatically pre-filled
-              information.
+              Manage documents (BAPP, BAST) with automatically pre-filled information.
             </ShadcnCardDescription>
           </ShadcnCardHeader>
           <ShadcnCardContent>
-            <div class="h-96 overflow-auto">
+            <div class="h-[480px] overflow-auto">
               <BaseTable v-if="mitraTableData">
                 <ShadcnTableHeader>
                   <ShadcnTableRow class="sticky top-0 z-10 divide-y-4 divide-y-reverse bg-white">
@@ -98,21 +105,21 @@ async function handleFillForm(id: string) {
                     />
                     <ShadcnTableHead
                       v-if="columns"
-                      class="text-nowrap border"
+                      class="text-nowrap"
                     >
                       STATUS
                     </ShadcnTableHead>
                     <ShadcnTableHead
                       v-for="column in columns"
                       :key="column.key"
-                      class="text-nowrap border"
+                      class="text-nowrap"
                     >
                       {{ column.label }}
                     </ShadcnTableHead>
                   </ShadcnTableRow>
                 </ShadcnTableHeader>
-                <ShadcnTableBody v-if="columns">
-                  <template v-if="rows?.length">
+                <ShadcnTableBody v-if="columns && rows">
+                  <template v-if="rows.length">
                     <ShadcnTableRow
                       v-for="row in rows"
                       :key="row.key"
@@ -132,29 +139,33 @@ async function handleFillForm(id: string) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              @click="() => handleCreateBAPP({ ...row.meta.mapped_work, meta: row.meta })"
-                            >
-                              Create
-                            </ShadcnDropdownMenuItem>
-                            <ShadcnDropdownMenuItem
-                              @click="() => handleViewBAPP(row.key)"
+                              v-if="storedDocuments.has(`${DOCUMENTS.bapp}-${row.key}`)"
+                              @click="() => handleViewDocument(DOCUMENTS.bapp, row.key)"
                             >
                               View
                             </ShadcnDropdownMenuItem>
-                            <div v-if="row.meta.mapped_work.bast?.number">
+                            <ShadcnDropdownMenuItem
+                              v-else
+                              @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
+                            >
+                              Create
+                            </ShadcnDropdownMenuItem>
+                            <div v-if="row.meta.mapped_work.bast.number">
                               <ShadcnDropdownMenuSeparator />
                               <ShadcnDropdownMenuLabel>
                                 BAST
                               </ShadcnDropdownMenuLabel>
                               <ShadcnDropdownMenuItem
-                                @click="() => handleCreateBAST({ ...row.meta.mapped_work, meta: row.meta })"
-                              >
-                                Create
-                              </ShadcnDropdownMenuItem>
-                              <ShadcnDropdownMenuItem
-                                @click="() => handleViewBAST(row.key)"
+                                v-if="storedDocuments.has(`${DOCUMENTS.bast}-${row.key}`)"
+                                @click="() => handleViewDocument(DOCUMENTS.bast, row.key)"
                               >
                                 View
+                              </ShadcnDropdownMenuItem>
+                              <ShadcnDropdownMenuItem
+                                v-else
+                                @click="() => handleCreateDocument(DOCUMENTS.bast, { ...row.meta.mapped_work, meta: row.meta })"
+                              >
+                                Create
                               </ShadcnDropdownMenuItem>
                             </div>
                             <ShadcnDropdownMenuSeparator />
@@ -169,13 +180,18 @@ async function handleFillForm(id: string) {
                           </ShadcnDropdownMenuContent>
                         </ShadcnDropdownMenu>
                       </ShadcnTableCell>
-                      <ShadcnTableCell class="text-nowrap border text-center">
-                        <DocumentBadgeStatus :status="row.meta.status as STATUSES_TYPE" />
+                      <ShadcnTableCell class="flex flex-col space-y-4 text-nowrap text-center">
+                        <DocumentBadgeStatus
+                          v-for="{ type, status } in row.meta.statuses"
+                          :key="type"
+                          :type
+                          :status
+                        />
                       </ShadcnTableCell>
                       <ShadcnTableCell
                         v-for="(value, index) in row.value"
                         :key="`${row.key}-${index}`"
-                        class="text-nowrap border"
+                        class="text-nowrap"
                       >
                         {{ value }}
                       </ShadcnTableCell>
@@ -185,11 +201,11 @@ async function handleFillForm(id: string) {
                     <ShadcnTableCell />
                     <ShadcnTableCell
                       :colspan="columns.length"
-                      class="h-24 border text-center"
+                      class="h-24 text-center"
                     >
                       <ShadcnAlert>
                         <MessageCircleWarning class="size-4" />
-                        <ShadcnAlertTitle>No document found associated with your name '{{ user?.name }}'</ShadcnAlertTitle>
+                        <ShadcnAlertTitle>No document found associated with your name '{{ user!.name }}'</ShadcnAlertTitle>
                         <ShadcnAlertDescription>
                           Please contact admin to create a new one for you.
                         </ShadcnAlertDescription>

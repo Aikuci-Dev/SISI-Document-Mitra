@@ -1,8 +1,8 @@
-import { overrideValues, snakeCase } from './utils';
+import { isNotUndefined, overrideValues, snakeCase } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn } from '~~/types/document';
-import { STATUSES } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DOCUMENTS_TYPE } from '~~/types/document';
+import { DOCUMENTS, STATUSES } from '~~/types/document';
 
 // Function to construct the initial WorkDocument structure
 function makeWorkDocument(): WorkDocument {
@@ -137,7 +137,10 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
         meta: {
           mapped_work: workDocument,
           key: workKey,
-          status: STATUSES.initiated,
+          statuses: [{
+            type: DOCUMENTS.original,
+            status: STATUSES.initiated,
+          }],
         },
       };
     })
@@ -150,20 +153,25 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
 // Get the status of multiple work documents based on their ID
 export function getWorkDocumentStatus(
   ids: string[],
-  data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
-): { id: string; status: STATUSES_TYPE }[] {
-  const dataMap = new Map(data.map(item => [item.id, item]));
+  data: { id: string; type: DOCUMENTS_TYPE | null; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
+): { id: string; type: DOCUMENTS_TYPE; status: STATUSES_TYPE }[] {
+  const dataMap = new Map(data.map(item => [`${item.type}-${item.id}`, item]));
 
-  return ids.map((id) => {
-    const item = dataMap.get(id);
-    if (!item) return { id, status: STATUSES.initiated };
+  return Object.values(DOCUMENTS)
+    .flatMap(type =>
+      ids.map((id) => {
+        if (type === DOCUMENTS.original) return { id, type, status: STATUSES.initiated };
 
-    if (!item.isValidated) return { id, status: STATUSES.created };
-    if (!item.isApproved) return { id, status: STATUSES.rejected };
-    if (item.signedAt) return { id, status: STATUSES.signed };
+        const item = dataMap.get(`${type}-${id}`);
+        if (!item) return { id, type, status: STATUSES.initiated };
 
-    return { id, status: STATUSES.approved };
-  });
+        if (!item.isValidated) return { id, type, status: STATUSES.created };
+        if (!item.isApproved) return { id, type, status: STATUSES.rejected };
+        if (item.signedAt) return { id, type, status: STATUSES.signed };
+
+        return { id, type, status: STATUSES.approved };
+      }),
+    );
 }
 
 // Get "WorkDocument" objects and add status information.
@@ -174,6 +182,7 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
   const workDocuments = await useDB()
     .select({
       id: tables.documentMitra.id,
+      type: tables.documentMitra.type,
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,
       signedAt: tables.documentMitra.signedAt,
@@ -182,16 +191,25 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
     .where(inArray(tables.documentMitra.id, ids));
 
   const statuses = getWorkDocumentStatus(ids, workDocuments);
-  const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
+  const statusesMap = new Map(statuses.map(status => [`${status.type}-${status.id}`, status.status]));
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { status, ...restMeta } = meta;
+    const { key, mapped_work } = meta;
+    const isBastExist = mapped_work.bast.number?.length;
 
     return {
       ...rest,
       meta: {
-        ...restMeta,
-        status: statusesMap.get(row.key) as STATUSES_TYPE,
+        mapped_work,
+        key,
+        statuses: Object.values(DOCUMENTS)
+          .map((type) => {
+            if (type === DOCUMENTS.original) return; // Comment if client needs status for 'original' type
+            if (type === DOCUMENTS.bast && !isBastExist) return;
+
+            return { type, status: statusesMap.get(`${type}-${key}`) as STATUSES_TYPE };
+          })
+          .filter(isNotUndefined),
       },
     };
   });
@@ -217,6 +235,16 @@ export async function getWorkDocumentByNameAndId(context: { name: string; id: st
 
   return dataTable.meta.mapped_work;
 };
+
+// --- Utility Function ---
+// Checks if a type is one of the accepted document types.
+export function isValidDocumentType(type: string): type is DOCUMENTS_TYPE {
+  return Object.values(DOCUMENTS).includes(type as DOCUMENTS_TYPE);
+}
+// Checks if a type is one of the accepted document statuses.
+export function isValidStatusType(type: string): type is STATUSES_TYPE {
+  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
+}
 
 // TODO-Last: Implement this feature
 // Then, simplify WorkDocument Type (reduce nested object)

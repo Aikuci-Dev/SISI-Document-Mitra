@@ -2,13 +2,15 @@
 import { useVueToPrint } from 'vue-to-print';
 import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
+import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
+import { DOCUMENTS } from '~~/types/document';
 
 definePageMeta({
   layout: false,
   middleware: [
     function (to, from) {
-      if (from.name !== 'documents') return abortNavigation();
+      if (from.name !== 'documents') return navigateTo('/documents');
 
       return;
     },
@@ -20,11 +22,9 @@ const routeType = computed<string>(() => {
   if (isString(route.params.type)) return route.params.type.toLowerCase();
   return '';
 });
-if (!['bapp', 'bast'].includes(routeType.value)) {
-  navigateTo('/documents');
-}
+if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
-const { work, workKey } = useDocument();
+const { work, workKey, workRelated } = useDocument();
 const form = ref(work);
 
 // VueToPrint
@@ -40,10 +40,22 @@ const { handlePrint } = useVueToPrint({
 const showAlertDialog = ref(false);
 
 // SIGN by User
-const formSign = ref();
+const formSign = ref(work.value?.employee.sign.url || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
-const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
+const isDisabledAction = computed(() => {
+  switch (routeType.value) {
+    case DOCUMENTS.bast:
+      if (!workRelated.value?.some(work => work.type === DOCUMENTS.bapp)) return true;
+      break;
+
+    default:
+      break;
+  }
+
+  return isLoading.value && showDialogSign.value;
+});
+const isDisabledInput = routeType.value === DOCUMENTS.bast && workRelated.value?.some(work => work.type === DOCUMENTS.bapp);
 function handleSign() {
   form.value!.employee.sign.url = formSign.value;
   handleGenerate();
@@ -106,6 +118,7 @@ function handleViewBAPP() {
         <DocumentForm
           v-model="form"
           :is-disabled-action="isDisabledAction"
+          :is-disabled-input="isDisabledInput"
           @generate="() => showAlertDialog = true"
         />
       </template>

@@ -12,6 +12,7 @@ const emits = defineEmits<FormEmits>();
 
 defineProps<{
   isDisabledAction?: boolean;
+  isDisabledInput?: boolean;
 }>();
 
 const formValue = defineModel<WorkDocument>();
@@ -50,6 +51,7 @@ const form = useForm({
       invoiceNominal: formValue.value?.invoice.nominal?.toString(),
     },
   },
+  validateOnMount: true,
 });
 
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
@@ -98,12 +100,14 @@ async function handleSubmit() {
             v-model="formValue.details.title"
             v-bind="slotProps"
             class="col-span-2"
+            :disabled="isDisabledInput"
           />
         </template>
         <template #dateStart="slotProps">
           <ShadcnAutoFormFieldDate
             v-bind="slotProps"
             label="Start Date (per period)"
+            :disabled="isDisabledInput"
             required
           />
         </template>
@@ -111,6 +115,7 @@ async function handleSubmit() {
           <ShadcnAutoFormFieldDate
             v-bind="slotProps"
             label="End Date (per period)"
+            :disabled="isDisabledInput"
             required
           />
         </template>
@@ -128,6 +133,7 @@ async function handleSubmit() {
             v-model="formValue.employee.name"
             v-bind="slotProps"
             label="Name"
+            disabled
             required
           />
         </template>
@@ -136,6 +142,7 @@ async function handleSubmit() {
             v-model="formValue.employee.role"
             v-bind="slotProps"
             label="Role"
+            disabled
             required
           />
         </template>
@@ -149,6 +156,7 @@ async function handleSubmit() {
             v-model="formValue.employee.supervisor.name"
             v-bind="slotProps"
             label="Name"
+            disabled
             required
           />
         </template>
@@ -157,6 +165,7 @@ async function handleSubmit() {
             v-model="formValue.employee.supervisor.role"
             v-bind="slotProps"
             label="Role"
+            disabled
             required
           />
         </template>
@@ -172,6 +181,7 @@ async function handleSubmit() {
           <DocumentFormDetail
             v-model="formValue"
             v-bind="slotProps"
+            :is-disabled-input
             class="col-span-2 m-4"
           />
         </template>
@@ -179,7 +189,7 @@ async function handleSubmit() {
         <div class="col-span-2 mt-4 flex justify-end">
           <ShadcnButton
             type="submit"
-            :disabled="isDisabledAction"
+            :disabled="isDisabledAction || !form.meta.value.valid"
           >
             Generate
           </ShadcnButton>
