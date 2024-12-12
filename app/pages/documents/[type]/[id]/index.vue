@@ -116,7 +116,7 @@ async function handleSign() {
             </div>
 
             <ShadcnTooltipProvider
-              v-if="isSupervisor"
+              v-if="isSupervisor && !data.signedAt"
               :disabled="!data.isValidated && !data.isApproved"
             >
               <ShadcnTooltip
