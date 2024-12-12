@@ -10,6 +10,7 @@ definePageMeta({
   layout: false,
   middleware: [
     function (to, from) {
+      if (from.name === to.name && from.params !== to.params) return;
       if (from.name !== 'documents') return navigateTo('/documents');
 
       return;
@@ -43,10 +44,11 @@ const showAlertDialog = ref(false);
 const formSign = ref(work.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
+const isAnyStoredBAPP = computed(() => workRelated.value?.some(work => work.type === DOCUMENTS.bapp));
 const isDisabledAction = computed(() => {
   switch (routeType.value) {
     case DOCUMENTS.bast:
-      if (!workRelated.value?.some(work => work.type === DOCUMENTS.bapp)) return true;
+      if (!isAnyStoredBAPP.value) return true;
       break;
 
     default:
@@ -174,13 +176,13 @@ function handleViewBAPP() {
             Print
           </ShadcnButton>
           <ShadcnButton
-            v-if="routeType === 'bast'"
+            v-if="routeType === 'bast' && isAnyStoredBAPP"
             @click="handleViewBAPP"
           >
             View BAPP
           </ShadcnButton>
           <ShadcnButton
-            v-else-if="form.bastNumber"
+            v-if="routeType === 'bapp' && form.bastNumber"
             @click="handleCreateBAST"
           >
             Create BAST
