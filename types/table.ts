@@ -7,3 +7,8 @@ export interface TableRow {
   key: string;
   value: string[];
 }
+
+export interface DataTable {
+  columns: TableColumn[];
+  rows: TableRow[];
+}
