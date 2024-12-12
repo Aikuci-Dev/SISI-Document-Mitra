@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
 import type { ApproveOrReject } from '~~/types/action';
@@ -42,12 +41,7 @@ async function handleApproveOrReject() {
   await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/${approveOrReject.value}`, {
     method: 'PATCH',
     onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
+      handleResponseError(response);
 
       isLoading.value = false;
     },
@@ -66,14 +60,7 @@ async function handleSign() {
   await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/sign`, {
     method: 'PATCH',
     body: { sign: formSign.value, name: supervisorName.value },
-    onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
-    },
+    onResponseError: ({ response }) => handleResponseError(response),
   })
     .catch(catchFetchError);
 

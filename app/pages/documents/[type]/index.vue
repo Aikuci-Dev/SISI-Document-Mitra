@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
 import { DOCUMENTS, type DOCUMENTS_TYPE } from '~~/types/document';
@@ -83,7 +82,6 @@ async function handleGenerate(skipStore?: boolean) {
       params: { name: form.value!.employeeName },
       body: form.value,
       onRequest() {
-        // Ref: https://nuxt.com/docs/api/composables/use-nuxt-data#optimistic-updates
         setWorkRelated([...relatedWork, { type: routeType.value as DOCUMENTS_TYPE, value: form.value! }]);
       },
       onRequestError() {
@@ -92,12 +90,7 @@ async function handleGenerate(skipStore?: boolean) {
       onResponseError: ({ response }) => {
         setWorkRelated(relatedWork);
 
-        const messages = response.statusText.split('>>');
-        toast({
-          title: messages[0]?.trim(),
-          description: messages[1]?.trim(),
-          variant: 'destructive',
-        });
+        handleResponseError(response);
       },
     })
       .catch(catchFetchError);

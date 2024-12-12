@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
 import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
 definePageMeta({
   layout: false,
@@ -61,14 +60,7 @@ function handleViewDocument(type: DOCUMENTS_TYPE, id: string) {
 async function handleFillForm(id: string) {
   const formUrl = await $fetch('/api/documents/form/generate-url', {
     params: { id, name: user.value!.name },
-    onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
-    },
+    onResponseError: ({ response }) => handleResponseError(response),
   })
     .catch(catchFetchError);
 
