@@ -4,7 +4,9 @@ import type { WorkDocument } from '~~/types/schema/document';
 import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DOCUMENTS_TYPE } from '~~/types/document';
 import { DOCUMENTS, STATUSES } from '~~/types/document';
 
-// Function to construct the initial WorkDocument structure
+// --- WorkDocument Utility Functions ---
+
+// Creates and returns a new `WorkDocument` with default values.
 function makeWorkDocument(): WorkDocument {
   return {
     detailsTitle: '',
@@ -32,9 +34,33 @@ function makeWorkDocument(): WorkDocument {
   };
 }
 
+// Returns the status of multiple work documents based on their IDs.
+export function getWorkDocumentStatus(
+  ids: string[],
+  data: { id: string; type: DOCUMENTS_TYPE | null; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
+): { id: string; type: DOCUMENTS_TYPE; status: STATUSES_TYPE }[] {
+  const dataMap = new Map(data.map(item => [`${item.type}-${item.id}`, item]));
+
+  return Object.values(DOCUMENTS)
+    .flatMap(type =>
+      ids.map((id) => {
+        if (type === DOCUMENTS.original) return { id, type, status: STATUSES.initiated };
+
+        const item = dataMap.get(`${type}-${id}`);
+        if (!item) return { id, type, status: STATUSES.initiated };
+
+        if (!item.isValidated) return { id, type, status: STATUSES.created };
+        if (!item.isApproved) return { id, type, status: STATUSES.rejected };
+        if (item.signedAt) return { id, type, status: STATUSES.signed };
+
+        return { id, type, status: STATUSES.approved };
+      }),
+    );
+}
+
 // --- Core Data Fetching Functions ---
 
-// Fetch spreadsheet data from Google Sheets
+// Fetches data from a Google Spreadsheet and returns headers and values.
 const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
   const { apiKey, sheet } = useRuntimeConfig().google;
   const spreadsheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheet.id}/values/${sheet.range}?key=${apiKey}`;
@@ -48,7 +74,7 @@ const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
   getKey: () => 'all',
 });
 
-// Fetch data columns based on spreadsheet headers
+// Fetches and maps spreadsheet headers to column definitions based on configurations.
 const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
   const { headers } = await getSpreadsheetData();
 
@@ -70,7 +96,7 @@ const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
 
 // --- Data Retrieval Functions ---
 
-// Get raw data for a specific name
+// Fetches raw data from the spreadsheet filtered by name.
 async function getRawDataByName(name: string) {
   const { freelancerKey } = useRuntimeConfig().google.sheet;
   const { headers, values } = await getSpreadsheetData();
@@ -83,7 +109,7 @@ async function getRawDataByName(name: string) {
   };
 }
 
-// Get transformed data for a specific name, converting the raw data into structured "WorkDocument" objects.
+// Transforms raw spreadsheet data into structured `WorkDocument` objects.
 async function getDataTableByName(name: string): Promise<DocumentTable> {
   const { values } = await getRawDataByName(name);
   const columns = await getDataColumns();
@@ -133,31 +159,7 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
   return { columns, rows };
 }
 
-// Get the status of multiple work documents based on their ID
-export function getWorkDocumentStatus(
-  ids: string[],
-  data: { id: string; type: DOCUMENTS_TYPE | null; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
-): { id: string; type: DOCUMENTS_TYPE; status: STATUSES_TYPE }[] {
-  const dataMap = new Map(data.map(item => [`${item.type}-${item.id}`, item]));
-
-  return Object.values(DOCUMENTS)
-    .flatMap(type =>
-      ids.map((id) => {
-        if (type === DOCUMENTS.original) return { id, type, status: STATUSES.initiated };
-
-        const item = dataMap.get(`${type}-${id}`);
-        if (!item) return { id, type, status: STATUSES.initiated };
-
-        if (!item.isValidated) return { id, type, status: STATUSES.created };
-        if (!item.isApproved) return { id, type, status: STATUSES.rejected };
-        if (item.signedAt) return { id, type, status: STATUSES.signed };
-
-        return { id, type, status: STATUSES.approved };
-      }),
-    );
-}
-
-// Get "WorkDocument" objects and add status information.
+// Fetches data table with status information for work documents based on name.
 export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(async (name: string) => {
   const datatables = await getDataTableByName(name);
 
@@ -204,7 +206,7 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
   getKey: (name: string) => `datatable-${name.trim()}`,
 });
 
-// Get WorkDocument by a specific name and ID
+// Fetches a specific `WorkDocument` based on name and ID.
 export async function getWorkDocumentByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
@@ -220,18 +222,20 @@ export async function getWorkDocumentByNameAndId(context: { name: string; id: st
 };
 
 // --- Utility Function ---
-// Checks if a type is one of the accepted document types.
+
+// Checks if the provided type is a valid `DOCUMENTS_TYPE`.
 export function isValidDocumentType(type: string): type is DOCUMENTS_TYPE {
   return Object.values(DOCUMENTS).includes(type as DOCUMENTS_TYPE);
 }
-// Checks if a type is one of the accepted document statuses.
+
+// Checks if the provided status is a valid `STATUSES_TYPE`.
 export function isValidStatusType(type: string): type is STATUSES_TYPE {
   return Object.values(STATUSES).includes(type as STATUSES_TYPE);
 }
 
 // --- Mapping Retrieval Functions ---
 
-// Function to get the column mappings from the database
+// Fetches column mappings from the database.
 export const getMappingColumns = defineCachedFunction(async () => {
   return useDB()
     .select({
@@ -247,7 +251,7 @@ export const getMappingColumns = defineCachedFunction(async () => {
   getKey: () => 'columns',
 });
 
-// TODO-Last: Make MAPPED_FORMS dynamic and configurable.
+// Mapped forms configuration (TODO: make dynamic and configurable)
 export const MAPPED_FORMS = {
   'entry.1424391317': 'employeeName',
   'entry.2068564928': 'supervisorName',
