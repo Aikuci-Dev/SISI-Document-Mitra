@@ -1,9 +1,9 @@
 import type { TableColumn, TableRow } from './table';
-import type { WorkDocument } from './schema/document';
+import type { WorkDocument, WorkDocumentKeys } from './schema/document';
 
 export interface DocumentTableColumn extends TableColumn {
   meta: {
-    mapped_key: string;
+    mapped_key?: string;
   };
 }
 
@@ -51,6 +51,31 @@ export interface WorkDocumentComposable {
   setWorkKey: (data: string) => void;
   setWorkRelated: (data: RelatedWork[]) => void;
 }
+
+export const WORK_DOCUMENT: Record<WorkDocumentKeys, string> = {
+  employeeName: 'Name',
+  employeeRole: 'Role',
+  employeeSignUrl: 'Signature',
+  supervisorName: 'Supervisor Name',
+  supervisorRole: 'Supervisor Role',
+  supervisorSignUrl: 'Supervisor Signature',
+
+  detailsTitle: 'Project Title',
+  detailsDateStart: 'Start Date',
+  detailsDateEnd: 'End Date',
+  detailsDateTsStart: 'Start Date (TS)',
+  detailsDateTsEnd: 'End Date (TS)',
+
+  poNumber: 'PO',
+  bappNumber: 'BAPP',
+  bappDate: 'BAPP Date',
+  bappDateTs: 'BAPP Date (TS)',
+  invoiceNumber: 'Invoice',
+  invoiceNominal: 'Invoice Nominal',
+  invoiceDate: 'Invoice Date',
+  invoiceDateTs: 'Invoice Date (TS)',
+  bastNumber: 'BAST',
+};
 
 export const DOCUMENTS = {
   original: 'original',

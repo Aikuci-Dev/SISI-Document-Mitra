@@ -3,8 +3,8 @@ import type { EmployeeInfo } from '~~/types/schema/document';
 
 const props = defineProps<{ employee: EmployeeInfo }>();
 
-const employeeSignURL = computed(() => props.employee.sign.url);
-const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
+const employeeSignURL = computed(() => props.employee.employeeSignUrl);
+const supervisorSignURL = computed(() => props.employee.supervisorSignUrl);
 </script>
 
 <template>
@@ -15,8 +15,8 @@ const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
       v-model:url="supervisorSignURL"
       class="basis-1/2"
       :sign="{
-        name: employee.supervisor.name,
-        role: employee.supervisor.role,
+        name: employee.supervisorName,
+        role: employee.supervisorRole,
         alias: 'PIHAK PERTAMA',
         company: 'PT. Sinergi Informatika Semen Indonesia',
       }"
@@ -59,8 +59,8 @@ const supervisorSignURL = computed(() => props.employee.supervisor.sign.url);
       v-model:url="employeeSignURL"
       class="basis-1/2"
       :sign="{
-        name: employee.name,
-        role: employee.role,
+        name: employee.employeeName,
+        role: employee.employeeRole,
         alias: 'PIHAK KEDUA',
         company: '&nbsp;',
       }"

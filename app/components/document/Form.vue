@@ -17,8 +17,8 @@ defineProps<{
 
 const formValue = defineModel<WorkDocument>();
 
-const dateStartTS = formValue.value?.details.date.ts.start || new Date().getTime();
-const dateEndTS = formValue.value?.details.date.ts.end || new Date().getTime();
+const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
+const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
 
 const schema = z.object({
   title: z.string().min(1, 'Project title is required.'),
@@ -30,7 +30,6 @@ const schema = z.object({
   employeeRole: z.string().min(1, 'Employee role is required.'),
   supervisorName: z.string().min(1, 'Supervisor name is required.'),
   supervisorRole: z.string().min(1, 'Supervisor role is required.'),
-  supervisorPhone: z.string().optional(),
 
   detail: z.object({
     po: z.string().min(1, 'PO number is required.'),
@@ -46,9 +45,8 @@ const form = useForm({
     dateStart: parseAbsolute(new Date(dateStartTS).toISOString(), getLocalTimeZone()),
     dateEnd: parseAbsolute(new Date(dateEndTS).toISOString(), getLocalTimeZone()),
 
-    supervisorPhone: formValue.value?.employee.supervisor.phone?.toString(),
     detail: {
-      invoiceNominal: formValue.value?.invoice.nominal?.toString(),
+      invoiceNominal: formValue.value?.invoiceNominal?.toString(),
     },
   },
   validateOnMount: true,
@@ -57,22 +55,19 @@ const form = useForm({
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
     const dateValue = date.toDate(getLocalTimeZone());
-    formValue.value!.details.date.ts.start = dateValue.getTime();
-    formValue.value!.details.date.date.start = dateValue.toISOString();
+    formValue.value!.detailsDateTsStart = dateValue.getTime();
+    formValue.value!.detailsDateStart = dateValue.toISOString();
   }
 });
 watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
   if (date) {
     const dateValue = date.toDate(getLocalTimeZone());
-    formValue.value!.details.date.ts.end = dateValue.getTime();
-    formValue.value!.details.date.date.end = dateValue.toISOString();
+    formValue.value!.detailsDateTsEnd = dateValue.getTime();
+    formValue.value!.detailsDateEnd = dateValue.toISOString();
   }
 });
-watch(() => form.values.supervisorPhone, (phone) => {
-  if (phone) formValue.value!.employee.supervisor.phone = +phone.replace(/\D+/g, '');
-});
 watch(() => form.values.detail?.invoiceNominal, (invoice) => {
-  if (invoice) formValue.value!.invoice.nominal = +invoice.replace(/\D+/g, '');
+  if (invoice) formValue.value!.invoiceNominal = +invoice.replace(/\D+/g, '');
 });
 
 async function handleSubmit() {
@@ -97,7 +92,7 @@ async function handleSubmit() {
       >
         <template #title="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.details.title"
+            v-model="formValue.detailsTitle"
             v-bind="slotProps"
             class="col-span-2"
             :disabled="isDisabledInput"
@@ -130,7 +125,7 @@ async function handleSubmit() {
         </template>
         <template #employeeName="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.employee.name"
+            v-model="formValue.employeeName"
             v-bind="slotProps"
             label="Name"
             disabled
@@ -139,7 +134,7 @@ async function handleSubmit() {
         </template>
         <template #employeeRole="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.employee.role"
+            v-model="formValue.employeeRole"
             v-bind="slotProps"
             label="Role"
             disabled
@@ -153,7 +148,7 @@ async function handleSubmit() {
             />
           </section>
           <ShadcnAutoFormFieldInput
-            v-model="formValue.employee.supervisor.name"
+            v-model="formValue.supervisorName"
             v-bind="slotProps"
             label="Name"
             disabled
@@ -162,18 +157,11 @@ async function handleSubmit() {
         </template>
         <template #supervisorRole="slotProps">
           <ShadcnAutoFormFieldInput
-            v-model="formValue.employee.supervisor.role"
+            v-model="formValue.supervisorRole"
             v-bind="slotProps"
             label="Role"
             disabled
             required
-          />
-        </template>
-        <template #supervisorPhone="slotProps">
-          <!-- TODO: Masking using `maska` -->
-          <ShadcnAutoFormFieldInput
-            v-bind="slotProps"
-            label="Phone"
           />
         </template>
 

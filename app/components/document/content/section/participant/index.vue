@@ -19,9 +19,9 @@ defineProps<{ employee: EmployeeInfo }>();
             <td>
               <slot
                 name="supervisor-name"
-                :value="employee.supervisor.name"
+                :value="employee.supervisorName"
               >
-                {{ employee.supervisor.name }}
+                {{ employee.supervisorName }}
               </slot>
             </td>
           </tr>
@@ -36,9 +36,9 @@ defineProps<{ employee: EmployeeInfo }>();
               <span class="italic">
                 <slot
                   name="supervisor-role"
-                  :value="employee.supervisor.role"
+                  :value="employee.supervisorRole"
                 >
-                  {{ employee.supervisor.role }}
+                  {{ employee.supervisorRole }}
                 </slot>
               </span> PT. Sinergi Informatika Semen Indonesia
             </td>
@@ -64,9 +64,9 @@ defineProps<{ employee: EmployeeInfo }>();
             <td>
               <slot
                 name="employee-name"
-                :value="employee.name"
+                :value="employee.employeeName"
               >
-                {{ employee.name }}
+                {{ employee.employeeName }}
               </slot>
             </td>
           </tr>
@@ -81,9 +81,9 @@ defineProps<{ employee: EmployeeInfo }>();
               <span class="italic">
                 <slot
                   name="employee-role"
-                  :value="employee.role"
+                  :value="employee.employeeRole"
                 >
-                  {{ employee.role }}
+                  {{ employee.employeeRole }}
                 </slot>
               </span>
             </td>

@@ -2,12 +2,10 @@
 import { Home } from 'lucide-vue-next';
 import type { Item } from '~/components/base/Breadcrumb.vue';
 
-withDefaults(defineProps<{
+defineProps<{
   page: string;
-  items?: Item[];
-}>(), {
-  items: () => [{ label: 'Documents', href: '/documents' }],
-});
+  items: Item[];
+}>();
 </script>
 
 <template>

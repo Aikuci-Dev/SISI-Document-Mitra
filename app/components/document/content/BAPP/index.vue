@@ -5,8 +5,8 @@ import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dataDateStart = computed(() => new Date(props.data.details.date.ts.start));
-const dataDateEnd = computed(() => new Date(props.data.details.date.ts.end));
+const dataDateStart = computed(() => new Date(props.data.detailsDateTsStart));
+const dataDateEnd = computed(() => new Date(props.data.detailsDateTsEnd));
 
 const dateStart = useDateFormat(dataDateStart, 'DD MMMM YYYY', { locales: 'id-ID' });
 const dateEnd = useDateFormat(dataDateEnd, 'DD MMMM YYYY', { locales: 'id-ID' });
@@ -20,18 +20,18 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
       <h1>
         <slot
           name="details-title"
-          :value="data.details.title"
+          :value="data.detailsTitle"
         >
-          {{ data.details.title }}
+          {{ data.detailsTitle }}
         </slot>
       </h1>
       <h1 class="text-[11pt] font-normal">
         No:
         <slot
           name="bapp-number"
-          :value="data.bapp.number"
+          :value="data.bappNumber"
         >
-          {{ data.bapp.number }}
+          {{ data.bappNumber }}
         </slot>
       </h1>
     </template>
@@ -42,14 +42,14 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
           Pada hari ini,
           <slot
             name="details-day-end"
-            :value="data.details.date.ts.end"
+            :value="data.detailsDateTsEnd"
           >
             {{ dayEnd }}
           </slot>
           tanggal
           <slot
             name="details-date-end"
-            :value="data.details.date.ts.end"
+            :value="data.detailsDateTsEnd"
           >
             {{ dateEnd }}
           </slot>
@@ -59,9 +59,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
 
       <slot
         name="section-participant"
-        :value="data.employee"
+        :value="data"
       >
-        <DocumentContentSectionParticipantDefault :employee="data.employee" />
+        <DocumentContentSectionParticipantDefault :employee="data" />
       </slot>
 
       <div>
@@ -72,17 +72,17 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
               Surat Perintah Kerja No.
               <slot
                 name="po-number"
-                :value="data.po.number"
+                :value="data.poNumber"
               >
-                {{ data.po.number }}
+                {{ data.poNumber }}
               </slot>
               perihal Pengadaan
               <span>
                 "<slot
                   name="details-title"
-                  :value="data.details.title"
+                  :value="data.detailsTitle"
                 >
-                  {{ data.details.title }}
+                  {{ data.detailsTitle }}
                 </slot>"
               </span>
             </li>
@@ -95,21 +95,21 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
             Dengan ini menyatakan bahwa <strong>PIHAK KEDUA</strong> telah melaksanakan pekerjaan kepada <strong>PIHAK PERTAMA</strong> berupa layanan Jasa Developer atas
             <slot
               name="details-title"
-              :value="data.details.title"
+              :value="data.detailsTitle"
             >
-              {{ data.details.title }}
+              {{ data.detailsTitle }}
             </slot>
             dari tanggal
             <slot
               name="details-date-start"
-              :value="data.details.date.ts.start"
+              :value="data.detailsDateTsStart"
             >
               {{ dateStart }}
             </slot>
             -
             <slot
               name="details-date-end"
-              :value="data.details.date.ts.end"
+              :value="data.detailsDateTsEnd"
             >
               {{ dateEnd }}
             </slot>
@@ -129,9 +129,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
                 <td>
                   <slot
                     name="po-number"
-                    :value="data.po.number"
+                    :value="data.poNumber"
                   >
-                    {{ data.po.number }}
+                    {{ data.poNumber }}
                   </slot>
                 </td>
               </tr>
@@ -145,9 +145,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
                 <td>
                   <slot
                     name="invoice-number"
-                    :value="data.invoice.number"
+                    :value="data.invoiceNumber"
                   >
-                    {{ data.invoice.number }}
+                    {{ data.invoiceNumber }}
                   </slot>
                 </td>
               </tr>
@@ -161,9 +161,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
                 <td>
                   <slot
                     name="invoice-nominal"
-                    :value="data.invoice.nominal"
+                    :value="data.invoiceNominal"
                   >
-                    {{ formatCurrency(data.invoice.nominal) }}
+                    {{ formatCurrency(data.invoiceNominal) }}
                   </slot>
                 </td>
               </tr>
@@ -181,9 +181,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
 
       <slot
         name="section-sign"
-        :value="data.employee"
+        :value="data"
       >
-        <DocumentContentSectionSignDefault :employee="data.employee" />
+        <DocumentContentSectionSignDefault :employee="data" />
       </slot>
     </template>
   </Document>

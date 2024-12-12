@@ -32,15 +32,15 @@ const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
   documentTitle: routeType.value === 'bapp'
-    ? `BAPP_${form.value?.bapp.number}`
-    : `BAST_${form.value?.bast.number}`,
+    ? `BAPP_${form.value?.bappNumber}`
+    : `BAST_${form.value?.bastNumber}`,
   removeAfterPrint: true,
 });
 
 const showAlertDialog = ref(false);
 
 // SIGN by User
-const formSign = ref(work.value?.employee.sign.url || '');
+const formSign = ref(work.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => {
@@ -57,7 +57,7 @@ const isDisabledAction = computed(() => {
 });
 const isDisabledInput = routeType.value === DOCUMENTS.bast && workRelated.value?.some(work => work.type === DOCUMENTS.bapp);
 function handleSign() {
-  form.value!.employee.sign.url = formSign.value;
+  form.value!.employeeSignUrl = formSign.value;
   handleGenerate();
 }
 
@@ -77,7 +77,7 @@ async function handleGenerate(skipStore?: boolean) {
   else {
     await $fetch(`/api/documents/type/${routeType.value}/${workKey.value}`, {
       method: 'POST',
-      params: { name: form.value!.employee.name },
+      params: { name: form.value!.employeeName },
       body: form.value,
       onResponseError: ({ response }) => {
         const messages = response.statusText.split('>>');
@@ -109,7 +109,10 @@ function handleViewBAPP() {
   <div>
     <NuxtLayout name="documents">
       <template #bodyHeader>
-        <DocumentBreadcrumb :page="routeType.toUpperCase()" />
+        <WidgetBreadcrumb
+          :items="[{ label: 'Documents', href: '/documents' }]"
+          :page="routeType.toUpperCase()"
+        />
       </template>
       <template
         v-if="form"
@@ -177,7 +180,7 @@ function handleViewBAPP() {
             View BAPP
           </ShadcnButton>
           <ShadcnButton
-            v-else-if="form.bast.number"
+            v-else-if="form.bastNumber"
             @click="handleCreateBAST"
           >
             Create BAST

@@ -1,0 +1,1 @@
+ALTER TABLE `mapping` ADD `map` text NOT NULL;

@@ -1,6 +1,6 @@
 import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 import type { DOCUMENTS_TYPE } from '~~/types/document';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument, WorkDocumentKeys } from '~~/types/schema/document';
 
 export const userGoogle = sqliteTable('user_google', {
   id: integer().primaryKey({ autoIncrement: true }),
@@ -26,4 +26,12 @@ export const documentMitra = sqliteTable('document_mitra', {
   return {
     typeAndId: uniqueIndex('type_and_id').on(table.type, table.id),
   };
+});
+
+export const mapping = sqliteTable('mapping', {
+  id: integer().primaryKey({ autoIncrement: true }),
+  type: text().notNull(),
+  value: text({ mode: 'json' }).$type<Record<WorkDocumentKeys, string | undefined | null>>().notNull(),
+  map: text({ mode: 'json' }).$type<Record<string, string>>().notNull(),
+  other: text({ mode: 'json' }).$type<Record<string, Record<string, string | undefined | null>>>(),
 });

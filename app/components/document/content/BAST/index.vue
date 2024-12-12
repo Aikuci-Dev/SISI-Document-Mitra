@@ -4,7 +4,7 @@ import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dataDateEnd = computed(() => new Date(props.data.details.date.ts.end));
+const dataDateEnd = computed(() => new Date(props.data.detailsDateTsEnd));
 
 const dateEnd = useDateFormat(dataDateEnd, 'DD MMMM YYYY', { locales: 'id-ID' });
 const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
@@ -17,18 +17,18 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
       <h1>
         <slot
           name="details-title"
-          :value="data.details.title"
+          :value="data.detailsTitle"
         >
-          {{ data.details.title }}
+          {{ data.detailsTitle }}
         </slot>
       </h1>
       <h1 class="text-[11pt] font-normal">
         No:
         <slot
           name="bast-number"
-          :value="data.bast.number"
+          :value="data.bastNumber"
         >
-          {{ data.bast.number }}
+          {{ data.bastNumber }}
         </slot>
       </h1>
     </template>
@@ -39,14 +39,14 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
           Pada hari ini,
           <slot
             name="details-day-end"
-            :value="data.details.date.ts.end"
+            :value="data.detailsDateTsEnd"
           >
             {{ dayEnd }}
           </slot>
           tanggal
           <slot
             name="details-date-end"
-            :value="data.details.date.ts.end"
+            :value="data.detailsDateTsEnd"
           >
             {{ dateEnd }}
           </slot>
@@ -56,9 +56,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
 
       <slot
         name="section-participant"
-        :value="data.employee"
+        :value="data"
       >
-        <DocumentContentSectionParticipantDefault :employee="data.employee" />
+        <DocumentContentSectionParticipantDefault :employee="data" />
       </slot>
 
       <div>
@@ -69,30 +69,30 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
               Surat Perintah Kerja No.
               <slot
                 name="po-number"
-                :value="data.po.number"
+                :value="data.poNumber"
               >
-                {{ data.po.number }}
+                {{ data.poNumber }}
               </slot>
               perihal Pengadaan
               <span>
                 "<slot
                   name="details-title"
-                  :value="data.details.title"
+                  :value="data.detailsTitle"
                 >
-                  {{ data.details.title }}
+                  {{ data.detailsTitle }}
                 </slot>"
               </span>
               Berita Acara Pemeriksaan Pekerjaan No.
               <slot
                 name="bapp-number"
-                :value="data.bapp.number"
+                :value="data.bappNumber"
               >
-                {{ data.bapp.number }}
+                {{ data.bappNumber }}
               </slot>
               tanggal
               <slot
                 name="details-date-end"
-                :value="data.details.date.ts.end"
+                :value="data.detailsDateTsEnd"
               >
                 {{ dateEnd }}
               </slot>
@@ -107,9 +107,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
           <span>
             "<slot
               name="details-title"
-              :value="data.details.title"
+              :value="data.detailsTitle"
             >
-              {{ data.details.title }}
+              {{ data.detailsTitle }}
             </slot>"
           </span>
           dan menyerahkan kepada <strong>PIHAK PERTAMA</strong>.
@@ -128,9 +128,9 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
 
       <slot
         name="section-sign"
-        :value="data.employee"
+        :value="data"
       >
-        <DocumentContentSectionSignDefault :employee="data.employee" />
+        <DocumentContentSectionSignDefault :employee="data" />
       </slot>
     </template>
   </Document>

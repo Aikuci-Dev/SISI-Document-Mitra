@@ -81,9 +81,9 @@ async function handleFillForm(id: string) {
   <div>
     <NuxtLayout name="documents">
       <template #bodyHeader>
-        <DocumentBreadcrumb
-          :page
+        <WidgetBreadcrumb
           :items="[]"
+          :page
         />
       </template>
       <template #bodyContent>
@@ -150,7 +150,7 @@ async function handleFillForm(id: string) {
                             >
                               Create
                             </ShadcnDropdownMenuItem>
-                            <div v-if="row.meta.mapped_work.bast.number">
+                            <div v-if="row.meta.mapped_work.bastNumber">
                               <ShadcnDropdownMenuSeparator />
                               <ShadcnDropdownMenuLabel>
                                 BAST
@@ -191,7 +191,7 @@ async function handleFillForm(id: string) {
                       <ShadcnTableCell
                         v-for="(value, index) in row.value"
                         :key="`${row.key}-${index}`"
-                        class="text-nowrap"
+                        class="text-nowrap border"
                       >
                         {{ value }}
                       </ShadcnTableCell>

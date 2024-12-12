@@ -10,25 +10,25 @@ defineProps<{ original: EmployeeInfo; employee: EmployeeInfo }>();
     <template #supervisor-name="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.supervisor.name, employee.supervisor.name)]"
+        :class="[highlightLevel(original.supervisorName, employee.supervisorName)]"
       />
     </template>
     <template #supervisor-role="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.supervisor.role, employee.supervisor.role)]"
+        :class="[highlightLevel(original.supervisorRole, employee.supervisorRole)]"
       />
     </template>
     <template #employee-name="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.name, employee.name)]"
+        :class="[highlightLevel(original.employeeName, employee.employeeName)]"
       />
     </template>
     <template #employee-role="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.role, employee.role)]"
+        :class="[highlightLevel(original.employeeRole, employee.employeeRole)]"
       />
     </template>
   </DocumentContentSectionSign>
