@@ -4,6 +4,7 @@ import { catchFetchError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
 import type { ApproveOrReject } from '~~/types/action';
+import { DOCUMENTS } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -15,15 +16,10 @@ if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
 const { data, error, refresh } = await useFetch(
   `/api/documents/type/${routeType.value}/${route.params.id}`,
+  { params: { includeRelatedWork: true } },
 );
 if (error.value) throw createError({ ...error.value, fatal: true });
-const { data: dataOriginal, error: errorOriginal } = await useFetch(
-  `/api/documents/type/original/${route.params.id}`,
-);
-if (errorOriginal.value) {
-  console.error('unexpected error', errorOriginal.value);
-  throw createError({ ...errorOriginal.value, fatal: true });
-}
+const dataOriginal = computed(() => data.value?.relatedWorks?.find(work => work.type === DOCUMENTS.original));
 
 const { user } = useUserSession();
 const hasAdmin = computed(() => user.value?.role?.includes('admin'));
