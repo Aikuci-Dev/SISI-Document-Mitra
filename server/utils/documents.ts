@@ -81,15 +81,16 @@ const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
   const mappingColumn = await useDB()
     .select({
       value: tables.mapping.value,
+      map: tables.mapping.map,
       other: tables.mapping.other,
     })
     .from(tables.mapping)
     .where(eq(tables.mapping.type, 'column'))
     .get();
-  if (!mappingColumn || !mappingColumn.other) return [];
+  if (!mappingColumn) return [];
 
   const columnMap = new Map(Object.entries(invertKeyValue(mappingColumn.value)));
-  const spreadSheetColumnMap = new Map(Object.entries(removeNullUndefined(mappingColumn.other.spreadsheet)));
+  const spreadSheetColumnMap = new Map(Object.entries(invertKeyValue(mappingColumn.map)));
   return headers
     .map((column, index) => {
       const key = spreadSheetColumnMap.get(column);

@@ -57,6 +57,13 @@
       "when": 1733966886424,
       "tag": "0007_exotic_juggernaut",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1733994360933,
+      "tag": "0008_big_wendigo",
+      "breakpoints": true
     }
   ]
 }

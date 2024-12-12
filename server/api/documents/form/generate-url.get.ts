@@ -37,6 +37,7 @@ export default defineEventHandler(async (event) => {
   const mappedForms = await useDB()
     .select({
       value: tables.mapping.value,
+      map: tables.mapping.map,
       other: tables.mapping.other,
     })
     .from(tables.mapping)
@@ -45,7 +46,7 @@ export default defineEventHandler(async (event) => {
   if (!mappedForms || !mappedForms.other) throw createError('Internal Server Error. >> Mapping data was missing, please contact administrator to handle this!');
   const typeMap = new Map(Object.entries(removeNullUndefined(mappedForms.other.type)));
 
-  const payload = Object.entries(removeNullUndefined(mappedForms.other.form))
+  const payload = Object.entries(removeNullUndefined(mappedForms.other.map))
     .reduce((prev, [entryKey, workDocumentKey]) => {
       switch (typeMap.get(entryKey)) {
         case 'custom-links':
