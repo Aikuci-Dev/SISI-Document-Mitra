@@ -1,4 +1,3 @@
-import type { MAPPED_FORMS_KEYS } from '~~/server/utils/documents';
 import { getValueByKey } from '~~/server/utils/utils';
 
 export default defineEventHandler(async (event) => {
@@ -35,25 +34,36 @@ export default defineEventHandler(async (event) => {
 
   if (!document) throw createError({ statusCode: 404 });
 
-  const dateEnd = new Date(document.detailsDateEnd);
-  const payload = Object.entries(MAPPED_FORMS)
-    .reduce((prev, [k, v]) => {
-      switch (k) {
-        case 'entry.741837358':
-          prev[k as MAPPED_FORMS_KEYS] = links;
+  const mappedForms = await useDB()
+    .select({
+      value: tables.mapping.value,
+      other: tables.mapping.other,
+    })
+    .from(tables.mapping)
+    .where(eq(tables.mapping.type, 'form'))
+    .get();
+  if (!mappedForms || !mappedForms.other) throw createError('Internal Server Error. >> Mapping data was missing, please contact administrator to handle this!');
+  const typeMap = new Map(Object.entries(removeNullUndefined(mappedForms.other.type)));
+
+  const payload = Object.entries(removeNullUndefined(mappedForms.other.form))
+    .reduce((prev, [entryKey, workDocumentKey]) => {
+      switch (typeMap.get(entryKey)) {
+        case 'custom-links':
+          prev[entryKey] = links;
           break;
-        case 'entry.283497930_year':
-          prev[k as MAPPED_FORMS_KEYS] = String(dateEnd.getFullYear());
+        case 'date': {
+          const value = getValueByKey(document, workDocumentKey) as string | number | undefined;
+          if (value) {
+            const date = new Date(value);
+            prev[`${entryKey}_year`] = String(date.getFullYear());
+            prev[`${entryKey}_month`] = String(date.getMonth() + 1);
+            prev[`${entryKey}_day`] = String(date.getDate());
+          }
           break;
-        case 'entry.283497930_month':
-          prev[k as MAPPED_FORMS_KEYS] = String(dateEnd.getMonth() + 1);
-          break;
-        case 'entry.283497930_day':
-          prev[k as MAPPED_FORMS_KEYS] = String(dateEnd.getDate());
-          break;
+        }
 
         default:
-          prev[k as MAPPED_FORMS_KEYS] = getValueByKey(document, v) as string;
+          prev[entryKey] = getValueByKey(document, workDocumentKey) as string;
           break;
       }
       return prev;

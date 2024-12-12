@@ -78,7 +78,14 @@ const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
 const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
   const { headers } = await getSpreadsheetData();
 
-  const mappingColumn = await getMappingColumns();
+  const mappingColumn = await useDB()
+    .select({
+      value: tables.mapping.value,
+      other: tables.mapping.other,
+    })
+    .from(tables.mapping)
+    .where(eq(tables.mapping.type, 'column'))
+    .get();
   if (!mappingColumn || !mappingColumn.other) return [];
 
   const columnMap = new Map(Object.entries(invertKeyValue(mappingColumn.value)));
@@ -232,33 +239,3 @@ export function isValidDocumentType(type: string): type is DOCUMENTS_TYPE {
 export function isValidStatusType(type: string): type is STATUSES_TYPE {
   return Object.values(STATUSES).includes(type as STATUSES_TYPE);
 }
-
-// --- Mapping Retrieval Functions ---
-
-// Fetches column mappings from the database.
-export const getMappingColumns = defineCachedFunction(async () => {
-  return useDB()
-    .select({
-      value: tables.mapping.value,
-      other: tables.mapping.other,
-    })
-    .from(tables.mapping)
-    .where(eq(tables.mapping.type, 'column'))
-    .get();
-}, {
-  maxAge: 365 * 24 * 60 * 60,
-  group: 'mapping',
-  getKey: () => 'columns',
-});
-
-// Mapped forms configuration (TODO: make dynamic and configurable)
-export const MAPPED_FORMS = {
-  'entry.1424391317': 'employeeName',
-  'entry.2068564928': 'supervisorName',
-  'entry.1805086296': 'detailsTitle',
-  'entry.741837358': '', // document links
-  'entry.283497930_year': 'detailsDateEnd',
-  'entry.283497930_month': 'detailsDateEnd',
-  'entry.283497930_day': 'detailsDateEnd',
-} as const;
-export type MAPPED_FORMS_KEYS = keyof typeof MAPPED_FORMS;
