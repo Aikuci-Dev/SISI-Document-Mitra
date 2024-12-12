@@ -1,4 +1,4 @@
-import type { DOCUMENTS_TYPE, STATUSES_TYPE } from '~~/types/document';
+import type { STATUSES_TYPE } from '~~/types/document';
 
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');
@@ -9,40 +9,35 @@ export default defineEventHandler(async (event) => {
 
   const workDocuments = await useDB()
     .select({
+      type: tables.documentMitra.type,
       value: tables.documentMitra.value,
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,
       signedAt: tables.documentMitra.signedAt,
     })
     .from(tables.documentMitra)
-    .where(
-      and(
-        eq(tables.documentMitra.type, type as DOCUMENTS_TYPE),
-        eq(tables.documentMitra.id, id),
-      ),
+    .where(eq(tables.documentMitra.id, id));
+
+  const { works, relatedWorks } = workDocuments
+    .reduce(
+      (prev, curr) => {
+        if (curr.type === type) prev.works.push(curr);
+        else prev.relatedWorks.push(curr);
+
+        return prev;
+      },
+      { works: [], relatedWorks: [] } as { works: typeof workDocuments; relatedWorks: typeof workDocuments },
     );
 
-  const workDocument = catchFirst(workDocuments);
+  const workDocument = catchFirst(works);
 
   const { isValidated, isApproved, signedAt } = workDocument;
   const statuses = getWorkDocumentStatus([id], [{ id, type, isValidated, isApproved, signedAt }]);
   const status = statuses.find(status => status.type === type);
 
-  let relatedWorks;
-  if (query.includeRelatedWork) {
-    relatedWorks = await useDB()
-      .select({
-        type: tables.documentMitra.type,
-        value: tables.documentMitra.value,
-      })
-      .from(tables.documentMitra)
-      .where(
-        and(
-          ne(tables.documentMitra.type, type as DOCUMENTS_TYPE),
-          eq(tables.documentMitra.id, id),
-        ),
-      );
-  }
-
-  return { ...workDocument, status: status!.status as STATUSES_TYPE, relatedWorks };
+  return {
+    ...workDocument,
+    status: status!.status as STATUSES_TYPE,
+    relatedWorks: query.includeRelatedWork ? relatedWorks : undefined,
+  };
 });
