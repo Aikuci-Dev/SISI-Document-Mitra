@@ -4,7 +4,7 @@ import { toast } from '~/components/shadcn/ui/toast';
 import { catchFetchError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
-import { DOCUMENTS } from '~~/types/document';
+import { DOCUMENTS, type DOCUMENTS_TYPE } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -25,8 +25,9 @@ const routeType = computed<string>(() => {
 });
 if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
-const { work, workKey, workRelated } = useDocument();
+const { work, workKey, workRelated, setWorkRelated } = useDocument();
 const form = ref(work);
+const relatedWork = toValue(workRelated) || [];
 
 // VueToPrint
 const documentComponentRef = ref();
@@ -57,7 +58,7 @@ const isDisabledAction = computed(() => {
 
   return isLoading.value && showDialogSign.value;
 });
-const isDisabledInput = routeType.value === DOCUMENTS.bast && workRelated.value?.some(work => work.type === DOCUMENTS.bapp);
+const isDisabledInput = routeType.value === DOCUMENTS.bast && isAnyStoredBAPP.value;
 function handleSign() {
   form.value!.employeeSignUrl = formSign.value;
   handleGenerate();
@@ -81,7 +82,16 @@ async function handleGenerate(skipStore?: boolean) {
       method: 'POST',
       params: { name: form.value!.employeeName },
       body: form.value,
+      onRequest() {
+        // Ref: https://nuxt.com/docs/api/composables/use-nuxt-data#optimistic-updates
+        setWorkRelated([...relatedWork, { type: routeType.value as DOCUMENTS_TYPE, value: form.value! }]);
+      },
+      onRequestError() {
+        setWorkRelated(relatedWork);
+      },
       onResponseError: ({ response }) => {
+        setWorkRelated(relatedWork);
+
         const messages = response.statusText.split('>>');
         toast({
           title: messages[0]?.trim(),
@@ -182,7 +192,7 @@ function handleViewBAPP() {
             View BAPP
           </ShadcnButton>
           <ShadcnButton
-            v-if="routeType === 'bapp' && form.bastNumber"
+            v-if="routeType === 'bapp' && isAnyStoredBAPP && form.bastNumber"
             @click="handleCreateBAST"
           >
             Create BAST
