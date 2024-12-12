@@ -109,7 +109,10 @@ function handleViewBAPP() {
   <div>
     <NuxtLayout name="documents">
       <template #bodyHeader>
-        <DocumentBreadcrumb :page="routeType.toUpperCase()" />
+        <WidgetBreadcrumb
+          :items="[{ label: 'Documents', href: '/documents' }]"
+          :page="routeType.toUpperCase()"
+        />
       </template>
       <template
         v-if="form"
