@@ -28,3 +28,4 @@ export const workDocumentSchema = employeeInfoSchema.extend({
   bastNumber: z.string().optional(),
 });
 export type WorkDocument = z.infer<typeof workDocumentSchema>;
+export type WorkDocumentKeys = keyof typeof workDocumentSchema.shape;

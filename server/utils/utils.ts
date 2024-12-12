@@ -17,6 +17,37 @@ export function overrideValues(obj: Record<string, unknown>, mapped_key: string,
   }, obj);
 }
 
+type InvertedObject<T extends object> = {
+  [
+  K in NonNullable<T[keyof T]> extends string | number | symbol
+    ? NonNullable<T[keyof T]>
+    : never
+  ]: keyof T;
+};
+
+// Function to invert key-value pairs in an object
+export function invertKeyValue<T extends object>(obj: T): InvertedObject<T> {
+  const valuableObj = removeNullUndefined(obj);
+
+  const inverted: Record<string, string> = {};
+  for (const [originalKey, value] of Object.entries(valuableObj)) inverted[String(value)] = originalKey;
+
+  return inverted as InvertedObject<T>;
+}
+
+type WithoutNullableKeys<Type> = {
+  [Key in keyof Type]-?: WithoutNullableKeys<NonNullable<Type[Key]>>;
+};
+
+// Function to remove null and undefined values from an object
+export function removeNullUndefined<T extends object>(obj: T): WithoutNullableKeys<T> {
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([_, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => [key, typeof value === 'object' ? removeNullUndefined(value) : value]),
+  ) as WithoutNullableKeys<T>;
+}
+
 // Function to check if data is not undefined
 export function isNotUndefined<T>(data: T | undefined): data is T {
   return typeof data !== 'undefined';

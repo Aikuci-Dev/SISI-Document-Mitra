@@ -1,4 +1,4 @@
-import { isNotUndefined, overrideValues, snakeCase } from './utils';
+import { isNotUndefined, overrideValues } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
 import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DOCUMENTS_TYPE } from '~~/types/document';
@@ -52,10 +52,16 @@ const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
 const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
   const { headers } = await getSpreadsheetData();
 
-  return headers.map((column) => {
-    const key = snakeCase(column) as MAPPED_COLUMNS_KEYS;
-    return { key, label: column, meta: { mapped_key: MAPPED_COLUMNS[key] } };
-  });
+  const mappingColumn = await getMappingColumns();
+  if (!mappingColumn || !mappingColumn.other) return [];
+
+  const columnMap = new Map(Object.entries(invertKeyValue(mappingColumn.value)));
+  const spreadSheetColumnMap = new Map(Object.entries(removeNullUndefined(mappingColumn.other.spreadsheet)));
+  return headers
+    .map((column, index) => {
+      const key = spreadSheetColumnMap.get(column);
+      return { key: key || String(index), label: column, meta: { mapped_key: columnMap.get(key!) } };
+    });
 }, {
   maxAge: 365 * 24 * 60 * 60,
   group: 'sheetData',
@@ -87,8 +93,8 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
       const workDocument = makeWorkDocument();
 
       value.forEach((item, index) => {
-        if (columns[index].meta.mapped_key)
-          overrideValues(workDocument, columns[index].meta.mapped_key, item.trim());
+        const mapped_key = columns[index].meta.mapped_key;
+        if (mapped_key) overrideValues(workDocument, mapped_key, item.trim());
       });
 
       const [startDay, startMonth, startYear] = workDocument.detailsDateStart.split('/');
@@ -223,30 +229,25 @@ export function isValidStatusType(type: string): type is STATUSES_TYPE {
   return Object.values(STATUSES).includes(type as STATUSES_TYPE);
 }
 
-// --- Static Column Mapping ---
+// --- Mapping Retrieval Functions ---
 
-// TODO-Next: Make MAPPED_COLUMNS dynamic and configurable.
-// The current hardcoded mapping should be made customizable, allowing users to define mappings.
-// Consider implementing a feature where users can map data from various sources to properties in the WorkDocument interface.
-// The mapping could be stored in a configuration file (e.g., JSON) or a user interface for easy customization.
-export const MAPPED_COLUMNS = {
-  inti: 'employeeName',
-  role: 'employeeRole',
-  start_kontrak: 'detailsDateStart',
-  end_kontrak: 'detailsDateEnd',
-  p_m: 'supervisorName',
-  // "no_project": "detailsNumber",
-  nama_project: 'detailsTitle',
-  n_o_p_o: 'poNumber',
-  tgl_invoice_b_a_p_p: 'bappDate',
-  j_t_pembayaran: 'invoiceDate',
-  nomor_b_a_p_p: 'bappNumber',
-  nomor_b_a_s_t: 'bastNumber',
-  nomor_invoice: 'invoiceNumber',
-} as const;
-export type MAPPED_COLUMNS_KEYS = keyof typeof MAPPED_COLUMNS;
+// Function to get the column mappings from the database
+export const getMappingColumns = defineCachedFunction(async () => {
+  return useDB()
+    .select({
+      value: tables.mapping.value,
+      other: tables.mapping.other,
+    })
+    .from(tables.mapping)
+    .where(eq(tables.mapping.type, 'column'))
+    .get();
+}, {
+  maxAge: 365 * 24 * 60 * 60,
+  group: 'mapping',
+  getKey: () => 'columns',
+});
 
-// TODO-Next: Make MAPPED_FORMS dynamic and configurable.
+// TODO-Last: Make MAPPED_FORMS dynamic and configurable.
 export const MAPPED_FORMS = {
   'entry.1424391317': 'employeeName',
   'entry.2068564928': 'supervisorName',
