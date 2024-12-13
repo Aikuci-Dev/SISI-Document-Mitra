@@ -11,6 +11,10 @@ definePageMeta({
 const page = 'Documents';
 
 const { user } = useUserSession();
+// TODO: Decide whether to include related works.
+// Current research is available but requires further investigation.
+// If included: Avoid manual checks, reducing API requests.
+// If not included: Smaller payload and faster response due to simpler logic.
 const { data: mitraTableData, error } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
 );
