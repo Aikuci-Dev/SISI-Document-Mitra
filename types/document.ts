@@ -88,6 +88,7 @@ export const STATUSES = {
   initiated: 'initiated',
   created: 'created',
   rejected: 'rejected',
+  revised: 'revised',
   approved: 'approved',
   signed: 'signed',
 } as const;

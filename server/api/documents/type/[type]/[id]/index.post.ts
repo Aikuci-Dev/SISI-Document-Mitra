@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
         isValidated: false,
         isApproved: false,
         validatedAt: null,
-        updatedAt: new Date(),
+        revisedAt: new Date(),
       },
     });
 

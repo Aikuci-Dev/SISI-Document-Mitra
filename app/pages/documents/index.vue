@@ -135,7 +135,13 @@ async function handleFillForm(id: string) {
                               BAPP
                             </ShadcnDropdownMenuLabel>
                             <ShadcnDropdownMenuItem
-                              v-if="storedDocuments.has(`${DOCUMENTS.bapp}-${row.key}`)"
+                              v-if="row.meta.statuses.find(status => status.type === DOCUMENTS.bapp && status.status === STATUSES.rejected)"
+                              @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
+                            >
+                              Revise
+                            </ShadcnDropdownMenuItem>
+                            <ShadcnDropdownMenuItem
+                              v-else-if="storedDocuments.has(`${DOCUMENTS.bapp}-${row.key}`)"
                               @click="() => handleViewDocument(DOCUMENTS.bapp, row.key)"
                             >
                               View
@@ -152,7 +158,13 @@ async function handleFillForm(id: string) {
                                 BAST
                               </ShadcnDropdownMenuLabel>
                               <ShadcnDropdownMenuItem
-                                v-if="storedDocuments.has(`${DOCUMENTS.bast}-${row.key}`)"
+                                v-if="row.meta.statuses.find(status => status.type === DOCUMENTS.bast && status.status === STATUSES.rejected)"
+                                @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
+                              >
+                                Revise
+                              </ShadcnDropdownMenuItem>
+                              <ShadcnDropdownMenuItem
+                                v-else-if="storedDocuments.has(`${DOCUMENTS.bast}-${row.key}`)"
                                 @click="() => handleViewDocument(DOCUMENTS.bast, row.key)"
                               >
                                 View

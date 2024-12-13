@@ -37,7 +37,7 @@ function makeWorkDocument(): WorkDocument {
 // Returns the status of multiple work documents based on their IDs.
 export function getWorkDocumentStatus(
   ids: string[],
-  data: { id: string; type: DOCUMENTS_TYPE | null; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null }[],
+  data: { id: string; type: DOCUMENTS_TYPE | null; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null; revisedAt: Date | null }[],
 ): { id: string; type: DOCUMENTS_TYPE; status: STATUSES_TYPE }[] {
   const dataMap = new Map(data.map(item => [`${item.type}-${item.id}`, item]));
 
@@ -49,6 +49,7 @@ export function getWorkDocumentStatus(
         const item = dataMap.get(`${type}-${id}`);
         if (!item) return { id, type, status: STATUSES.initiated };
 
+        if (item.revisedAt) return { id, type, status: STATUSES.revised };
         if (!item.isValidated) return { id, type, status: STATUSES.created };
         if (!item.isApproved) return { id, type, status: STATUSES.rejected };
         if (item.signedAt) return { id, type, status: STATUSES.signed };
@@ -179,6 +180,7 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,
       signedAt: tables.documentMitra.signedAt,
+      revisedAt: tables.documentMitra.revisedAt,
     })
     .from(tables.documentMitra)
     .where(inArray(tables.documentMitra.id, ids));

@@ -19,6 +19,7 @@ export default defineEventHandler(async (event) => {
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,
       signedAt: tables.documentMitra.signedAt,
+      revisedAt: tables.documentMitra.revisedAt,
     })
     .from(tables.documentMitra)
     .where(eq(tables.documentMitra.id, id));
@@ -36,8 +37,8 @@ export default defineEventHandler(async (event) => {
 
   const workDocument = catchFirst(works);
 
-  const { isValidated, isApproved, signedAt } = workDocument;
-  const statuses = getWorkDocumentStatus([id], [{ id, type, isValidated, isApproved, signedAt }]);
+  const { isValidated, isApproved, signedAt, revisedAt } = workDocument;
+  const statuses = getWorkDocumentStatus([id], [{ id, type, isValidated, isApproved, signedAt, revisedAt }]);
   const status = statuses.find(status => status.type === type);
 
   return {
