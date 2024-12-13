@@ -19,7 +19,7 @@ export const documentMitra = sqliteTable('document_mitra', {
   isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
   isApproved: integer('is_approved', { mode: 'boolean' }).default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }),
+  revisedAt: integer('revised_at', { mode: 'timestamp' }),
   validatedAt: integer('validated_at', { mode: 'timestamp' }),
   signedAt: integer('signed_at', { mode: 'timestamp' }),
 }, (table) => {

@@ -64,6 +64,13 @@
       "when": 1733994360933,
       "tag": "0008_big_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1734079037058,
+      "tag": "0009_magenta_khan",
+      "breakpoints": true
     }
   ]
 }
