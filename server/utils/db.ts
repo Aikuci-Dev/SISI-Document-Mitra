@@ -3,7 +3,7 @@ import type { AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 import { sql, type SQL } from 'drizzle-orm';
 import * as schema from '../database/schema';
 
-export { sql, eq, and, or, inArray } from 'drizzle-orm';
+export { sql, eq, ne, and, or, inArray } from 'drizzle-orm';
 
 export const tables = schema;
 

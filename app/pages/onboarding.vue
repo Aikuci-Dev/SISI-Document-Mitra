@@ -2,8 +2,7 @@
 import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
 const { user, fetch: refetchUserSession } = useUserSession();
 
@@ -29,12 +28,7 @@ async function handleSubmit() {
     method: 'POST',
     body: { id, email, name: form.values.name },
     onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
+      handleResponseError(response);
 
       loading.value = false;
     },

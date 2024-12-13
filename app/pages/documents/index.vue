@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
 import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
 definePageMeta({
   layout: false,
@@ -12,6 +11,10 @@ definePageMeta({
 const page = 'Documents';
 
 const { user } = useUserSession();
+// TODO: Decide whether to include related works.
+// Current research is available but requires further investigation.
+// If included: Avoid manual checks, reducing API requests.
+// If not included: Smaller payload and faster response due to simpler logic.
 const { data: mitraTableData, error } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
 );
@@ -61,14 +64,7 @@ function handleViewDocument(type: DOCUMENTS_TYPE, id: string) {
 async function handleFillForm(id: string) {
   const formUrl = await $fetch('/api/documents/form/generate-url', {
     params: { id, name: user.value!.name },
-    onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
-    },
+    onResponseError: ({ response }) => handleResponseError(response),
   })
     .catch(catchFetchError);
 

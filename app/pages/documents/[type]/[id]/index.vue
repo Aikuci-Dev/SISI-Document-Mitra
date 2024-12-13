@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
+import type { ApproveOrReject } from '~~/types/action';
+import { DOCUMENTS } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -14,15 +15,10 @@ if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
 const { data, error, refresh } = await useFetch(
   `/api/documents/type/${routeType.value}/${route.params.id}`,
+  { params: { includeRelatedWork: true } },
 );
 if (error.value) throw createError({ ...error.value, fatal: true });
-const { data: dataOriginal, error: errorOriginal } = await useFetch(
-  `/api/documents/type/original/${route.params.id}`,
-);
-if (errorOriginal.value) {
-  console.error('unexpected error', errorOriginal.value);
-  throw createError({ ...errorOriginal.value, fatal: true });
-}
+const dataOriginal = computed(() => data.value?.relatedWorks?.find(work => work.type === DOCUMENTS.original));
 
 const { user } = useUserSession();
 const hasAdmin = computed(() => user.value?.role?.includes('admin'));
@@ -30,20 +26,22 @@ const supervisorName = computed(() => data.value?.value.supervisorName);
 const isSupervisor = computed(() => user.value?.name === supervisorName.value);
 
 const isLoading = ref(false);
+const showAlertDialog = ref(false);
+const approveOrReject = ref<ApproveOrReject>('approve');
 
 // REVIEW by Admin
-async function handleApproveOrReject(type: 'approve' | 'reject') {
+function showAlertDialogApproveOrReject(type: ApproveOrReject) {
+  showAlertDialog.value = true;
+  approveOrReject.value = type;
+}
+async function handleApproveOrReject() {
+  showAlertDialog.value = false;
   isLoading.value = true;
 
-  await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/${type}`, {
+  await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/${approveOrReject.value}`, {
     method: 'PATCH',
     onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
+      handleResponseError(response);
 
       isLoading.value = false;
     },
@@ -54,12 +52,6 @@ async function handleApproveOrReject(type: 'approve' | 'reject') {
 
   isLoading.value = false;
 }
-async function handleApprove() {
-  handleApproveOrReject('approve');
-}
-async function handleReject() {
-  handleApproveOrReject('reject');
-}
 
 // SIGN by SPV
 const formSign = ref();
@@ -68,14 +60,7 @@ async function handleSign() {
   await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/sign`, {
     method: 'PATCH',
     body: { sign: formSign.value, name: supervisorName.value },
-    onResponseError: ({ response }) => {
-      const messages = response.statusText.split('>>');
-      toast({
-        title: messages[0]?.trim(),
-        description: messages[1]?.trim(),
-        variant: 'destructive',
-      });
-    },
+    onResponseError: ({ response }) => handleResponseError(response),
   })
     .catch(catchFetchError);
 
@@ -93,28 +78,28 @@ async function handleSign() {
           v-if="data && dataOriginal"
           class="h-screen overflow-auto bg-slate-100 print:h-full print:overflow-hidden"
         >
-          <DocumentAction class="absolute right-5 top-5">
+          <DocumentAction class="absolute right-5 top-40">
             <div
               v-if="hasAdmin && !data.isValidated"
               class="flex justify-between space-x-4"
             >
               <ShadcnButton
                 :disabled="isLoading"
-                @click="handleApprove"
+                @click="() => showAlertDialogApproveOrReject('approve')"
               >
                 Approve
               </ShadcnButton>
               <ShadcnButton
                 variant="destructive"
                 :disabled="isLoading"
-                @click="handleReject"
+                @click="() => showAlertDialogApproveOrReject('reject')"
               >
                 Reject
               </ShadcnButton>
             </div>
 
             <ShadcnTooltipProvider
-              v-if="isSupervisor"
+              v-if="isSupervisor && !data.signedAt"
               :disabled="!data.isValidated && !data.isApproved"
             >
               <ShadcnTooltip
@@ -150,6 +135,23 @@ async function handleSign() {
               </ShadcnTooltip>
             </ShadcnTooltipProvider>
           </DocumentAction>
+
+          <ShadcnAlertDialog v-model:open="showAlertDialog">
+            <ShadcnAlertDialogContent>
+              <ShadcnAlertDialogHeader>
+                <ShadcnAlertDialogTitle>Final Confirmation</ShadcnAlertDialogTitle>
+                <ShadcnAlertDialogDescription>
+                  This action will permanently <span class="font-bold uppercase">{{ approveOrReject }}</span> the document. Please confirm before proceeding.
+                </ShadcnAlertDialogDescription>
+              </ShadcnAlertDialogHeader>
+              <ShadcnAlertDialogFooter>
+                <ShadcnAlertDialogCancel>Cancel</ShadcnAlertDialogCancel>
+                <ShadcnAlertDialogAction @click="handleApproveOrReject">
+                  Confirm
+                </ShadcnAlertDialogAction>
+              </ShadcnAlertDialogFooter>
+            </ShadcnAlertDialogContent>
+          </ShadcnAlertDialog>
 
           <DocumentDialogSign
             v-model:open="showDialogSign"

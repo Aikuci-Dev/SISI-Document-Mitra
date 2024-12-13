@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
-import { toast } from '~/components/shadcn/ui/toast';
-import { catchFetchError } from '~/lib/exceptions';
+import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import { isValidDocumentType } from '~/lib/documents';
 import { isString } from '~/lib/utils';
-import { DOCUMENTS } from '~~/types/document';
+import { DOCUMENTS, type DOCUMENTS_TYPE } from '~~/types/document';
 
 definePageMeta({
   layout: false,
   middleware: [
     function (to, from) {
+      if (from.name === to.name && from.params !== to.params) return;
       if (from.name !== 'documents') return navigateTo('/documents');
 
       return;
@@ -24,8 +24,9 @@ const routeType = computed<string>(() => {
 });
 if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
-const { work, workKey, workRelated } = useDocument();
+const { work, workKey, workRelated, setWorkRelated } = useDocument();
 const form = ref(work);
+const relatedWork = toValue(workRelated) || [];
 
 // VueToPrint
 const documentComponentRef = ref();
@@ -43,10 +44,11 @@ const showAlertDialog = ref(false);
 const formSign = ref(work.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
+const isAnyStoredBAPP = computed(() => workRelated.value?.some(work => work.type === DOCUMENTS.bapp));
 const isDisabledAction = computed(() => {
   switch (routeType.value) {
     case DOCUMENTS.bast:
-      if (!workRelated.value?.some(work => work.type === DOCUMENTS.bapp)) return true;
+      if (!isAnyStoredBAPP.value) return true;
       break;
 
     default:
@@ -55,7 +57,7 @@ const isDisabledAction = computed(() => {
 
   return isLoading.value && showDialogSign.value;
 });
-const isDisabledInput = routeType.value === DOCUMENTS.bast && workRelated.value?.some(work => work.type === DOCUMENTS.bapp);
+const isDisabledInput = routeType.value === DOCUMENTS.bast && isAnyStoredBAPP.value;
 function handleSign() {
   form.value!.employeeSignUrl = formSign.value;
   handleGenerate();
@@ -79,13 +81,16 @@ async function handleGenerate(skipStore?: boolean) {
       method: 'POST',
       params: { name: form.value!.employeeName },
       body: form.value,
+      onRequest() {
+        setWorkRelated([...relatedWork, { type: routeType.value as DOCUMENTS_TYPE, value: form.value! }]);
+      },
+      onRequestError() {
+        setWorkRelated(relatedWork);
+      },
       onResponseError: ({ response }) => {
-        const messages = response.statusText.split('>>');
-        toast({
-          title: messages[0]?.trim(),
-          description: messages[1]?.trim(),
-          variant: 'destructive',
-        });
+        setWorkRelated(relatedWork);
+
+        handleResponseError(response);
       },
     })
       .catch(catchFetchError);
@@ -174,13 +179,13 @@ function handleViewBAPP() {
             Print
           </ShadcnButton>
           <ShadcnButton
-            v-if="routeType === 'bast'"
+            v-if="routeType === 'bast' && isAnyStoredBAPP"
             @click="handleViewBAPP"
           >
             View BAPP
           </ShadcnButton>
           <ShadcnButton
-            v-else-if="form.bastNumber"
+            v-if="routeType === 'bapp' && isAnyStoredBAPP && form.bastNumber"
             @click="handleCreateBAST"
           >
             Create BAST
