@@ -1,11 +1,15 @@
+import { z } from 'zod';
 import { getValueByKey } from '~~/server/utils/utils';
+
+const payloadSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+});
 
 export default defineEventHandler(async (event) => {
   const host = getRequestHost(event);
 
-  const { id, name }: { id: string; name: string } = getQuery(event);
-
-  if (!id) throw createError({ statusCode: 400, statusMessage: 'Bad request. >> Please try again later or contact support if the issue persists.' });
+  const { id, name } = await getValidatedQuery(event, query => payloadSchema.parse(query));
 
   const { form } = useRuntimeConfig().google;
 

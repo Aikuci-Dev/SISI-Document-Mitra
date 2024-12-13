@@ -1,9 +1,14 @@
+import { z } from 'zod';
 import type { STATUSES_TYPE } from '~~/types/document';
+
+const payloadSchema = z.object({
+  includeRelatedWork: z.boolean().optional(),
+});
 
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');
   const type = decodeURI(getRouterParam(event, 'type') || '').toLowerCase();
-  const query = getQuery(event);
+  const { data: query } = await getValidatedQuery(event, query => payloadSchema.safeParse(query));
 
   if (!isValidDocumentType(type)) throw createError({ statusCode: 404 });
 
@@ -38,6 +43,6 @@ export default defineEventHandler(async (event) => {
   return {
     ...workDocument,
     status: status!.status as STATUSES_TYPE,
-    relatedWorks: query.includeRelatedWork ? relatedWorks : undefined,
+    relatedWorks: query?.includeRelatedWork ? relatedWorks : undefined,
   };
 });
