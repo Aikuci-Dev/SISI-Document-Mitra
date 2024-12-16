@@ -84,6 +84,13 @@ export const DOCUMENTS = {
 } as const;
 export type DOCUMENTS_TYPE = typeof DOCUMENTS[keyof typeof DOCUMENTS];
 
+export const DOCUMENTS_TABLE = {
+  employee: 'employee',
+  supervisor: 'supervisor',
+  admin: 'admin',
+} as const;
+export type DOCUMENTS_TABLE_TYPE = typeof DOCUMENTS_TABLE[keyof typeof DOCUMENTS_TABLE];
+
 export const STATUSES = {
   initiated: 'initiated',
   created: 'created',

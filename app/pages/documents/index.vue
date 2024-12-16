@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS, DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
 definePageMeta({
@@ -10,6 +10,14 @@ definePageMeta({
 const page = 'Documents';
 
 const { user } = useUserSession();
+const hasAdmin = computed(() => user.value?.role?.includes('admin'));
+
+const tabs = [
+  { key: DOCUMENTS_TABLE.employee, title: 'As Employee' },
+  { key: DOCUMENTS_TABLE.supervisor, title: 'As Supervisor' },
+  hasAdmin.value ? { key: DOCUMENTS_TABLE.admin, title: 'As Admin' } : undefined,
+].filter(Boolean) as { key: DOCUMENTS_TABLE_TYPE; title: string }[];
+
 // TODO: Decide whether to include related works.
 // Current research is available but requires further investigation.
 // If included: Avoid manual checks, reducing API requests.
@@ -98,37 +106,32 @@ async function handleFillForm(context: { id: string }) {
           <ShadcnCardContent>
             <div class="h-[480px] overflow-auto">
               <ShadcnTabs
-                default-value="employee"
+                :default-value="DOCUMENTS_TABLE.employee"
                 class="w-[400px]"
               >
                 <ShadcnTabsList>
-                  <ShadcnTabsTrigger value="employee">
-                    As Employee
-                  </ShadcnTabsTrigger>
-                  <ShadcnTabsTrigger value="supervisor">
-                    As Supervisor
+                  <ShadcnTabsTrigger
+                    v-for="tab in tabs"
+                    :key="tab.key"
+                    :value="tab.key"
+                  >
+                    {{ tab.title }}
                   </ShadcnTabsTrigger>
                 </ShadcnTabsList>
-                <ShadcnTabsContent value="employee">
+                <ShadcnTabsContent
+                  v-for="tab in tabs"
+                  :key="tab.key"
+                  :value="tab.key"
+                >
                   <DocumentDatatable
                     :columns
                     :rows
                     :user="user!"
                     :stored-documents
-                    can-create
-                    can-fill-form
+                    :type="tab.key"
                     @create="handleCreateDocument"
                     @view="handleViewDocument"
                     @form-fill="handleFillForm"
-                  />
-                </ShadcnTabsContent>
-                <ShadcnTabsContent value="supervisor">
-                  <DocumentDatatable
-                    :columns
-                    :rows
-                    :user="user!"
-                    :stored-documents
-                    @view="handleViewDocument"
                   />
                 </ShadcnTabsContent>
               </ShadcnTabs>

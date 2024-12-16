@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type DocumentTable, type WorkMetaStatus, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS, DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DOCUMENTS_TYPE, type DocumentTable, type WorkMetaStatus, type WorkWithMeta } from '~~/types/document';
 import type { User } from '~~/types/session';
 
 type DatatableEmits = {
@@ -11,9 +11,8 @@ type DatatableEmits = {
 defineEmits<DatatableEmits>();
 
 type DatatableProps = DocumentTable & {
+  type: DOCUMENTS_TABLE_TYPE;
   user: User; storedDocuments: Map<string, WorkMetaStatus>;
-  canCreate?: boolean;
-  canFillForm?: boolean;
 };
 defineProps<DatatableProps>();
 </script>
@@ -56,7 +55,7 @@ defineProps<DatatableProps>();
                   BAPP
                 </ShadcnDropdownMenuLabel>
                 <ShadcnDropdownMenuItem
-                  v-if="canCreate && row.meta.statuses.find(status => status.type === DOCUMENTS.bapp && status.status === STATUSES.rejected)"
+                  v-if="type === DOCUMENTS_TABLE.employee && row.meta.statuses.find(status => status.type === DOCUMENTS.bapp && status.status === STATUSES.rejected)"
                   @click="$emit('create', { type: DOCUMENTS.bapp, data: { ...row.meta.mapped_work, meta: row.meta } })"
                 >
                   Revise
@@ -68,7 +67,7 @@ defineProps<DatatableProps>();
                   View
                 </ShadcnDropdownMenuItem>
                 <ShadcnDropdownMenuItem
-                  v-else-if="canCreate"
+                  v-else-if="type === DOCUMENTS_TABLE.employee"
                   @click="$emit('create', { type: DOCUMENTS.bapp, data: { ...row.meta.mapped_work, meta: row.meta } })"
                 >
                   Create
@@ -79,7 +78,7 @@ defineProps<DatatableProps>();
                     BAST
                   </ShadcnDropdownMenuLabel>
                   <ShadcnDropdownMenuItem
-                    v-if="canCreate && row.meta.statuses.find(status => status.type === DOCUMENTS.bast && status.status === STATUSES.rejected)"
+                    v-if="type === DOCUMENTS_TABLE.employee && row.meta.statuses.find(status => status.type === DOCUMENTS.bast && status.status === STATUSES.rejected)"
                     @click="$emit('create', { type: DOCUMENTS.bapp, data: { ...row.meta.mapped_work, meta: row.meta } })"
                   >
                     Revise
@@ -91,31 +90,30 @@ defineProps<DatatableProps>();
                     View
                   </ShadcnDropdownMenuItem>
                   <ShadcnDropdownMenuItem
-                    v-else-if="canCreate"
+                    v-else-if="type === DOCUMENTS_TABLE.employee"
                     @click="$emit('create', { type: DOCUMENTS.bast, data: { ...row.meta.mapped_work, meta: row.meta } })"
                   >
                     Create
                   </ShadcnDropdownMenuItem>
                 </div>
-                <ShadcnDropdownMenuSeparator />
-                <ShadcnDropdownMenuLabel>
-                  Others
-                </ShadcnDropdownMenuLabel>
-                <ShadcnDropdownMenuItem
-                  v-if="canFillForm"
-                  @click="$emit('formFill', { id: row.key })"
-                >
-                  Fill Form
-                </ShadcnDropdownMenuItem>
+                <template v-if="type === DOCUMENTS_TABLE.employee">
+                  <ShadcnDropdownMenuSeparator />
+                  <ShadcnDropdownMenuLabel>
+                    Others
+                  </ShadcnDropdownMenuLabel>
+                  <ShadcnDropdownMenuItem @click="$emit('formFill', { id: row.key })">
+                    Fill Form
+                  </ShadcnDropdownMenuItem>
+                </template>
               </ShadcnDropdownMenuContent>
             </ShadcnDropdownMenu>
           </ShadcnTableCell>
           <ShadcnTableCell class="flex flex-col space-y-4 text-nowrap text-center">
             <DocumentBadgeStatus
-              v-for="{ type, status } in row.meta.statuses"
-              :key="type"
-              :type
-              :status
+              v-for="status in row.meta.statuses"
+              :key="status.type"
+              :type="status.type"
+              :status="status.status"
             />
           </ShadcnTableCell>
           <ShadcnTableCell
