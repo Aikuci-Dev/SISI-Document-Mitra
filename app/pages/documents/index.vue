@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
 import { DOCUMENTS, STATUSES, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
@@ -18,8 +17,8 @@ const { user } = useUserSession();
 const { data: mitraTableData, error } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
 );
-const columns = computed(() => mitraTableData.value?.columns);
-const rows = computed(() => mitraTableData.value?.rows);
+const columns = computed(() => mitraTableData.value?.columns || []);
+const rows = computed(() => mitraTableData.value?.rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const storedDocuments = new Map(
@@ -31,7 +30,9 @@ const storedDocuments = new Map(
 );
 
 const { setWork, setWorkKey, setWorkRelated } = useDocument();
-async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
+async function handleCreateDocument(context: { type: DOCUMENTS_TYPE; data: WorkWithMeta }) {
+  const { type, data } = context;
+
   const { meta, ...rest } = data;
   setWorkKey(meta.key);
   setWork(rest); // Set original data
@@ -58,10 +59,14 @@ async function handleCreateDocument(type: DOCUMENTS_TYPE, data: WorkWithMeta) {
 
   navigateTo(`/documents/${type}`);
 }
-function handleViewDocument(type: DOCUMENTS_TYPE, id: string) {
+function handleViewDocument(context: { type: DOCUMENTS_TYPE; id: string }) {
+  const { type, id } = context;
+
   navigateTo(`/documents/${type}/${id}`, { open: { target: '_blank' } });
 }
-async function handleFillForm(id: string) {
+async function handleFillForm(context: { id: string }) {
+  const { id } = context;
+
   const formUrl = await $fetch('/api/documents/form/generate-url', {
     params: { id, name: user.value!.name },
     onResponseError: ({ response }) => handleResponseError(response),
@@ -92,136 +97,41 @@ async function handleFillForm(id: string) {
           </ShadcnCardHeader>
           <ShadcnCardContent>
             <div class="h-[480px] overflow-auto">
-              <BaseTable v-if="mitraTableData">
-                <ShadcnTableHeader>
-                  <ShadcnTableRow class="sticky top-0 z-10 divide-y-4 divide-y-reverse bg-white">
-                    <ShadcnTableHead
-                      v-if="columns"
-                      class="sticky left-0 z-20 bg-white"
-                    />
-                    <ShadcnTableHead
-                      v-if="columns"
-                      class="text-nowrap"
-                    >
-                      STATUS
-                    </ShadcnTableHead>
-                    <ShadcnTableHead
-                      v-for="column in columns"
-                      :key="column.key"
-                      class="text-nowrap"
-                    >
-                      {{ column.label }}
-                    </ShadcnTableHead>
-                  </ShadcnTableRow>
-                </ShadcnTableHeader>
-                <ShadcnTableBody v-if="columns && rows">
-                  <template v-if="rows.length">
-                    <ShadcnTableRow
-                      v-for="row in rows"
-                      :key="row.key"
-                    >
-                      <ShadcnTableCell class="sticky left-0 border-e-4 bg-white">
-                        <ShadcnDropdownMenu>
-                          <ShadcnDropdownMenuTrigger as-child>
-                            <ShadcnButton
-                              variant="ghost"
-                              class="size-8 p-0"
-                            >
-                              <MoreVertical class="size-4" />
-                            </ShadcnButton>
-                          </ShadcnDropdownMenuTrigger>
-                          <ShadcnDropdownMenuContent align="end">
-                            <ShadcnDropdownMenuLabel>
-                              BAPP
-                            </ShadcnDropdownMenuLabel>
-                            <ShadcnDropdownMenuItem
-                              v-if="row.meta.statuses.find(status => status.type === DOCUMENTS.bapp && status.status === STATUSES.rejected)"
-                              @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
-                            >
-                              Revise
-                            </ShadcnDropdownMenuItem>
-                            <ShadcnDropdownMenuItem
-                              v-else-if="storedDocuments.has(`${DOCUMENTS.bapp}-${row.key}`)"
-                              @click="() => handleViewDocument(DOCUMENTS.bapp, row.key)"
-                            >
-                              View
-                            </ShadcnDropdownMenuItem>
-                            <ShadcnDropdownMenuItem
-                              v-else
-                              @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
-                            >
-                              Create
-                            </ShadcnDropdownMenuItem>
-                            <div v-if="row.meta.mapped_work.bastNumber">
-                              <ShadcnDropdownMenuSeparator />
-                              <ShadcnDropdownMenuLabel>
-                                BAST
-                              </ShadcnDropdownMenuLabel>
-                              <ShadcnDropdownMenuItem
-                                v-if="row.meta.statuses.find(status => status.type === DOCUMENTS.bast && status.status === STATUSES.rejected)"
-                                @click="() => handleCreateDocument(DOCUMENTS.bapp, { ...row.meta.mapped_work, meta: row.meta })"
-                              >
-                                Revise
-                              </ShadcnDropdownMenuItem>
-                              <ShadcnDropdownMenuItem
-                                v-else-if="storedDocuments.has(`${DOCUMENTS.bast}-${row.key}`)"
-                                @click="() => handleViewDocument(DOCUMENTS.bast, row.key)"
-                              >
-                                View
-                              </ShadcnDropdownMenuItem>
-                              <ShadcnDropdownMenuItem
-                                v-else
-                                @click="() => handleCreateDocument(DOCUMENTS.bast, { ...row.meta.mapped_work, meta: row.meta })"
-                              >
-                                Create
-                              </ShadcnDropdownMenuItem>
-                            </div>
-                            <ShadcnDropdownMenuSeparator />
-                            <ShadcnDropdownMenuLabel>
-                              Others
-                            </ShadcnDropdownMenuLabel>
-                            <ShadcnDropdownMenuItem
-                              @click="() => handleFillForm(row.key)"
-                            >
-                              Fill Form
-                            </ShadcnDropdownMenuItem>
-                          </ShadcnDropdownMenuContent>
-                        </ShadcnDropdownMenu>
-                      </ShadcnTableCell>
-                      <ShadcnTableCell class="flex flex-col space-y-4 text-nowrap text-center">
-                        <DocumentBadgeStatus
-                          v-for="{ type, status } in row.meta.statuses"
-                          :key="type"
-                          :type
-                          :status
-                        />
-                      </ShadcnTableCell>
-                      <ShadcnTableCell
-                        v-for="(value, index) in row.value"
-                        :key="`${row.key}-${index}`"
-                        class="text-nowrap border"
-                      >
-                        {{ value }}
-                      </ShadcnTableCell>
-                    </ShadcnTableRow>
-                  </template>
-                  <ShadcnTableRow v-else>
-                    <ShadcnTableCell />
-                    <ShadcnTableCell
-                      :colspan="columns.length"
-                      class="h-24 text-center"
-                    >
-                      <ShadcnAlert>
-                        <MessageCircleWarning class="size-4" />
-                        <ShadcnAlertTitle>No document found associated with your name '{{ user!.name }}'</ShadcnAlertTitle>
-                        <ShadcnAlertDescription>
-                          Please contact admin to create a new one for you.
-                        </ShadcnAlertDescription>
-                      </ShadcnAlert>
-                    </ShadcnTableCell>
-                  </ShadcnTableRow>
-                </ShadcnTableBody>
-              </BaseTable>
+              <ShadcnTabs
+                default-value="employee"
+                class="w-[400px]"
+              >
+                <ShadcnTabsList>
+                  <ShadcnTabsTrigger value="employee">
+                    As Employee
+                  </ShadcnTabsTrigger>
+                  <ShadcnTabsTrigger value="supervisor">
+                    As Supervisor
+                  </ShadcnTabsTrigger>
+                </ShadcnTabsList>
+                <ShadcnTabsContent value="employee">
+                  <DocumentDatatable
+                    :columns
+                    :rows
+                    :user="user!"
+                    :stored-documents
+                    can-create
+                    can-fill-form
+                    @create="handleCreateDocument"
+                    @view="handleViewDocument"
+                    @form-fill="handleFillForm"
+                  />
+                </ShadcnTabsContent>
+                <ShadcnTabsContent value="supervisor">
+                  <DocumentDatatable
+                    :columns
+                    :rows
+                    :user="user!"
+                    :stored-documents
+                    @view="handleViewDocument"
+                  />
+                </ShadcnTabsContent>
+              </ShadcnTabs>
             </div>
           </ShadcnCardContent>
         </ShadcnCard>
