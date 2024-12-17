@@ -40,7 +40,7 @@ export interface WorkDocumentComposable {
   setWorkKey: (data: string) => void;
 }
 
-export const WORK_DOCUMENT: Record<WorkDocumentKeys, string> = {
+export const WORK_DOCUMENT: Partial<Record<WorkDocumentKeys, string | null>> = {
   employeeName: 'Name',
   employeeRole: 'Role',
   employeeSignUrl: 'Signature',
@@ -48,6 +48,7 @@ export const WORK_DOCUMENT: Record<WorkDocumentKeys, string> = {
   supervisorRole: 'Supervisor Role',
   supervisorSignUrl: 'Supervisor Signature',
 
+  detailsNumber: 'Project Number',
   detailsTitle: 'Project Title',
   detailsDateStart: 'Start Date',
   detailsDateEnd: 'End Date',

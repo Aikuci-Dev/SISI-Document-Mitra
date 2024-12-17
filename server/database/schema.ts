@@ -26,7 +26,7 @@ export const documentMitra = sqliteTable('document_mitra', {
 export const mapping = sqliteTable('mapping', {
   id: integer().primaryKey({ autoIncrement: true }),
   type: text().notNull(),
-  value: text({ mode: 'json' }).$type<Record<WorkDocumentKeys, string | undefined | null>>().notNull(),
-  map: text({ mode: 'json' }).$type<Record<string, WorkDocumentKeys | undefined | null>>().notNull(),
+  value: text({ mode: 'json' }).$type<Partial<Record<WorkDocumentKeys, string | null>>>().notNull(),
+  map: text({ mode: 'json' }).$type<Record<string, WorkDocumentKeys | null>>().notNull(),
   other: text({ mode: 'json' }).$type<Record<string, Record<string, string>>>(),
 });
