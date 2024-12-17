@@ -1,15 +1,11 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import { isValidDocumentType } from '~/lib/documents';
-import { isString } from '~/lib/utils';
-import { DOCUMENTS, type DOCUMENTS_TYPE } from '~~/types/document';
 
 definePageMeta({
   layout: false,
   middleware: [
     function (to, from) {
-      if (from.name === to.name && from.params !== to.params) return;
       if (from.name !== 'documents') return navigateTo('/documents');
 
       return;
@@ -17,22 +13,15 @@ definePageMeta({
   ],
 });
 
-const route = useRoute();
-const routeType = computed<string>(() => {
-  if (isString(route.params.type)) return route.params.type.toLowerCase();
-  return '';
-});
-if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
-
-const { work, workKey, workRelated, setWorkRelated } = useDocument();
+const { work, workKey } = useDocument();
 const form = ref(work);
-const relatedWork = toValue(workRelated) || [];
 
 // VueToPrint
+const documentType = ref('bapp');
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
-  documentTitle: routeType.value === 'bapp'
+  documentTitle: documentType.value === 'bapp'
     ? `BAPP_${form.value?.bappNumber}`
     : `BAST_${form.value?.bastNumber}`,
   removeAfterPrint: true,
@@ -44,20 +33,7 @@ const showAlertDialog = ref(false);
 const formSign = ref(work.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
-const isAnyStoredBAPP = computed(() => workRelated.value?.some(work => work.type === DOCUMENTS.bapp));
-const isDisabledAction = computed(() => {
-  switch (routeType.value) {
-    case DOCUMENTS.bast:
-      if (!isAnyStoredBAPP.value) return true;
-      break;
-
-    default:
-      break;
-  }
-
-  return isLoading.value && showDialogSign.value;
-});
-const isDisabledInput = routeType.value === DOCUMENTS.bast && isAnyStoredBAPP.value;
+const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
 function handleSign() {
   form.value!.employeeSignUrl = formSign.value;
   handleGenerate();
@@ -77,19 +53,11 @@ async function handleGenerate(skipStore?: boolean) {
 
   if (skipStore) handlePrint();
   else {
-    await $fetch(`/api/documents/type/${routeType.value}/${workKey.value}`, {
-      method: 'POST',
+    await $fetch(`/api/documents/${workKey.value}`, {
+      method: 'PUT',
       params: { name: form.value!.employeeName },
       body: form.value,
-      onRequest() {
-        setWorkRelated([...relatedWork, { type: routeType.value as DOCUMENTS_TYPE, value: form.value! }]);
-      },
-      onRequestError() {
-        setWorkRelated(relatedWork);
-      },
       onResponseError: ({ response }) => {
-        setWorkRelated(relatedWork);
-
         handleResponseError(response);
       },
     })
@@ -102,12 +70,6 @@ async function handleGenerate(skipStore?: boolean) {
 
   isLoading.value = false;
 }
-function handleCreateBAST() {
-  navigateTo('/documents/bast');
-}
-function handleViewBAPP() {
-  navigateTo(`/documents/bapp/${workKey.value}`, { open: { target: '_blank' } });
-}
 </script>
 
 <template>
@@ -116,7 +78,7 @@ function handleViewBAPP() {
       <template #bodyHeader>
         <WidgetBreadcrumb
           :items="[{ label: 'Documents', href: '/documents' }]"
-          :page="routeType.toUpperCase()"
+          page="Document"
         />
       </template>
       <template
@@ -126,7 +88,6 @@ function handleViewBAPP() {
         <DocumentForm
           v-model="form"
           :is-disabled-action="isDisabledAction"
-          :is-disabled-input="isDisabledInput"
           @generate="() => showAlertDialog = true"
         />
       </template>
@@ -160,12 +121,6 @@ function handleViewBAPP() {
           />
         </div>
         <DocumentContentBAPP
-          v-if="routeType === 'bapp'"
-          ref="documentComponentRef"
-          :data="form"
-        />
-        <DocumentContentBAST
-          v-else
           ref="documentComponentRef"
           :data="form"
         />
@@ -177,18 +132,6 @@ function handleViewBAPP() {
         <DocumentAction>
           <ShadcnButton @click="() => handleGenerate(true)">
             Print
-          </ShadcnButton>
-          <ShadcnButton
-            v-if="routeType === 'bast' && isAnyStoredBAPP"
-            @click="handleViewBAPP"
-          >
-            View BAPP
-          </ShadcnButton>
-          <ShadcnButton
-            v-if="routeType === 'bapp' && isAnyStoredBAPP && form.bastNumber"
-            @click="handleCreateBAST"
-          >
-            Create BAST
           </ShadcnButton>
         </DocumentAction>
       </template>

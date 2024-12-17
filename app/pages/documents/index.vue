@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DOCUMENTS, DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DOCUMENTS_TYPE, type RelatedWork, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type WorkWithMeta } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
 definePageMeta({
@@ -29,48 +29,20 @@ const columns = computed(() => mitraTableData.value?.columns || []);
 const rows = computed(() => mitraTableData.value?.rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-const storedDocuments = new Map(
-  rows.value?.flatMap(
-    ({ meta }) => meta.statuses
-      .filter(({ status }) => status !== STATUSES.initiated)
-      .map(status => [`${status.type}-${meta.key}`, status]),
-  ),
-);
-
-const { setWork, setWorkKey, setWorkRelated } = useDocument();
-async function handleCreateDocument(context: { type: DOCUMENTS_TYPE; data: WorkWithMeta }) {
-  const { type, data } = context;
+const { setWork, setWorkKey } = useDocument();
+async function handleCreateDocument(context: { data: WorkWithMeta }) {
+  const { data } = context;
 
   const { meta, ...rest } = data;
   setWorkKey(meta.key);
-  setWork(rest); // Set original data
+  setWork(rest);
 
-  if (storedDocuments.size) {
-    const relatedWork: RelatedWork[] = [];
-
-    if (storedDocuments.has(`${type}-${meta.key}`)) {
-      const document = await $fetch(`/api/documents/type/${type}/${meta.key}`).catch(catchFetchError);
-      if (document) setWork(document.value); // Use stored data
-    }
-
-    // Fetch related 'bapp' document if type is 'bast'
-    if (type === DOCUMENTS.bast && storedDocuments.has(`${DOCUMENTS.bapp}-${meta.key}`)) {
-      const document = await $fetch(`/api/documents/type/${DOCUMENTS.bapp}/${meta.key}`).catch(catchFetchError);
-      if (document) {
-        setWork(document.value); // Use 'bapp' data for 'bast' type
-
-        relatedWork.push({ type: DOCUMENTS.bapp, value: document.value });
-        setWorkRelated(relatedWork);
-      }
-    }
-  }
-
-  navigateTo(`/documents/${type}`);
+  navigateTo(`/documents/create`);
 }
-function handleViewDocument(context: { type: DOCUMENTS_TYPE; id: string }) {
-  const { type, id } = context;
+function handleViewDocument(context: { id: string }) {
+  const { id } = context;
 
-  navigateTo(`/documents/${type}/${id}`, { open: { target: '_blank' } });
+  navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
 }
 async function handleFillForm(context: { id: string }) {
   const { id } = context;
@@ -127,7 +99,6 @@ async function handleFillForm(context: { id: string }) {
                     :columns
                     :rows
                     :user="user!"
-                    :stored-documents
                     :type="tab.key"
                     @create="handleCreateDocument"
                     @view="handleViewDocument"

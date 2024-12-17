@@ -1,24 +1,17 @@
 <script setup lang="ts">
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import { isValidDocumentType } from '~/lib/documents';
-import { isString } from '~/lib/utils';
 import type { ApproveOrReject } from '~~/types/action';
-import { DOCUMENTS } from '~~/types/document';
 
 definePageMeta({
   layout: false,
 });
 
 const route = useRoute();
-const routeType = computed<string>(() => isString(route.params.type) ? route.params.type.toLowerCase() : '');
-if (!isValidDocumentType(routeType.value)) navigateTo('/documents');
 
 const { data, error, refresh } = await useFetch(
-  `/api/documents/type/${routeType.value}/${route.params.id}`,
-  { params: { includeRelatedWork: true } },
+  `/api/documents/${route.params.id}`,
 );
 if (error.value) throw createError({ ...error.value, fatal: true });
-const dataOriginal = computed(() => data.value?.relatedWorks?.find(work => work.type === DOCUMENTS.original));
 
 const { user } = useUserSession();
 const hasAdmin = computed(() => user.value?.role?.includes('admin'));
@@ -38,7 +31,7 @@ async function handleApproveOrReject() {
   showAlertDialog.value = false;
   isLoading.value = true;
 
-  await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/${approveOrReject.value}`, {
+  await $fetch(`/api/documents/${route.params.id}/${approveOrReject.value}`, {
     method: 'PATCH',
     onResponseError: ({ response }) => {
       handleResponseError(response);
@@ -57,7 +50,7 @@ async function handleApproveOrReject() {
 const formSign = ref();
 const showDialogSign = ref(false);
 async function handleSign() {
-  await $fetch(`/api/documents/type/${routeType.value}/${route.params.id}/sign`, {
+  await $fetch(`/api/documents/${route.params.id}/sign`, {
     method: 'PATCH',
     body: { sign: formSign.value, name: supervisorName.value },
     onResponseError: ({ response }) => handleResponseError(response),
@@ -75,7 +68,7 @@ async function handleSign() {
     <NuxtLayout name="documents">
       <template #body>
         <div
-          v-if="data && dataOriginal"
+          v-if="data"
           class="h-screen overflow-auto bg-slate-100 print:h-full print:overflow-hidden"
         >
           <DocumentAction class="absolute right-5 top-40">
@@ -163,28 +156,15 @@ async function handleSign() {
             <DocumentAlertStatus :status="data.status" />
           </div>
           <div class="grid place-content-center">
-            <template v-if="routeType === 'bapp'">
-              <DocumentContentBAPPHighlighted
-                v-if="hasAdmin"
-                :original="dataOriginal.value"
-                :data="data.value"
-              />
-              <DocumentContentBAPP
-                v-else
-                :data="data.value"
-              />
-            </template>
-            <template v-else>
-              <DocumentContentBASTHighlighted
-                v-if="hasAdmin"
-                :original="dataOriginal.value"
-                :data="data.value"
-              />
-              <DocumentContentBAST
-                v-else
-                :data="data.value"
-              />
-            </template>
+            <DocumentContentBAPPHighlighted
+              v-if="hasAdmin"
+              :original="data.original"
+              :data="data.value"
+            />
+            <DocumentContentBAPP
+              v-else
+              :data="data.value"
+            />
           </div>
         </div>
       </template>
