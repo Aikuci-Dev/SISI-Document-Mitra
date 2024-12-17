@@ -16,29 +16,17 @@ export default defineEventHandler(async (event) => {
   const formUrl = `https://docs.google.com/forms/d/e/${form.id}/viewform`;
 
   const workDocuments = await useDB()
-    .select({
-      value: tables.documentMitra.value,
-      type: tables.documentMitra.type,
-    })
+    .select({ value: tables.documentMitra.value })
     .from(tables.documentMitra)
-    .where(eq(tables.documentMitra.id, id));
+    .where(eq(tables.documentMitra.id, id))
+    .get();
 
-  let document, links = '';
-
-  if (workDocuments.length) {
-    const bapp = workDocuments.find(workDocument => workDocument.type === 'bapp');
-    const bast = workDocuments.find(workDocument => workDocument.type === 'bast');
-    const bappUrl = bapp ? `[BAPP] ${host}/documents/bapp/${id}/public` : undefined;
-    const bastUrl = bast ? `[BAST] ${host}/documents/bast/${id}/public` : undefined;
-    links = [bappUrl, bastUrl].filter(Boolean).join(', ');
-
-    document = workDocuments[0].value;
-  }
-  else document = await getWorkDocumentByNameAndId({ name, id });
+  const document = workDocuments?.value || await getWorkDocumentByNameAndId({ name, id });
+  const links = workDocuments ? `[Document] ${host}/documents/${id}/public` : '';
 
   if (!document) throw createError({ statusCode: 404 });
 
-  const mappedForms = await useDB()
+  const mappingForm = await useDB()
     .select({
       value: tables.mapping.value,
       map: tables.mapping.map,
@@ -47,28 +35,31 @@ export default defineEventHandler(async (event) => {
     .from(tables.mapping)
     .where(eq(tables.mapping.type, 'form'))
     .get();
-  if (!mappedForms || !mappedForms.other) throw createError('Internal Server Error. >> Mapping data was missing, please contact administrator to handle this!');
-  const typeMap = new Map(Object.entries(removeNullUndefined(mappedForms.other.type)));
+  if (!mappingForm || !mappingForm.other) throw createError('Internal Server Error. >> Mapping data was missing, please contact administrator to handle this!');
+  const typeMap = new Map(Object.entries(removeNullUndefined(mappingForm.other.type)));
 
-  const payload = Object.entries(removeNullUndefined(mappedForms.other.map))
+  const payload = Object.entries(mappingForm.map)
     .reduce((prev, [entryKey, workDocumentKey]) => {
       switch (typeMap.get(entryKey)) {
         case 'custom-links':
           prev[entryKey] = links;
           break;
         case 'date': {
-          const value = getValueByKey(document, workDocumentKey) as string | number | undefined;
-          if (value) {
-            const date = new Date(value);
-            prev[`${entryKey}_year`] = String(date.getFullYear());
-            prev[`${entryKey}_month`] = String(date.getMonth() + 1);
-            prev[`${entryKey}_day`] = String(date.getDate());
+          if (workDocumentKey) {
+            const value = String(getValueByKey(document, workDocumentKey));
+            if (value) {
+              const date = new Date(value);
+              prev[`${entryKey}_year`] = String(date.getFullYear());
+              prev[`${entryKey}_month`] = String(date.getMonth() + 1);
+              prev[`${entryKey}_day`] = String(date.getDate());
+            }
           }
           break;
         }
 
         default:
-          prev[entryKey] = getValueByKey(document, workDocumentKey) as string;
+          if (workDocumentKey)
+            prev[entryKey] = getValueByKey(document, workDocumentKey) as string;
           break;
       }
       return prev;
