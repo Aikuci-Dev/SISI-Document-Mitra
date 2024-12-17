@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
+import type { BAPPOrBAST } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -17,11 +18,11 @@ const { work, workKey } = useDocument();
 const form = ref(work);
 
 // VueToPrint
-const documentType = ref('bapp');
+const documentType = ref<BAPPOrBAST>('BAPP');
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
-  documentTitle: documentType.value === 'bapp'
+  documentTitle: documentType.value === 'BAPP'
     ? `BAPP_${form.value?.bappNumber}`
     : `BAST_${form.value?.bastNumber}`,
   removeAfterPrint: true,
@@ -120,8 +121,9 @@ async function handleGenerate(skipStore?: boolean) {
             @sign="handleSign"
           />
         </div>
-        <DocumentContentBAPP
+        <DocumentContent
           ref="documentComponentRef"
+          :type="documentType"
           :data="form"
         />
       </template>

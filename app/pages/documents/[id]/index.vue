@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { ApproveOrReject } from '~~/types/action';
+import type { BAPPOrBAST } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -14,10 +15,11 @@ const { data, error, refresh } = await useFetch(
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { user } = useUserSession();
-const hasAdmin = computed(() => user.value?.role?.includes('admin'));
+const hasAdminRole = computed(() => user.value?.role?.includes('admin'));
 const supervisorName = computed(() => data.value?.value.supervisorName);
 const isSupervisor = computed(() => user.value?.name === supervisorName.value);
 
+const type = ref<BAPPOrBAST>('BAPP');
 const isLoading = ref(false);
 const showAlertDialog = ref(false);
 const approveOrReject = ref<ApproveOrReject>('approve');
@@ -73,7 +75,7 @@ async function handleSign() {
         >
           <DocumentAction class="absolute right-5 top-40">
             <div
-              v-if="hasAdmin && !data.isValidated"
+              v-if="hasAdminRole && !data.isValidated"
               class="flex justify-between space-x-4"
             >
               <ShadcnButton
@@ -156,13 +158,15 @@ async function handleSign() {
             <DocumentAlertStatus :status="data.status" />
           </div>
           <div class="grid place-content-center">
-            <DocumentContentBAPPHighlighted
-              v-if="hasAdmin"
+            <DocumentContentHighlighted
+              v-if="hasAdminRole"
+              :type
               :original="data.original"
               :data="data.value"
             />
-            <DocumentContentBAPP
+            <DocumentContent
               v-else
+              :type
               :data="data.value"
             />
           </div>

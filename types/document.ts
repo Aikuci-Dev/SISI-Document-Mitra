@@ -66,6 +66,8 @@ export const WORK_DOCUMENT: Partial<Record<WorkDocumentKeys, string | null>> = {
   bastNumber: 'BAST',
 };
 
+export type BAPPOrBAST = 'BAPP' | 'BAST';
+
 export const DOCUMENTS_TABLE = {
   employee: 'employee',
   supervisor: 'supervisor',

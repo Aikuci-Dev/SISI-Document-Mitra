@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { BAPPOrBAST } from '~~/types/document';
+
 definePageMeta({
   layout: false,
   name: '[public] Mitra Document',
@@ -10,6 +12,8 @@ const { data, error } = await useFetch(
   `/api/documents/${route.params.id}`,
 );
 if (error.value) throw createError({ ...error.value, fatal: true });
+
+const type = ref<BAPPOrBAST>('BAPP');
 
 function gotoValidatePage() {
   navigateTo(`/documents/${route.params.id}`);
@@ -46,7 +50,8 @@ function gotoValidatePage() {
             </ShadcnTooltipProvider>
           </DocumentAction>
           <div class="grid place-content-center">
-            <DocumentContentBAPPHighlighted
+            <DocumentContentHighlighted
+              :type
               :original="data.original"
               :data="data.value"
             />
