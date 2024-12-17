@@ -1,5 +1,4 @@
-import { sqliteTable, integer, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
-import type { DOCUMENTS_TYPE } from '~~/types/document';
+import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
 import type { WorkDocument, WorkDocumentKeys } from '~~/types/schema/document';
 
 export const userGoogle = sqliteTable('user_google', {
@@ -13,8 +12,8 @@ export const userGoogle = sqliteTable('user_google', {
 });
 
 export const documentMitra = sqliteTable('document_mitra', {
-  id: text().notNull(),
-  type: text().$type<DOCUMENTS_TYPE>().notNull(),
+  id: text().unique().notNull(),
+  original: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   value: text({ mode: 'json' }).$type<WorkDocument>().notNull(),
   isValidated: integer('is_validated', { mode: 'boolean' }).default(false),
   isApproved: integer('is_approved', { mode: 'boolean' }).default(false),
@@ -22,16 +21,12 @@ export const documentMitra = sqliteTable('document_mitra', {
   revisedAt: integer('revised_at', { mode: 'timestamp' }),
   validatedAt: integer('validated_at', { mode: 'timestamp' }),
   signedAt: integer('signed_at', { mode: 'timestamp' }),
-}, (table) => {
-  return {
-    typeAndId: uniqueIndex('type_and_id').on(table.type, table.id),
-  };
 });
 
 export const mapping = sqliteTable('mapping', {
   id: integer().primaryKey({ autoIncrement: true }),
   type: text().notNull(),
   value: text({ mode: 'json' }).$type<Record<WorkDocumentKeys, string | undefined | null>>().notNull(),
-  map: text({ mode: 'json' }).$type<Record<string, string>>().notNull(),
-  other: text({ mode: 'json' }).$type<Record<string, Record<string, string | undefined | null>>>(),
+  map: text({ mode: 'json' }).$type<Record<string, WorkDocumentKeys | undefined | null>>().notNull(),
+  other: text({ mode: 'json' }).$type<Record<string, Record<string, string>>>(),
 });
