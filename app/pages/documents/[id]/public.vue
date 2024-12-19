@@ -13,6 +13,10 @@ const { data, error } = await useFetch(
 );
 if (error.value) throw createError({ ...error.value, fatal: true });
 
+const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
+  { key: 'BAPP' },
+  data.value?.value.bastNumber?.length ? { key: 'BAST' } : undefined,
+].filter(Boolean) as { key: BAPPOrBAST }[]);
 const type = ref<BAPPOrBAST>('BAPP');
 
 function gotoValidatePage() {
@@ -50,11 +54,28 @@ function gotoValidatePage() {
             </ShadcnTooltipProvider>
           </DocumentAction>
           <div class="grid place-content-center">
-            <DocumentContentHighlighted
-              :type
-              :original="data.original"
-              :data="data.value"
-            />
+            <ShadcnTabs v-model="type">
+              <ShadcnTabsList>
+                <ShadcnTabsTrigger
+                  v-for="tab in tabs"
+                  :key="tab.key"
+                  :value="tab.key"
+                >
+                  {{ tab.key }}
+                </ShadcnTabsTrigger>
+              </ShadcnTabsList>
+              <ShadcnTabsContent
+                v-for="tab in tabs"
+                :key="tab.key"
+                :value="tab.key"
+              >
+                <DocumentContentHighlighted
+                  :type
+                  :original="data.original"
+                  :data="data.value"
+                />
+              </ShadcnTabsContent>
+            </ShadcnTabs>
           </div>
         </div>
       </template>

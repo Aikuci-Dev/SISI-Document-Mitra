@@ -19,12 +19,16 @@ const hasAdminRole = computed(() => user.value?.role?.includes('admin'));
 const supervisorName = computed(() => data.value?.value.supervisorName);
 const isSupervisor = computed(() => user.value?.name === supervisorName.value);
 
+const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
+  { key: 'BAPP' },
+  data.value?.value.bastNumber?.length ? { key: 'BAST' } : undefined,
+].filter(Boolean) as { key: BAPPOrBAST }[]);
 const type = ref<BAPPOrBAST>('BAPP');
+
+// REVIEW by Admin
 const isLoading = ref(false);
 const showAlertDialog = ref(false);
 const approveOrReject = ref<ApproveOrReject>('approve');
-
-// REVIEW by Admin
 function showAlertDialogApproveOrReject(type: ApproveOrReject) {
   showAlertDialog.value = true;
   approveOrReject.value = type;
@@ -158,17 +162,34 @@ async function handleSign() {
             <DocumentAlertStatus :status="data.status" />
           </div>
           <div class="grid place-content-center">
-            <DocumentContentHighlighted
-              v-if="hasAdminRole"
-              :type
-              :original="data.original"
-              :data="data.value"
-            />
-            <DocumentContent
-              v-else
-              :type
-              :data="data.value"
-            />
+            <ShadcnTabs v-model="type">
+              <ShadcnTabsList>
+                <ShadcnTabsTrigger
+                  v-for="tab in tabs"
+                  :key="tab.key"
+                  :value="tab.key"
+                >
+                  {{ tab.key }}
+                </ShadcnTabsTrigger>
+              </ShadcnTabsList>
+              <ShadcnTabsContent
+                v-for="tab in tabs"
+                :key="tab.key"
+                :value="tab.key"
+              >
+                <DocumentContentHighlighted
+                  v-if="hasAdminRole"
+                  :type
+                  :original="data.original"
+                  :data="data.value"
+                />
+                <DocumentContent
+                  v-else
+                  :type
+                  :data="data.value"
+                />
+              </ShadcnTabsContent>
+            </ShadcnTabs>
           </div>
         </div>
       </template>

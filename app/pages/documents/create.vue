@@ -17,8 +17,13 @@ definePageMeta({
 const { work, workKey } = useDocument();
 const form = ref(work);
 
-// VueToPrint
+const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
+  { key: 'BAPP' },
+  form.value?.bastNumber?.length ? { key: 'BAST' } : undefined,
+].filter(Boolean) as { key: BAPPOrBAST }[]);
 const documentType = ref<BAPPOrBAST>('BAPP');
+
+// VueToPrint
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
@@ -121,11 +126,29 @@ async function handleGenerate(skipStore?: boolean) {
             @sign="handleSign"
           />
         </div>
-        <DocumentContent
-          ref="documentComponentRef"
-          :type="documentType"
-          :data="form"
-        />
+
+        <ShadcnTabs v-model="documentType">
+          <ShadcnTabsList>
+            <ShadcnTabsTrigger
+              v-for="tab in tabs"
+              :key="tab.key"
+              :value="tab.key"
+            >
+              {{ tab.key }}
+            </ShadcnTabsTrigger>
+          </ShadcnTabsList>
+          <ShadcnTabsContent
+            v-for="tab in tabs"
+            :key="tab.key"
+            :value="tab.key"
+          >
+            <DocumentContent
+              ref="documentComponentRef"
+              :type="documentType"
+              :data="form"
+            />
+          </ShadcnTabsContent>
+        </ShadcnTabs>
       </template>
       <template
         v-if="form"
