@@ -21,6 +21,7 @@ export default defineNuxtConfig({
         id: '',
         range: '',
         freelancerKey: 'freelancer',
+        supervisorKey: 'pm',
       },
       form: {
         id: '',
