@@ -17,9 +17,14 @@ const tabs = [
   { key: DOCUMENTS_TABLE.supervisor, title: 'As Supervisor' },
   hasAdminRole.value ? { key: DOCUMENTS_TABLE.admin, title: 'As Admin' } : undefined,
 ].filter(Boolean) as { key: DOCUMENTS_TABLE_TYPE; title: string }[];
+const datatableType = ref<DOCUMENTS_TABLE_TYPE>('employee');
 
 const { data: mitraTableData, error } = await useFetch(
-  `/api/documents/mitra/${user.value!.name}`,
+  `/api/documents/datatable/${user.value!.name}`,
+  {
+    params: { type: datatableType },
+    watch: [datatableType],
+  },
 );
 const columns = computed(() => mitraTableData.value?.columns || []);
 const rows = computed(() => mitraTableData.value?.rows || []);
@@ -72,10 +77,9 @@ async function handleFillForm(context: { id: string }) {
             </ShadcnCardDescription>
           </ShadcnCardHeader>
           <ShadcnCardContent>
-            <div class="h-[480px] overflow-auto">
+            <div>
               <ShadcnTabs
-                :default-value="DOCUMENTS_TABLE.employee"
-                class="w-[400px]"
+                v-model="datatableType"
               >
                 <ShadcnTabsList>
                   <ShadcnTabsTrigger
@@ -90,12 +94,13 @@ async function handleFillForm(context: { id: string }) {
                   v-for="tab in tabs"
                   :key="tab.key"
                   :value="tab.key"
+                  class="h-[480px] overflow-auto"
                 >
                   <DocumentDatatable
                     :columns
                     :rows
                     :user="user!"
-                    :type="tab.key"
+                    :type="datatableType"
                     @create="handleCreateDocument"
                     @view="handleViewDocument"
                     @form-fill="handleFillForm"
