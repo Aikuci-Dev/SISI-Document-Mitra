@@ -1,14 +1,22 @@
+import { z } from 'zod';
+
+// See: https://developers.google.com/identity/gsi/web/reference/html-reference#server-side
+const payloadSchema = z.object({
+  g_csrf_token: z.string(),
+  credential: z.string(),
+});
+
 export default defineEventHandler(async (event) => {
   const adminEmailsEnv = useRuntimeConfig(event).user.admin.email;
   const adminEmails = adminEmailsEnv.replace(/\s/g, '').split(',');
 
   const cookies = parseCookies(event);
-  const payload = await readBody(event);
+  const body = await readValidatedBody(event, body => payloadSchema.parse(body));
 
-  if (payload.g_csrf_token !== cookies.g_csrf_token)
+  if (body.g_csrf_token !== cookies.g_csrf_token)
     throw createError({ statusCode: 401 });
 
-  const googleJWT = await verifyCredential(payload.credential);
+  const googleJWT = await verifyCredential(body.credential);
   const { sub: id, email, name } = googleJWT!;
   const googleId = parseInt(id);
 

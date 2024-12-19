@@ -64,6 +64,34 @@
       "when": 1733994360933,
       "tag": "0008_big_wendigo",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1734079037058,
+      "tag": "0009_magenta_khan",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1734336260263,
+      "tag": "0010_huge_silver_sable",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "6",
+      "when": 1734340644927,
+      "tag": "0011_ancient_maddog",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1734399946005,
+      "tag": "0012_daily_the_call",
+      "breakpoints": true
     }
   ]
 }

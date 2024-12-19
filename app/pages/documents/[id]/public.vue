@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { isValidDocumentType } from '~/lib/documents';
-import { isString } from '~/lib/utils';
-import { DOCUMENTS } from '~~/types/document';
+import type { BAPPOrBAST } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -9,18 +7,20 @@ definePageMeta({
 });
 
 const route = useRoute();
-const routeType = computed<string>(() => isString(route.params.type) ? route.params.type.toLowerCase() : '');
-if (!isValidDocumentType(routeType.value)) throw createError({ statusCode: 404, fatal: true });
 
 const { data, error } = await useFetch(
-  `/api/documents/type/${routeType.value}/${route.params.id}`,
-  { params: { includeRelatedWork: true } },
+  `/api/documents/${route.params.id}`,
 );
 if (error.value) throw createError({ ...error.value, fatal: true });
-const dataOriginal = computed(() => data.value?.relatedWorks?.find(work => work.type === DOCUMENTS.original));
+
+const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
+  { key: 'BAPP' },
+  data.value?.value.bastNumber?.length ? { key: 'BAST' } : undefined,
+].filter(Boolean) as { key: BAPPOrBAST }[]);
+const type = ref<BAPPOrBAST>('BAPP');
 
 function gotoValidatePage() {
-  navigateTo(`/documents/${routeType.value}/${route.params.id}`);
+  navigateTo(`/documents/${route.params.id}`);
 }
 </script>
 
@@ -29,7 +29,7 @@ function gotoValidatePage() {
     <NuxtLayout name="documents">
       <template #body>
         <div
-          v-if="data && dataOriginal"
+          v-if="data"
           class="h-screen overflow-auto bg-slate-100 print:h-full print:overflow-hidden"
         >
           <DocumentAction class="absolute right-5 top-5">
@@ -54,16 +54,28 @@ function gotoValidatePage() {
             </ShadcnTooltipProvider>
           </DocumentAction>
           <div class="grid place-content-center">
-            <DocumentContentBAPPHighlighted
-              v-if="routeType === 'bapp'"
-              :original="dataOriginal.value"
-              :data="data.value"
-            />
-            <DocumentContentBASTHighlighted
-              v-else
-              :original="dataOriginal.value"
-              :data="data.value"
-            />
+            <ShadcnTabs v-model="type">
+              <ShadcnTabsList>
+                <ShadcnTabsTrigger
+                  v-for="tab in tabs"
+                  :key="tab.key"
+                  :value="tab.key"
+                >
+                  {{ tab.key }}
+                </ShadcnTabsTrigger>
+              </ShadcnTabsList>
+              <ShadcnTabsContent
+                v-for="tab in tabs"
+                :key="tab.key"
+                :value="tab.key"
+              >
+                <DocumentContentHighlighted
+                  :type
+                  :original="data.original"
+                  :data="data.value"
+                />
+              </ShadcnTabsContent>
+            </ShadcnTabs>
           </div>
         </div>
       </template>

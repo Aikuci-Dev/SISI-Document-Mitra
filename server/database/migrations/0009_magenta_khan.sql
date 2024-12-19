@@ -1,0 +1,1 @@
+ALTER TABLE `document_mitra` RENAME COLUMN "updated_at" TO "revised_at";

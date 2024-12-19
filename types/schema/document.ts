@@ -11,6 +11,7 @@ export const employeeInfoSchema = z.object({
 export type EmployeeInfo = z.infer<typeof employeeInfoSchema>;
 
 export const workDocumentSchema = employeeInfoSchema.extend({
+  detailsNumber: z.string(),
   detailsTitle: z.string(),
   detailsDateStart: z.string(),
   detailsDateEnd: z.string(),

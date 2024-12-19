@@ -1,6 +1,7 @@
 import type { H3Event } from 'h3';
 import { useSession } from 'h3';
 import { defu } from 'defu';
+import { z } from 'zod';
 import type { UserSession, UserSessionRequired } from '~~/types/session';
 
 const config = useRuntimeConfig();
@@ -39,35 +40,6 @@ export async function requireUserSession(
   return userSession as UserSessionRequired;
 }
 
-export async function verifyUserAuthorizationByName(
-  event: H3Event,
-  opts: { hasBodyPayload?: boolean; name?: string; errorMessage?: string } = {},
-) {
-  const { user } = await requireUserSession(event);
-
-  let name = '';
-  if (opts.name) name = opts.name;
-  else {
-    const query: { name?: string } = getQuery(event);
-    if (query.name) name = query.name;
-    const param = getRouterParam(event, 'name');
-    if (param) name = decodeURI(param);
-    if (opts.hasBodyPayload) {
-      const body: { name?: string } = await readBody(event);
-      if (body.name) name = body.name;
-    }
-  }
-
-  if (name !== user.name) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: opts.errorMessage || 'Forbidden. >> The name you provided does not match the name in your account.',
-    });
-  }
-
-  return user;
-}
-
 export async function verifyUserAuthorizationByRole(
   event: H3Event,
   opts: { role: string[] },
@@ -87,4 +59,39 @@ export async function verifyUserAuthorizationByRole(
 
 function _useSession(event: H3Event) {
   return useSession<UserSession>(event, { password: sessionConfig.password });
+}
+
+const sessionPayloadSchema = z.object({
+  name: z.string().optional(),
+});
+
+export async function verifyUserAuthorizationByName(
+  event: H3Event,
+  opts: { hasBodyPayload?: boolean; name?: string; errorMessage?: string } = {},
+) {
+  const { user } = await requireUserSession(event);
+
+  let name = '';
+  if (opts.name) name = opts.name;
+  else {
+    const { data: query } = await getValidatedQuery(event, query => sessionPayloadSchema.safeParse(query));
+    if (query?.name) name = query.name;
+
+    const param = getRouterParam(event, 'name');
+    if (param) name = decodeURI(param);
+
+    if (opts.hasBodyPayload) {
+      const { data: body } = await readValidatedBody(event, body => sessionPayloadSchema.safeParse(body));
+      if (body?.name) name = body.name;
+    }
+  }
+
+  if (name !== user.name) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: opts.errorMessage || 'Forbidden. >> The name you provided does not match the name in your account.',
+    });
+  }
+
+  return user;
 }

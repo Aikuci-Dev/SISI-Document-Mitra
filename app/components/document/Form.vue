@@ -21,6 +21,7 @@ const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
 const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
 
 const schema = z.object({
+  number: z.string().min(1, 'Project number is required.'),
   title: z.string().min(1, 'Project title is required.'),
   dateStart: z.any().refine(val => val, 'Invalid Date'),
   dateEnd: z.any().refine(val => val, 'Invalid Date'),
@@ -90,11 +91,17 @@ async function handleSubmit() {
         class="grid grid-cols-2 gap-x-4"
         @submit="handleSubmit"
       >
+        <template #number="slotProps">
+          <ShadcnAutoFormFieldInput
+            v-model="formValue.detailsNumber"
+            v-bind="slotProps"
+            disabled
+          />
+        </template>
         <template #title="slotProps">
           <ShadcnAutoFormFieldInput
             v-model="formValue.detailsTitle"
             v-bind="slotProps"
-            class="col-span-2"
             :disabled="isDisabledInput"
           />
         </template>

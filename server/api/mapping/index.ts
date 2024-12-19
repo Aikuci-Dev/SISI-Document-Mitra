@@ -1,5 +1,8 @@
 import { WORK_DOCUMENT } from '~~/types/document';
 import type { WorkDocumentKeys } from '~~/types/schema/document';
+import { dataFormatSchema } from '~~/types/schema/format';
+
+const payloadSchema = dataFormatSchema.extend({});
 
 export default defineEventHandler(async (event) => {
   const mappingData = await useDB()
@@ -10,8 +13,8 @@ export default defineEventHandler(async (event) => {
     })
     .from(tables.mapping);
 
-  const query: { format?: 'datatable' } = getQuery(event);
-  if (query.format) {
+  const { data: query } = await getValidatedQuery(event, query => payloadSchema.safeParse(query));
+  if (query?.format) {
     const columns = [
       { key: 'type', label: 'Type' },
       { key: 'workDocumentKey', label: 'Key' },
