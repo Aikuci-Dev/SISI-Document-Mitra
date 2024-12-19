@@ -44,7 +44,7 @@ export function getWorkDocumentStatus(
 
   return ids.map((id) => {
     const item = dataMap.get(id);
-    if (!item) return { id, status: STATUSES.initiated };
+    if (!item) return { id, status: STATUSES.nil };
 
     if (item.revisedAt) return { id, status: STATUSES.revised };
     if (!item.isValidated) return { id, status: STATUSES.created };
@@ -84,7 +84,7 @@ const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[
 // Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
 function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: SheetValues['values']): DocumentTableRow[] {
   return values
-    .map((value) => {
+    .map((value, index) => {
       const workDocument = makeWorkDocument();
 
       value.forEach((item, index) => {
@@ -108,14 +108,15 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
 
       workDocument.supervisorRole = 'Project Manager';
 
-      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}`;
+      const isDraft = workDocument.poNumber.toLowerCase() === 'draft';
+      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}${isDraft ? index : ''}`;
       return {
         key: workKey,
         value,
         meta: {
           mapped_work: workDocument,
           key: workKey,
-          status: STATUSES.initiated,
+          status: isDraft ? STATUSES.draft : STATUSES.initiated,
         },
       };
     })
@@ -194,14 +195,18 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
 
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { key, mapped_work } = meta;
+    const { key, mapped_work, status } = meta;
+
+    const finalStatus = statusesMap.has(key) && statusesMap.get(key) !== STATUSES.nil
+      ? statusesMap.get(key)!
+      : status;
 
     return {
       ...rest,
       meta: {
         mapped_work,
         key,
-        status: statusesMap.get(key)!,
+        status: finalStatus,
       },
     };
   });
