@@ -10,18 +10,14 @@ definePageMeta({
 const page = 'Documents';
 
 const { user } = useUserSession();
-const hasAdmin = computed(() => user.value?.role?.includes('admin'));
+const hasAdminRole = computed(() => user.value?.role?.includes('admin'));
 
 const tabs = [
   { key: DOCUMENTS_TABLE.employee, title: 'As Employee' },
   { key: DOCUMENTS_TABLE.supervisor, title: 'As Supervisor' },
-  hasAdmin.value ? { key: DOCUMENTS_TABLE.admin, title: 'As Admin' } : undefined,
+  hasAdminRole.value ? { key: DOCUMENTS_TABLE.admin, title: 'As Admin' } : undefined,
 ].filter(Boolean) as { key: DOCUMENTS_TABLE_TYPE; title: string }[];
 
-// TODO: Decide whether to include related works.
-// Current research is available but requires further investigation.
-// If included: Avoid manual checks, reducing API requests.
-// If not included: Smaller payload and faster response due to simpler logic.
 const { data: mitraTableData, error } = await useFetch(
   `/api/documents/mitra/${user.value!.name}`,
 );
