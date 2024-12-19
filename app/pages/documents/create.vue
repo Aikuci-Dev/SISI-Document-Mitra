@@ -137,11 +137,7 @@ async function handleGenerate(skipStore?: boolean) {
               {{ tab.key }}
             </ShadcnTabsTrigger>
           </ShadcnTabsList>
-          <ShadcnTabsContent
-            v-for="tab in tabs"
-            :key="tab.key"
-            :value="tab.key"
-          >
+          <ShadcnTabsContent :value="documentType">
             <DocumentContent
               ref="documentComponentRef"
               :type="documentType"
