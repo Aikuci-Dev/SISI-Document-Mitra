@@ -26,7 +26,7 @@ const documentType = ref<BAPPOrBAST>('BAPP');
 // VueToPrint
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
-  content: documentComponentRef,
+  content: computed(() => documentComponentRef.value[0]),
   documentTitle: documentType.value === 'BAPP'
     ? `BAPP_${form.value?.bappNumber}`
     : `BAST_${form.value?.bastNumber}`,
@@ -137,7 +137,11 @@ async function handleGenerate(skipStore?: boolean) {
               {{ tab.key }}
             </ShadcnTabsTrigger>
           </ShadcnTabsList>
-          <ShadcnTabsContent :value="documentType">
+          <ShadcnTabsContent
+            v-for="tab in tabs"
+            :key="tab.key"
+            :value="tab.key"
+          >
             <DocumentContent
               ref="documentComponentRef"
               :type="documentType"

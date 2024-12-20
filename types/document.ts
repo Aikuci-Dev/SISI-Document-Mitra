@@ -76,6 +76,8 @@ export const DOCUMENTS_TABLE = {
 export type DOCUMENTS_TABLE_TYPE = typeof DOCUMENTS_TABLE[keyof typeof DOCUMENTS_TABLE];
 
 export const STATUSES = {
+  nil: 'nil',
+  draft: 'draft',
   initiated: 'initiated',
   created: 'created',
   rejected: 'rejected',

@@ -41,7 +41,7 @@ defineProps<DatatableProps>();
           :key="row.key"
         >
           <ShadcnTableCell class="sticky left-0 border-e-4 bg-white">
-            <ShadcnDropdownMenu>
+            <ShadcnDropdownMenu v-if="row.meta.status !== STATUSES.nil && row.meta.status !== STATUSES.draft">
               <ShadcnDropdownMenuTrigger as-child>
                 <ShadcnButton
                   variant="ghost"
@@ -55,18 +55,14 @@ defineProps<DatatableProps>();
                   DOCUMENT
                 </ShadcnDropdownMenuLabel>
                 <ShadcnDropdownMenuItem
-                  v-if="type === DOCUMENTS_TABLE.employee && row.meta.status === STATUSES.rejected"
+                  v-if="type === DOCUMENTS_TABLE.employee"
                   @click="$emit('create', { data: { ...row.meta.mapped_work, meta: row.meta } })"
                 >
-                  Revise
+                  <span v-if="row.meta.status === STATUSES.rejected">Revise</span>
+                  <span v-else-if="row.meta.status === STATUSES.initiated">Create</span>
                 </ShadcnDropdownMenuItem>
                 <ShadcnDropdownMenuItem
-                  v-else-if="type === DOCUMENTS_TABLE.employee"
-                  @click="$emit('create', { data: { ...row.meta.mapped_work, meta: row.meta } })"
-                >
-                  Create
-                </ShadcnDropdownMenuItem>
-                <ShadcnDropdownMenuItem
+                  v-else-if="row.meta.status !== STATUSES.initiated"
                   @click="$emit('view', { id: row.key })"
                 >
                   View
@@ -103,9 +99,17 @@ defineProps<DatatableProps>();
         >
           <ShadcnAlert>
             <MessageCircleWarning class="size-4" />
-            <ShadcnAlertTitle>No document found associated with your name '{{ user.name }}'</ShadcnAlertTitle>
+            <ShadcnAlertTitle>
+              <span v-if="DOCUMENTS_TABLE.admin">No documents available</span>
+              <span v-else>No documents available for '{{ user.name }}'</span>
+            </ShadcnAlertTitle>
             <ShadcnAlertDescription>
-              Please contact admin to create a new one for you.
+              <span v-if="DOCUMENTS_TABLE.admin">
+                Ask your employee to create a document first.
+              </span>
+              <span v-else>
+                Please contact your admin to initiate a document.
+              </span>
             </ShadcnAlertDescription>
           </ShadcnAlert>
         </ShadcnTableCell>

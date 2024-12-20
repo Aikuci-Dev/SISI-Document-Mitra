@@ -1,7 +1,7 @@
 import { overrideValues } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow } from '~~/types/document';
 import { STATUSES } from '~~/types/document';
 
 // --- WorkDocument Utility Functions ---
@@ -9,6 +9,7 @@ import { STATUSES } from '~~/types/document';
 // Creates and returns a new `WorkDocument` with default values.
 function makeWorkDocument(): WorkDocument {
   return {
+    detailsNumber: '',
     detailsTitle: '',
     detailsDateStart: '',
     detailsDateEnd: '',
@@ -43,7 +44,7 @@ export function getWorkDocumentStatus(
 
   return ids.map((id) => {
     const item = dataMap.get(id);
-    if (!item) return { id, status: STATUSES.initiated };
+    if (!item) return { id, status: STATUSES.nil };
 
     if (item.revisedAt) return { id, status: STATUSES.revised };
     if (!item.isValidated) return { id, status: STATUSES.created };
@@ -54,26 +55,8 @@ export function getWorkDocumentStatus(
   });
 }
 
-// --- Core Data Fetching Functions ---
-
-// Fetches data from a Google Spreadsheet and returns headers and values.
-const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
-  const { apiKey, sheet } = useRuntimeConfig().google;
-  const spreadsheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheet.id}/values/${sheet.range}?key=${apiKey}`;
-  const data: ValueRange = await $fetch(spreadsheetUrl);
-
-  const [headers, ...rest] = data.values;
-  return { headers, values: rest };
-}, {
-  maxAge: 30 * 60,
-  group: 'sheetData',
-  getKey: () => 'all',
-});
-
-// Fetches and maps spreadsheet headers to column definitions based on configurations.
-const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
-  const { headers } = await getSpreadsheetData();
-
+// Retrieves and maps spreadsheet headers to column definitions based on configuration settings.
+const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[]>(async (headers: SheetValues['headers']) => {
   const mappingColumn = await useDB()
     .select({
       value: tables.mapping.value,
@@ -94,32 +77,14 @@ const getDataColumns = defineCachedFunction<DocumentTableColumn[]>(async () => {
     });
 }, {
   maxAge: 365 * 24 * 60 * 60,
-  group: 'sheetData',
+  group: 'document',
   getKey: () => 'columns',
 });
 
-// --- Data Retrieval Functions ---
-
-// Fetches raw data from the spreadsheet filtered by name.
-async function getRawDataByName(name: string) {
-  const { freelancerKey } = useRuntimeConfig().google.sheet;
-  const { headers, values } = await getSpreadsheetData();
-  const freelancerIndex = headers.findIndex(header => header.trim().toLowerCase() == freelancerKey);
-  return {
-    headers,
-    values: freelancerIndex === -1
-      ? []
-      : values.filter(mitra => mitra[freelancerIndex].trim().toLowerCase() == name.trim().toLowerCase()),
-  };
-}
-
-// Transforms raw spreadsheet data into structured `WorkDocument` objects.
-async function getDataTableByName(name: string): Promise<DocumentTable> {
-  const { values } = await getRawDataByName(name);
-  const columns = await getDataColumns();
-
-  const rows = values
-    .map((value) => {
+// Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
+function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: SheetValues['values']): DocumentTableRow[] {
+  return values
+    .map((value, index) => {
       const workDocument = makeWorkDocument();
 
       value.forEach((item, index) => {
@@ -143,26 +108,75 @@ async function getDataTableByName(name: string): Promise<DocumentTable> {
 
       workDocument.supervisorRole = 'Project Manager';
 
-      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}`;
+      const isDraft = workDocument.poNumber.toLowerCase() === 'draft';
+      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}${isDraft ? index : ''}`;
       return {
         key: workKey,
         value,
         meta: {
           mapped_work: workDocument,
           key: workKey,
-          status: STATUSES.initiated,
+          status: isDraft ? STATUSES.draft : STATUSES.initiated,
         },
       };
     })
     .filter(value => value.meta.mapped_work.poNumber)
     .sort((prev, curr) => curr.meta.mapped_work.bappDateTs - prev.meta.mapped_work.bappDateTs);
+}
+
+// --- Core Data Fetching Functions ---
+
+// Fetches data from a Google Spreadsheet and returns headers and values.
+const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
+  const { apiKey, sheet } = useRuntimeConfig().google;
+  const spreadsheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${sheet.id}/values/${sheet.range}?key=${apiKey}`;
+  const data: ValueRange = await $fetch(spreadsheetUrl);
+
+  const [headers, ...rest] = data.values;
+  return { headers, values: rest };
+}, {
+  maxAge: 30 * 60,
+  group: 'sheetData',
+  getKey: () => 'all',
+});
+
+// --- Data Retrieval Functions ---
+
+// Fetches a table of work documents, filtered by the specified name or supervisor, depending on user role.
+async function fetchWorkDocumentTable(context: { name?: string; supervisorName?: string; role?: 'admin' }): Promise<DocumentTable> {
+  const spreadSheetData = await getSpreadsheetData();
+
+  let values = spreadSheetData.values;
+  const { name, supervisorName, role } = context;
+  if (role !== 'admin') {
+    if (name) {
+      const { freelancerKey } = useRuntimeConfig().google.sheet;
+      const freelancerIndex = spreadSheetData.headers.findIndex(header => header.trim().toLowerCase() == freelancerKey.trim().toLowerCase());
+      values = freelancerIndex === -1
+        ? []
+        : spreadSheetData.values.filter(mitra => mitra[freelancerIndex].trim().toLowerCase() == name.trim().toLowerCase());
+    }
+    else if (supervisorName) {
+      const { supervisorKey } = useRuntimeConfig().google.sheet;
+      const supervisorIndex = spreadSheetData.headers.findIndex(header => header.trim().toLowerCase() == supervisorKey.trim().toLowerCase());
+      values = supervisorIndex === -1
+        ? []
+        : spreadSheetData.values.filter(mitra => mitra[supervisorIndex].trim().toLowerCase() == supervisorName.trim().toLowerCase());
+    }
+  }
+
+  const columns = await mapSpreadsheetHeadersToColumns(spreadSheetData.headers);
+  const rows = transformSpreadsheetDataToRows(columns, values);
 
   return { columns, rows };
 }
 
-// Fetches data table with status information for work documents based on name.
-export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(async (name: string) => {
-  const datatables = await getDataTableByName(name);
+// Fetches a table of work documents along with their validation and approval status.
+export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTable>(async (context: { name?: string; type?: string; role?: 'admin' }) => {
+  const { type, name, role } = context;
+  const employeeName = type === 'employee' ? name : undefined;
+  const supervisorName = type === 'supervisor' ? name : undefined;
+  const datatables = await fetchWorkDocumentTable({ name: employeeName, supervisorName, role });
 
   const ids = datatables.rows.map(row => row.key);
   const workDocuments = await useDB()
@@ -181,14 +195,18 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
 
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { key, mapped_work } = meta;
+    const { key, mapped_work, status } = meta;
+
+    const finalStatus = statusesMap.has(key) && statusesMap.get(key) !== STATUSES.nil
+      ? statusesMap.get(key)!
+      : status;
 
     return {
       ...rest,
       meta: {
         mapped_work,
         key,
-        status: statusesMap.get(key)!,
+        status: finalStatus,
       },
     };
   });
@@ -196,15 +214,17 @@ export const getDataTableWithStatusByName = defineCachedFunction<DocumentTable>(
   return datatables;
 }, {
   maxAge: 5 * 60,
-  group: 'sheetData',
-  getKey: (name: string) => `datatable-${name.trim()}`,
+  group: 'document',
+  getKey:
+    (context: { name?: string; type?: string; role?: 'admin' }) =>
+      `datatable${context.type ? `-${context.type}` : ''}${context.name ? `-${context.name.trim()}` : ''}`,
 });
 
 // Fetches a specific `WorkDocument` based on name and ID.
 export async function getWorkDocumentByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
-  const dataTables = await getDataTableWithStatusByName(name);
+  const dataTables = await fetchWorkDocumentTableWithStatus(name);
   const dataTable = dataTables.rows.find(row => row.key === id);
   if (!dataTable)
     throw createError({
