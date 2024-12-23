@@ -77,8 +77,8 @@ const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[
     });
 }, {
   maxAge: 365 * 24 * 60 * 60,
-  group: 'document',
-  getKey: () => 'columns',
+  name: 'spreadsheet',
+  getKey: () => 'mapping-columns',
 });
 
 // Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
@@ -136,8 +136,8 @@ const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
   return { headers, values: rest };
 }, {
   maxAge: 30 * 60,
-  group: 'sheetData',
-  getKey: () => 'all',
+  name: 'spreadsheet',
+  getKey: () => 'raw-data',
 });
 
 // --- Data Retrieval Functions ---
@@ -214,7 +214,7 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
   return datatables;
 }, {
   maxAge: 5 * 60,
-  group: 'document',
+  name: 'datatable',
   getKey:
     (context: { name?: string; type?: string; role?: 'admin' }) =>
       `datatable${context.type ? `-${context.type}` : ''}${context.name ? `-${context.name.trim()}` : ''}`,
