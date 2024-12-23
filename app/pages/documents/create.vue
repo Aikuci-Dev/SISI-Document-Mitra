@@ -33,31 +33,43 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
-const showAlertDialog = ref(false);
-
 // SIGN by User
 const formSign = ref(work.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
+const showAlertDialog = ref(false);
+const skipStore = ref(false);
+
 function handleSign() {
   form.value!.employeeSignUrl = formSign.value;
   handleGenerate();
 }
 
-async function handleGenerate(skipStore?: boolean) {
+function handleSaveAndPrint() {
   showAlertDialog.value = false;
+  skipStore.value = false;
+  handleGenerate();
+}
+
+function handlePrintOnly() {
+  skipStore.value = true;
+  handleGenerate();
+}
+
+async function handleGenerate() {
   isLoading.value = true;
   showDialogSign.value = false;
 
   if (!formSign.value) {
     showDialogSign.value = true;
+    isLoading.value = false;
     return;
   }
 
   await nextTick();
 
-  if (skipStore) handlePrint();
+  if (skipStore.value) handlePrint();
   else {
     await $fetch(`/api/documents/${workKey.value}`, {
       method: 'PUT',
@@ -113,7 +125,7 @@ async function handleGenerate(skipStore?: boolean) {
               </ShadcnAlertDialogHeader>
               <ShadcnAlertDialogFooter>
                 <ShadcnAlertDialogCancel>Cancel</ShadcnAlertDialogCancel>
-                <ShadcnAlertDialogAction @click="() => handleGenerate()">
+                <ShadcnAlertDialogAction @click="handleSaveAndPrint">
                   Continue
                 </ShadcnAlertDialogAction>
               </ShadcnAlertDialogFooter>
@@ -155,7 +167,7 @@ async function handleGenerate(skipStore?: boolean) {
         #bodyRight
       >
         <DocumentAction>
-          <ShadcnButton @click="() => handleGenerate(true)">
+          <ShadcnButton @click="handlePrintOnly">
             Print
           </ShadcnButton>
         </DocumentAction>
