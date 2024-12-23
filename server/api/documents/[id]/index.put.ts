@@ -29,5 +29,9 @@ export default defineEventHandler(async (event) => {
       },
     });
 
+  const prefixCacheKey = 'nitro:functions:datatable';
+  await useStorage('cache').removeItem(`${prefixCacheKey}:datatable.json`);
+  await useStorage('cache').removeItem(`${prefixCacheKey}:datatable-employee-${user.name}.json`);
+
   return workDocument;
 });
