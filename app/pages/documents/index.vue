@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable, type WorkWithMeta } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 
 definePageMeta({
@@ -19,16 +19,21 @@ const tabs = [
 ].filter(Boolean) as { key: DOCUMENTS_TABLE_TYPE; title: string }[];
 const datatableType = ref<DOCUMENTS_TABLE_TYPE>('employee');
 
-const { data: mitraTableData, error } = await useFetch(
-  `/api/documents/datatable/${user.value!.name}`,
-  {
-    params: { type: datatableType },
-    watch: [datatableType],
-    key: 'datatable',
+const { data: mitraTableData, error } = await useAsyncData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>(
+  'datatable',
+  async () => {
+    const datatables = await Promise.all(
+      tabs.map(async tab => [
+        tab.key,
+        await useRequestFetch()(`/api/documents/datatable/${user.value!.name}`, { params: { type: tab.key } },
+        ),
+      ]),
+    );
+    return Object.fromEntries(datatables);
   },
 );
-const columns = computed(() => mitraTableData.value?.columns || []);
-const rows = computed(() => mitraTableData.value?.rows || []);
+const columns = computed(() => mitraTableData.value?.[datatableType.value].columns || []);
+const rows = computed(() => mitraTableData.value?.[datatableType.value].rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { setWork, setWorkKey } = useDocument();
