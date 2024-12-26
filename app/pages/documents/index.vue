@@ -29,7 +29,11 @@ const { data: mitraTableData, error } = await useAsyncData<Record<DOCUMENTS_TABL
         await useRequestFetch()(`/api/documents/datatable/${user.value!.name}`, { params: { type: tab.key } },
         ),
       ]),
-    );
+    ).catch((err) => {
+      // BUG: Why sometime error occurred?
+      console.error('err', err);
+      return [];
+    });
     return Object.fromEntries(datatables);
   },
 );
