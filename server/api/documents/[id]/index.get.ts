@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
   const workDocument = catchFirst(workDocuments);
 
   const { isValidated, isApproved, signedAt, revisedAt } = workDocument;
-  const status = getWorkDocumentStatus([id], [{ id, isValidated, isApproved, signedAt, revisedAt }]);
+  const status = getWorkDocumentStatusFromFlags([id], [{ id, isValidated, isApproved, signedAt, revisedAt }]);
 
   return { ...workDocument, status: status[0].status };
 });

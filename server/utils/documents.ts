@@ -41,7 +41,7 @@ function makeWorkDocument(): WorkDocument {
 }
 
 // Returns the status of multiple work documents based on their IDs.
-export function getWorkDocumentStatus(
+export function getWorkDocumentStatusFromFlags(
   ids: string[],
   data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null; revisedAt: Date | null }[],
 ): { id: string; status: STATUSES_TYPE }[] {
@@ -196,7 +196,7 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
     .from(tables.documentMitra)
     .where(inArray(tables.documentMitra.id, ids));
 
-  const statuses = getWorkDocumentStatus(ids, workDocuments);
+  const statuses = getWorkDocumentStatusFromFlags(ids, workDocuments);
   const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
   const workDocumentsMap = new Map(workDocuments.map(workDocument => [workDocument.id, workDocument]));
 
@@ -230,8 +230,8 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
   getKey: () => 'datatable',
 });
 
-// Fetches a specific `WorkDocument` based on name and ID.
-export async function getWorkDocumentByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
+// Fetches a specific original `WorkDocument` based on name and ID.
+export async function getWorkDocumentOriginalByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
   const dataTables = await fetchWorkDocumentTableWithStatus({ name });
