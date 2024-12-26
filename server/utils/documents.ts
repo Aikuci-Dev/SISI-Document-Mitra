@@ -4,7 +4,12 @@ import type { WorkDocument } from '~~/types/schema/document';
 import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow } from '~~/types/document';
 import { STATUSES } from '~~/types/document';
 
-// --- WorkDocument Utility Functions ---
+// --- Utility Functions ---
+
+// Checks if the provided status is a valid `STATUSES_TYPE`.
+export function isValidStatusType(type: string): type is STATUSES_TYPE {
+  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
+}
 
 // Creates and returns a new `WorkDocument` with default values.
 function makeWorkDocument(): WorkDocument {
@@ -215,16 +220,15 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
 }, {
   maxAge: 5 * 60,
   name: 'datatable',
-  getKey:
-    (context: { name?: string; type?: string; role?: 'admin' }) =>
-      `datatable${context.type ? `-${context.type}` : ''}${context.name ? `-${context.name.trim()}` : ''}`,
+  shouldBypassCache: (context: { name?: string; type?: string; role?: 'admin' }) => !!context.name,
+  getKey: () => 'datatable',
 });
 
 // Fetches a specific `WorkDocument` based on name and ID.
 export async function getWorkDocumentByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
-  const dataTables = await fetchWorkDocumentTableWithStatus(name);
+  const dataTables = await fetchWorkDocumentTableWithStatus({ name });
   const dataTable = dataTables.rows.find(row => row.key === id);
   if (!dataTable)
     throw createError({
@@ -234,10 +238,3 @@ export async function getWorkDocumentByNameAndId(context: { name: string; id: st
 
   return dataTable.meta.mapped_work;
 };
-
-// --- Utility Function ---
-
-// Checks if the provided status is a valid `STATUSES_TYPE`.
-export function isValidStatusType(type: string): type is STATUSES_TYPE {
-  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
-}
