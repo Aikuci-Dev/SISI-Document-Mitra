@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import { isString } from '~/lib/utils';
 import type { ApproveOrReject } from '~~/types/action';
 import type { BAPPOrBAST, DocumentTable } from '~~/types/document';
 
@@ -18,18 +17,8 @@ const { data, error, refresh } = useLazyFetch(`/api/documents/${id}`, {
 
     const row = datatable.value?.rows.find(row => row.key === id);
     if (row) {
-      const ids = isString(id) ? [id] : id;
-
-      const status = row.meta.status;
-      const flags = getWorkDocumentFlagsFromStatus(ids, [{ id: ids[0]!, status }]);
-      return {
-        value: row.meta.mapped_work,
-        original: row.meta.mapped_work,
-        status,
-        isValidated: flags[0]?.isValidated,
-        isApproved: flags[0]?.isApproved,
-        signedAt: flags[0]?.signedAt,
-      };
+      const { mapped_work, status } = row.meta;
+      return { ...mapped_work, status };
     }
   },
 });
