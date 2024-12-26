@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import { DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DocumentTable, type WorkWithMeta } from '~~/types/document';
+import { isStatusInitiatedOrRejected, isStatusNotNilOrDraft } from '~/lib/documents';
+import type { CreateOrView } from '~~/types/action';
+import { DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import type { User } from '~~/types/session';
 
 type DatatableEmits = {
-  create: [{ data: WorkWithMeta }];
-  view: [{ id: string }];
+  createOrView: [{ type: CreateOrView; id: string }];
   formFill: [{ id: string }];
 };
 defineEmits<DatatableEmits>();
@@ -15,9 +16,6 @@ type DatatableProps = DocumentTable & {
   user: User;
 };
 defineProps<DatatableProps>();
-
-const isStatusNotNilOrDraft = (status: string) => status !== STATUSES.nil && status !== STATUSES.draft;
-const isInitiatedOrRejected = (status: string) => [STATUSES.initiated, STATUSES.rejected].includes(status as 'initiated' | 'rejected');
 </script>
 
 <template>
@@ -61,8 +59,8 @@ const isInitiatedOrRejected = (status: string) => [STATUSES.initiated, STATUSES.
                 <ShadcnDropdownMenuLabel>DOCUMENT</ShadcnDropdownMenuLabel>
 
                 <ShadcnDropdownMenuItem
-                  v-if="type === DOCUMENTS_TABLE.employee && isInitiatedOrRejected(row.meta.status)"
-                  @click="$emit('create', { data: { ...row.meta.mapped_work.original, meta: row.meta } })"
+                  v-if="type === DOCUMENTS_TABLE.employee && isStatusInitiatedOrRejected(row.meta.status)"
+                  @click="$emit('createOrView', { type: 'create', id: row.key })"
                 >
                   <span v-if="row.meta.status === STATUSES.rejected">Revise</span>
                   <span v-else>Create</span>
@@ -71,7 +69,7 @@ const isInitiatedOrRejected = (status: string) => [STATUSES.initiated, STATUSES.
                 <!-- View option -->
                 <ShadcnDropdownMenuItem
                   v-if="row.meta.status !== STATUSES.initiated"
-                  @click="$emit('view', { id: row.key })"
+                  @click="$emit('createOrView', { type: 'view', id: row.key })"
                 >
                   View
                 </ShadcnDropdownMenuItem>

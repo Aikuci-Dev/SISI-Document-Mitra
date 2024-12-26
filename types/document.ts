@@ -2,13 +2,6 @@ import type { TableColumn, TableRow } from './table';
 import type { WorkDocument, WorkDocumentKeys } from './schema/document';
 
 // META
-export type WorkMeta = {
-  key: string;
-  status: STATUSES_TYPE;
-};
-export type WorkWithMeta = WorkDocument & {
-  meta: WorkMeta;
-};
 export type MappedWork = {
   original: WorkDocument;
   value: WorkDocument;
@@ -25,7 +18,9 @@ export interface DocumentTableColumn extends TableColumn {
   };
 }
 export interface DocumentTableRow extends TableRow {
-  meta: WorkMeta & {
+  meta: {
+    key: string;
+    status: STATUSES_TYPE;
     mapped_work: MappedWork;
   };
 }
@@ -34,20 +29,7 @@ export interface DocumentTable {
   rows: DocumentTableRow[];
 }
 
-// STATE
-export interface DocumentState {
-  work?: WorkDocument;
-  workKey?: string;
-  [key: string]: unknown;
-}
-export interface WorkDocumentComposable {
-  document: Ref<DocumentState>;
-  work: ComputedRef<WorkDocument | undefined>;
-  workKey: ComputedRef<string | undefined>;
-  setWork: (data: WorkDocument) => void;
-  setWorkKey: (data: string) => void;
-}
-
+// CONST
 export const WORK_DOCUMENT: Partial<Record<WorkDocumentKeys, string | null>> = {
   employeeName: 'Name',
   employeeRole: 'Role',

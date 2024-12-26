@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
+import type { CreateOrView } from '~~/types/action';
 
 definePageMeta({
   layout: false,
@@ -36,20 +37,11 @@ const columns = computed(() => mitraTableData.value?.[datatableType.value].colum
 const rows = computed(() => mitraTableData.value?.[datatableType.value].rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-const { setWork, setWorkKey } = useDocument();
-async function handleCreateDocument(context: { data: WorkWithMeta }) {
-  const { data } = context;
+function handleCreateOrView(context: { type: CreateOrView; id: string }) {
+  const { id, type } = context;
 
-  const { meta, ...rest } = data;
-  setWorkKey(meta.key);
-  setWork(rest);
-
-  navigateTo(`/documents/create`);
-}
-function handleViewDocument(context: { id: string }) {
-  const { id } = context;
-
-  navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
+  if (type === 'create') navigateTo(`/documents/${id}/create`);
+  else navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
 }
 async function handleFillForm(context: { id: string }) {
   const { id } = context;
@@ -107,8 +99,7 @@ async function handleFillForm(context: { id: string }) {
                     :rows
                     :user="user!"
                     :type="datatableType"
-                    @create="handleCreateDocument"
-                    @view="handleViewDocument"
+                    @create-or-view="handleCreateOrView"
                     @form-fill="handleFillForm"
                   />
                 </ShadcnTabsContent>
