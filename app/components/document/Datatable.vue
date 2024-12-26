@@ -15,6 +15,9 @@ type DatatableProps = DocumentTable & {
   user: User;
 };
 defineProps<DatatableProps>();
+
+const isStatusNotNilOrDraft = (status: string) => status !== STATUSES.nil && status !== STATUSES.draft;
+const isInitiatedOrRejected = (status: string) => [STATUSES.initiated, STATUSES.rejected].includes(status as 'initiated' | 'rejected');
 </script>
 
 <template>
@@ -37,6 +40,7 @@ defineProps<DatatableProps>();
         </ShadcnTableHead>
       </ShadcnTableRow>
     </ShadcnTableHeader>
+
     <ShadcnTableBody>
       <template v-if="rows.length">
         <ShadcnTableRow
@@ -44,7 +48,7 @@ defineProps<DatatableProps>();
           :key="row.key"
         >
           <ShadcnTableCell class="sticky left-0 border-e-4 bg-white">
-            <ShadcnDropdownMenu v-if="row.meta.status !== STATUSES.nil && row.meta.status !== STATUSES.draft">
+            <ShadcnDropdownMenu v-if="isStatusNotNilOrDraft(row.meta.status)">
               <ShadcnDropdownMenuTrigger as-child>
                 <ShadcnButton
                   variant="ghost"
@@ -54,27 +58,28 @@ defineProps<DatatableProps>();
                 </ShadcnButton>
               </ShadcnDropdownMenuTrigger>
               <ShadcnDropdownMenuContent align="end">
-                <ShadcnDropdownMenuLabel>
-                  DOCUMENT
-                </ShadcnDropdownMenuLabel>
+                <ShadcnDropdownMenuLabel>DOCUMENT</ShadcnDropdownMenuLabel>
+
                 <ShadcnDropdownMenuItem
-                  v-if="type === DOCUMENTS_TABLE.employee"
+                  v-if="type === DOCUMENTS_TABLE.employee && isInitiatedOrRejected(row.meta.status)"
                   @click="$emit('create', { data: { ...row.meta.mapped_work.original, meta: row.meta } })"
                 >
                   <span v-if="row.meta.status === STATUSES.rejected">Revise</span>
-                  <span v-else-if="row.meta.status === STATUSES.initiated">Create</span>
+                  <span v-else>Create</span>
                 </ShadcnDropdownMenuItem>
+
+                <!-- View option -->
                 <ShadcnDropdownMenuItem
-                  v-else-if="row.meta.status !== STATUSES.initiated"
+                  v-if="row.meta.status !== STATUSES.initiated"
                   @click="$emit('view', { id: row.key })"
                 >
                   View
                 </ShadcnDropdownMenuItem>
+
+                <!-- Other options for employee type -->
                 <template v-if="type === DOCUMENTS_TABLE.employee">
                   <ShadcnDropdownMenuSeparator />
-                  <ShadcnDropdownMenuLabel>
-                    Others
-                  </ShadcnDropdownMenuLabel>
+                  <ShadcnDropdownMenuLabel>Others</ShadcnDropdownMenuLabel>
                   <ShadcnDropdownMenuItem @click="$emit('formFill', { id: row.key })">
                     Fill Form
                   </ShadcnDropdownMenuItem>
@@ -82,9 +87,13 @@ defineProps<DatatableProps>();
               </ShadcnDropdownMenuContent>
             </ShadcnDropdownMenu>
           </ShadcnTableCell>
+
+          <!-- Document Status -->
           <ShadcnTableCell class="flex flex-col space-y-4 text-nowrap text-center">
             <DocumentBadgeStatus :status="row.meta.status" />
           </ShadcnTableCell>
+
+          <!-- Row Values -->
           <ShadcnTableCell
             v-for="(value, index) in row.value"
             :key="`${row.key}-${index}`"
@@ -94,6 +103,8 @@ defineProps<DatatableProps>();
           </ShadcnTableCell>
         </ShadcnTableRow>
       </template>
+
+      <!-- No rows available -->
       <ShadcnTableRow v-else>
         <ShadcnTableCell />
         <ShadcnTableCell
