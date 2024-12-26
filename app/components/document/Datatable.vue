@@ -22,7 +22,10 @@ defineProps<DatatableProps>();
     <ShadcnTableHeader>
       <ShadcnTableRow class="sticky top-0 z-10 divide-y-4 divide-y-reverse bg-white">
         <ShadcnTableHead class="sticky left-0 z-20 bg-white" />
-        <ShadcnTableHead class="text-nowrap">
+        <ShadcnTableHead
+          v-if="rows.length"
+          class="text-nowrap"
+        >
           STATUS
         </ShadcnTableHead>
         <ShadcnTableHead
@@ -56,7 +59,7 @@ defineProps<DatatableProps>();
                 </ShadcnDropdownMenuLabel>
                 <ShadcnDropdownMenuItem
                   v-if="type === DOCUMENTS_TABLE.employee"
-                  @click="$emit('create', { data: { ...row.meta.mapped_work, meta: row.meta } })"
+                  @click="$emit('create', { data: { ...row.meta.mapped_work.original, meta: row.meta } })"
                 >
                   <span v-if="row.meta.status === STATUSES.rejected">Revise</span>
                   <span v-else-if="row.meta.status === STATUSES.initiated">Create</span>
