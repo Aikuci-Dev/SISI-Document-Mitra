@@ -9,6 +9,14 @@ export type WorkMeta = {
 export type WorkWithMeta = WorkDocument & {
   meta: WorkMeta;
 };
+export type MappedWork = {
+  original: WorkDocument;
+  value: WorkDocument;
+  isValidated?: boolean | null;
+  isApproved?: boolean | null;
+  signedAt?: Date | null;
+  revisedAt?: Date | null;
+};
 
 // TABLE
 export interface DocumentTableColumn extends TableColumn {
@@ -18,7 +26,7 @@ export interface DocumentTableColumn extends TableColumn {
 }
 export interface DocumentTableRow extends TableRow {
   meta: WorkMeta & {
-    mapped_work: WorkDocument;
+    mapped_work: MappedWork;
   };
 }
 export interface DocumentTable {

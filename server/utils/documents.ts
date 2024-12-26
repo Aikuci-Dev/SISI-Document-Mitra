@@ -1,7 +1,7 @@
 import { overrideValues } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/types/document';
 import { STATUSES } from '~~/types/document';
 
 // --- Utility Functions ---
@@ -119,14 +119,14 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
         key: workKey,
         value,
         meta: {
-          mapped_work: workDocument,
+          mapped_work: { original: workDocument, value: workDocument },
           key: workKey,
           status: isDraft ? STATUSES.draft : STATUSES.initiated,
         },
       };
     })
-    .filter(value => value.meta.mapped_work.poNumber)
-    .sort((prev, curr) => curr.meta.mapped_work.bappDateTs - prev.meta.mapped_work.bappDateTs);
+    .filter(value => value.meta.mapped_work.original.poNumber)
+    .sort((prev, curr) => curr.meta.mapped_work.original.bappDateTs - prev.meta.mapped_work.original.bappDateTs);
 }
 
 // --- Core Data Fetching Functions ---
@@ -187,6 +187,7 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
   const workDocuments = await useDB()
     .select({
       id: tables.documentMitra.id,
+      value: tables.documentMitra.value,
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,
       signedAt: tables.documentMitra.signedAt,
@@ -197,10 +198,15 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
 
   const statuses = getWorkDocumentStatus(ids, workDocuments);
   const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
+  const workDocumentsMap = new Map(workDocuments.map(workDocument => [workDocument.id, workDocument]));
 
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { key, mapped_work, status } = meta;
+    const { key, status } = meta;
+
+    const original = meta.mapped_work.original;
+    const workDocument = workDocumentsMap.get(key);
+    const mapped_work: MappedWork = workDocument ? { original, ...workDocument } : { original, value: original };
 
     const finalStatus = statusesMap.has(key) && statusesMap.get(key) !== STATUSES.nil
       ? statusesMap.get(key)!
@@ -236,5 +242,5 @@ export async function getWorkDocumentByNameAndId(context: { name: string; id: st
       statusMessage: 'Something went wrong. >> Please refresh the page OR try again later.',
     });
 
-  return dataTable.meta.mapped_work;
+  return dataTable.meta.mapped_work.original;
 };
