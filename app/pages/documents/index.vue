@@ -24,6 +24,7 @@ const { data: mitraTableData, error } = await useFetch(
   {
     params: { type: datatableType },
     watch: [datatableType],
+    key: 'datatable',
   },
 );
 const columns = computed(() => mitraTableData.value?.columns || []);

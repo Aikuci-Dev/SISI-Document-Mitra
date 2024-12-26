@@ -1,17 +1,38 @@
 <script setup lang="ts">
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
+import { isString } from '~/lib/utils';
 import type { ApproveOrReject } from '~~/types/action';
-import type { BAPPOrBAST } from '~~/types/document';
+import type { BAPPOrBAST, DocumentTable } from '~~/types/document';
 
 definePageMeta({
   layout: false,
 });
 
-const route = useRoute();
+const { id } = useRoute().params;
 
-const { data, error, refresh } = await useFetch(
-  `/api/documents/${route.params.id}`,
-);
+const { data: datatable } = useNuxtData<DocumentTable>('datatable');
+const { data, error, refresh } = useLazyFetch(`/api/documents/${id}`, {
+  key: `datatable-${id}`,
+  default() {
+    if (!id) return;
+
+    const row = datatable.value?.rows.find(row => row.key === id);
+    if (row) {
+      const ids = isString(id) ? [id] : id;
+
+      const status = row.meta.status;
+      const flags = getWorkDocumentFlagsFromStatus(ids, [{ id: ids[0]!, status }]);
+      return {
+        value: row.meta.mapped_work,
+        original: row.meta.mapped_work,
+        status,
+        isValidated: flags[0]?.isValidated,
+        isApproved: flags[0]?.isApproved,
+        signedAt: flags[0]?.signedAt,
+      };
+    }
+  },
+});
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { user } = useUserSession();
@@ -37,7 +58,7 @@ async function handleApproveOrReject() {
   showAlertDialog.value = false;
   isLoading.value = true;
 
-  await $fetch(`/api/documents/${route.params.id}/${approveOrReject.value}`, {
+  await $fetch(`/api/documents/${id}/${approveOrReject.value}`, {
     method: 'PATCH',
     onResponseError: ({ response }) => {
       handleResponseError(response);
@@ -56,7 +77,7 @@ async function handleApproveOrReject() {
 const formSign = ref();
 const showDialogSign = ref(false);
 async function handleSign() {
-  await $fetch(`/api/documents/${route.params.id}/sign`, {
+  await $fetch(`/api/documents/${id}/sign`, {
     method: 'PATCH',
     body: { sign: formSign.value, name: supervisorName.value },
     onResponseError: ({ response }) => handleResponseError(response),
