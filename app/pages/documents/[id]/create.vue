@@ -12,7 +12,12 @@ const { id } = useRoute().params;
 
 const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
 function getWork() {
-  if (!id || !datatable.value) throw createError({ statusCode: 404, fatal: true });
+  if (!datatable.value) {
+    navigateTo('/documents');
+    return;
+  }
+
+  if (!id) throw createError({ statusCode: 404, fatal: true });
 
   const row = datatable.value.employee.rows.find(row => row.key === id);
   if (!row) throw createError({ statusCode: 404, fatal: true });
@@ -26,7 +31,7 @@ const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.valu
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
-  form.value.bastNumber?.length ? { key: 'BAST' } : undefined,
+  form.value?.bastNumber?.length ? { key: 'BAST' } : undefined,
 ].filter(Boolean) as { key: BAPPOrBAST }[]);
 const documentType = ref<BAPPOrBAST>('BAPP');
 
@@ -35,13 +40,13 @@ const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: computed(() => documentComponentRef.value[0]),
   documentTitle: documentType.value === 'BAPP'
-    ? `BAPP_${form.value.bappNumber}`
-    : `BAST_${form.value.bastNumber}`,
+    ? `BAPP_${form.value?.bappNumber}`
+    : `BAST_${form.value?.bastNumber}`,
   removeAfterPrint: true,
 });
 
 // SIGN by User
-const formSign = ref(form.value.employeeSignUrl || '');
+const formSign = ref(form.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
