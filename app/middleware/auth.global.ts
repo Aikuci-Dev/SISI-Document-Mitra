@@ -6,9 +6,6 @@ export default defineNuxtRouteMiddleware((to) => {
 
   if (isString(to.name) && to.name.startsWith('[public]')) return;
 
-  if (to.path === '/dashboard')
-    return navigateTo('/documents', { redirectCode: 301 });
-
   if (!loggedIn.value) {
     if (to.path === '/') return;
 
@@ -23,8 +20,6 @@ export default defineNuxtRouteMiddleware((to) => {
   }
 
   if (to.path === '/onboarding') return navigateTo('/dashboard');
-
-  if (to.path === '/') return navigateTo('/dashboard', { redirectCode: 301 });
 
   return;
 });

@@ -36,6 +36,10 @@ export default defineNuxtConfig({
       },
     },
   },
+  routeRules: {
+    '/dashboard': { redirect: { to: '/documents', statusCode: 301 } },
+    '/documents/**': { ssr: false },
+  },
   future: {
     compatibilityVersion: 4,
   },
