@@ -5,11 +5,8 @@ import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRo
 import { STATUSES } from '~~/types/document';
 
 // --- Utility Functions ---
-
-// Checks if the provided status is a valid `STATUSES_TYPE`.
-export function isValidStatusType(type: string): type is STATUSES_TYPE {
-  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
-}
+export const isStatusNotInitiated = (status: STATUSES_TYPE) => status !== STATUSES.initiated;
+export const isStatusNotNilOrDraft = (status: STATUSES_TYPE) => status !== STATUSES.nil && status !== STATUSES.draft;
 
 // Creates and returns a new `WorkDocument` with default values.
 function makeWorkDocument(): WorkDocument {
