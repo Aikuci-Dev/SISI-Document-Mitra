@@ -55,7 +55,7 @@ const form = computed(() => {
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
-  documentTitle: `document_${form.value?.bappNumber}`,
+  documentTitle: `document_${form.value?.poNumber}`,
   removeAfterPrint: true,
 });
 
