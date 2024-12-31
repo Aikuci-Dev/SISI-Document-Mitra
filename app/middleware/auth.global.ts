@@ -19,7 +19,7 @@ export default defineNuxtRouteMiddleware((to) => {
     return navigateTo('/onboarding');
   }
 
-  if (to.path === '/onboarding') return navigateTo('/dashboard');
+  if (['/', '/onboarding'].includes(to.path)) return navigateTo('/dashboard');
 
   return;
 });
