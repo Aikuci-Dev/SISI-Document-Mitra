@@ -29,5 +29,7 @@ export default defineEventHandler(async (event) => {
     .returning()
     .get();
 
+  await useStorage('cache').removeItem(`nitro:functions:datatable:datatable.json`);
+
   return workDocumentUpdated;
 });

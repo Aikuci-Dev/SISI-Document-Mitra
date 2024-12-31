@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     .where(eq(tables.documentMitra.id, id))
     .get();
 
-  const document = workDocuments?.value || await getWorkDocumentByNameAndId({ name, id });
+  const document = workDocuments?.value || await getWorkDocumentOriginalByNameAndId({ name, id });
   const links = workDocuments ? `[Document] ${host}/documents/${id}/public` : '';
 
   if (!document) throw createError({ statusCode: 404 });

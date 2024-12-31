@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import { DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DocumentTable, type WorkWithMeta } from '~~/types/document';
+import { isStatusInitiatedOrRejected, isStatusNotNilOrDraft } from '~/lib/documents';
+import type { CreateOrView } from '~~/types/action';
+import { DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import type { User } from '~~/types/session';
 
 type DatatableEmits = {
-  create: [{ data: WorkWithMeta }];
-  view: [{ id: string }];
+  createOrView: [{ type: CreateOrView; id: string }];
   formFill: [{ id: string }];
 };
 defineEmits<DatatableEmits>();
@@ -22,7 +23,10 @@ defineProps<DatatableProps>();
     <ShadcnTableHeader>
       <ShadcnTableRow class="sticky top-0 z-10 divide-y-4 divide-y-reverse bg-white">
         <ShadcnTableHead class="sticky left-0 z-20 bg-white" />
-        <ShadcnTableHead class="text-nowrap">
+        <ShadcnTableHead
+          v-if="rows.length"
+          class="text-nowrap"
+        >
           STATUS
         </ShadcnTableHead>
         <ShadcnTableHead
@@ -34,6 +38,7 @@ defineProps<DatatableProps>();
         </ShadcnTableHead>
       </ShadcnTableRow>
     </ShadcnTableHeader>
+
     <ShadcnTableBody>
       <template v-if="rows.length">
         <ShadcnTableRow
@@ -41,7 +46,7 @@ defineProps<DatatableProps>();
           :key="row.key"
         >
           <ShadcnTableCell class="sticky left-0 border-e-4 bg-white">
-            <ShadcnDropdownMenu v-if="row.meta.status !== STATUSES.nil && row.meta.status !== STATUSES.draft">
+            <ShadcnDropdownMenu v-if="isStatusNotNilOrDraft(row.meta.status)">
               <ShadcnDropdownMenuTrigger as-child>
                 <ShadcnButton
                   variant="ghost"
@@ -51,27 +56,28 @@ defineProps<DatatableProps>();
                 </ShadcnButton>
               </ShadcnDropdownMenuTrigger>
               <ShadcnDropdownMenuContent align="end">
-                <ShadcnDropdownMenuLabel>
-                  DOCUMENT
-                </ShadcnDropdownMenuLabel>
+                <ShadcnDropdownMenuLabel>DOCUMENT</ShadcnDropdownMenuLabel>
+
                 <ShadcnDropdownMenuItem
-                  v-if="type === DOCUMENTS_TABLE.employee"
-                  @click="$emit('create', { data: { ...row.meta.mapped_work, meta: row.meta } })"
+                  v-if="type === DOCUMENTS_TABLE.employee && isStatusInitiatedOrRejected(row.meta.status)"
+                  @click="$emit('createOrView', { type: 'create', id: row.key })"
                 >
                   <span v-if="row.meta.status === STATUSES.rejected">Revise</span>
-                  <span v-else-if="row.meta.status === STATUSES.initiated">Create</span>
+                  <span v-else>Create</span>
                 </ShadcnDropdownMenuItem>
+
+                <!-- View option -->
                 <ShadcnDropdownMenuItem
-                  v-else-if="row.meta.status !== STATUSES.initiated"
-                  @click="$emit('view', { id: row.key })"
+                  v-if="row.meta.status !== STATUSES.initiated"
+                  @click="$emit('createOrView', { type: 'view', id: row.key })"
                 >
                   View
                 </ShadcnDropdownMenuItem>
+
+                <!-- Other options for employee type -->
                 <template v-if="type === DOCUMENTS_TABLE.employee">
                   <ShadcnDropdownMenuSeparator />
-                  <ShadcnDropdownMenuLabel>
-                    Others
-                  </ShadcnDropdownMenuLabel>
+                  <ShadcnDropdownMenuLabel>Others</ShadcnDropdownMenuLabel>
                   <ShadcnDropdownMenuItem @click="$emit('formFill', { id: row.key })">
                     Fill Form
                   </ShadcnDropdownMenuItem>
@@ -79,9 +85,13 @@ defineProps<DatatableProps>();
               </ShadcnDropdownMenuContent>
             </ShadcnDropdownMenu>
           </ShadcnTableCell>
+
+          <!-- Document Status -->
           <ShadcnTableCell class="flex flex-col space-y-4 text-nowrap text-center">
             <DocumentBadgeStatus :status="row.meta.status" />
           </ShadcnTableCell>
+
+          <!-- Row Values -->
           <ShadcnTableCell
             v-for="(value, index) in row.value"
             :key="`${row.key}-${index}`"
@@ -91,6 +101,8 @@ defineProps<DatatableProps>();
           </ShadcnTableCell>
         </ShadcnTableRow>
       </template>
+
+      <!-- No rows available -->
       <ShadcnTableRow v-else>
         <ShadcnTableCell />
         <ShadcnTableCell

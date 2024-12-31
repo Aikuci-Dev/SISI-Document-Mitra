@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type WorkWithMeta } from '~~/types/document';
+import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
+import type { CreateOrView } from '~~/types/action';
 
 definePageMeta({
   layout: false,
@@ -19,31 +20,32 @@ const tabs = [
 ].filter(Boolean) as { key: DOCUMENTS_TABLE_TYPE; title: string }[];
 const datatableType = ref<DOCUMENTS_TABLE_TYPE>('employee');
 
-const { data: mitraTableData, error } = await useFetch(
-  `/api/documents/datatable/${user.value!.name}`,
-  {
-    params: { type: datatableType },
-    watch: [datatableType],
+const { data: mitraTableData, error } = await useAsyncData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>(
+  'datatable',
+  async () => {
+    const datatables = await Promise.all(
+      tabs.map(async tab => [
+        tab.key,
+        await useRequestFetch()(`/api/documents/datatable/${user.value!.name}`, { params: { type: tab.key } },
+        ),
+      ]),
+    ).catch((err) => {
+      // BUG: Why sometime error occurred?
+      console.error('err', err);
+      return [];
+    });
+    return Object.fromEntries(datatables);
   },
 );
-const columns = computed(() => mitraTableData.value?.columns || []);
-const rows = computed(() => mitraTableData.value?.rows || []);
+const columns = computed(() => mitraTableData.value?.[datatableType.value].columns || []);
+const rows = computed(() => mitraTableData.value?.[datatableType.value].rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-const { setWork, setWorkKey } = useDocument();
-async function handleCreateDocument(context: { data: WorkWithMeta }) {
-  const { data } = context;
+function handleCreateOrView(context: { type: CreateOrView; id: string }) {
+  const { id, type } = context;
 
-  const { meta, ...rest } = data;
-  setWorkKey(meta.key);
-  setWork(rest);
-
-  navigateTo(`/documents/create`);
-}
-function handleViewDocument(context: { id: string }) {
-  const { id } = context;
-
-  navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
+  if (type === 'create') navigateTo(`/documents/${id}/create`);
+  else navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
 }
 async function handleFillForm(context: { id: string }) {
   const { id } = context;
@@ -101,8 +103,7 @@ async function handleFillForm(context: { id: string }) {
                     :rows
                     :user="user!"
                     :type="datatableType"
-                    @create="handleCreateDocument"
-                    @view="handleViewDocument"
+                    @create-or-view="handleCreateOrView"
                     @form-fill="handleFillForm"
                   />
                 </ShadcnTabsContent>

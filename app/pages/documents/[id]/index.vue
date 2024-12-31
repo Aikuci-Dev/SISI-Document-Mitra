@@ -1,17 +1,28 @@
 <script setup lang="ts">
+import type { FetchResponse } from 'ofetch';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { ApproveOrReject } from '~~/types/action';
-import type { BAPPOrBAST } from '~~/types/document';
+import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable, MappedWork } from '~~/types/document';
 
 definePageMeta({
   layout: false,
 });
 
-const route = useRoute();
+const { id } = useRoute().params;
 
-const { data, error, refresh } = await useFetch(
-  `/api/documents/${route.params.id}`,
-);
+const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
+const { data, error } = useLazyFetch(`/api/documents/${id}`, {
+  key: `datatable-${id}`,
+  default() {
+    if (!id || !datatable.value) return;
+
+    const row = Object.values(datatable.value).flatMap(item => item.rows).find(row => row.key === id);
+    if (row) {
+      const { mapped_work, status } = row.meta;
+      return { ...mapped_work, status };
+    }
+  },
+});
 if (error.value) throw createError({ ...error.value, fatal: true });
 
 const { user } = useUserSession();
@@ -25,6 +36,17 @@ const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
 ].filter(Boolean) as { key: BAPPOrBAST }[]);
 const type = ref<BAPPOrBAST>('BAPP');
 
+async function handleResponse(response: FetchResponse<unknown>) {
+  if (response.ok) {
+    const { isValidated, isApproved, revisedAt, signedAt } = response._data as MappedWork;
+    data.value!.isValidated = isValidated;
+    data.value!.isApproved = isApproved;
+    data.value!.revisedAt = revisedAt;
+    data.value!.signedAt = signedAt;
+  }
+  await refreshNuxtData('datatable');
+}
+
 // REVIEW by Admin
 const isLoading = ref(false);
 const showAlertDialog = ref(false);
@@ -37,17 +59,16 @@ async function handleApproveOrReject() {
   showAlertDialog.value = false;
   isLoading.value = true;
 
-  await $fetch(`/api/documents/${route.params.id}/${approveOrReject.value}`, {
+  await $fetch(`/api/documents/${id}/${approveOrReject.value}`, {
     method: 'PATCH',
     onResponseError: ({ response }) => {
       handleResponseError(response);
 
       isLoading.value = false;
     },
+    onResponse: async ({ response }) => await handleResponse(response),
   })
     .catch(catchFetchError);
-
-  refresh();
 
   isLoading.value = false;
 }
@@ -56,14 +77,13 @@ async function handleApproveOrReject() {
 const formSign = ref();
 const showDialogSign = ref(false);
 async function handleSign() {
-  await $fetch(`/api/documents/${route.params.id}/sign`, {
+  await $fetch(`/api/documents/${id}/sign`, {
     method: 'PATCH',
     body: { sign: formSign.value, name: supervisorName.value },
     onResponseError: ({ response }) => handleResponseError(response),
+    onResponse: async ({ response }) => await handleResponse(response),
   })
     .catch(catchFetchError);
-
-  refresh();
 
   showDialogSign.value = false;
 }

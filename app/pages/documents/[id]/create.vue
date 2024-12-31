@@ -1,25 +1,30 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
+import { isStatusInitiatedOrRejected } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import type { BAPPOrBAST } from '~~/types/document';
+import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable } from '~~/types/document';
 
 definePageMeta({
   layout: false,
-  middleware: [
-    function (to, from) {
-      if (from.name !== 'documents') return navigateTo('/documents');
-
-      return;
-    },
-  ],
 });
 
-const { work, workKey } = useDocument();
-const form = ref(work);
+const { id } = useRoute().params;
+
+const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
+function getWork() {
+  if (!id || !datatable.value) throw createError({ statusCode: 404, fatal: true });
+
+  const row = datatable.value.employee.rows.find(row => row.key === id);
+  if (!row) throw createError({ statusCode: 404, fatal: true });
+  if (!isStatusInitiatedOrRejected(row.meta.status)) throw createError({ statusCode: 404, fatal: true });
+
+  return row.meta.mapped_work.value;
+};
+const form = ref(getWork());
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
-  form.value?.bastNumber?.length ? { key: 'BAST' } : undefined,
+  form.value.bastNumber?.length ? { key: 'BAST' } : undefined,
 ].filter(Boolean) as { key: BAPPOrBAST }[]);
 const documentType = ref<BAPPOrBAST>('BAPP');
 
@@ -28,43 +33,58 @@ const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: computed(() => documentComponentRef.value[0]),
   documentTitle: documentType.value === 'BAPP'
-    ? `BAPP_${form.value?.bappNumber}`
-    : `BAST_${form.value?.bastNumber}`,
+    ? `BAPP_${form.value.bappNumber}`
+    : `BAST_${form.value.bastNumber}`,
   removeAfterPrint: true,
 });
 
-const showAlertDialog = ref(false);
-
 // SIGN by User
-const formSign = ref(work.value?.employeeSignUrl || '');
+const formSign = ref(form.value.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
+const showAlertDialog = ref(false);
+const skipStore = ref(false);
+
 function handleSign() {
   form.value!.employeeSignUrl = formSign.value;
   handleGenerate();
 }
 
-async function handleGenerate(skipStore?: boolean) {
+function handleSaveAndPrint() {
   showAlertDialog.value = false;
+  skipStore.value = false;
+  handleGenerate();
+}
+
+function handlePrintOnly() {
+  skipStore.value = true;
+  handleGenerate();
+}
+
+async function handleGenerate() {
   isLoading.value = true;
   showDialogSign.value = false;
 
   if (!formSign.value) {
     showDialogSign.value = true;
+    isLoading.value = false;
     return;
   }
 
   await nextTick();
 
-  if (skipStore) handlePrint();
+  if (skipStore.value) handlePrint();
   else {
-    await $fetch(`/api/documents/${workKey.value}`, {
+    await $fetch(`/api/documents/${id}`, {
       method: 'PUT',
       params: { name: form.value!.employeeName },
       body: form.value,
       onResponseError: ({ response }) => {
         handleResponseError(response);
+      },
+      async onResponse() {
+        await refreshNuxtData('datatable');
       },
     })
       .catch(catchFetchError);
@@ -113,7 +133,7 @@ async function handleGenerate(skipStore?: boolean) {
               </ShadcnAlertDialogHeader>
               <ShadcnAlertDialogFooter>
                 <ShadcnAlertDialogCancel>Cancel</ShadcnAlertDialogCancel>
-                <ShadcnAlertDialogAction @click="() => handleGenerate()">
+                <ShadcnAlertDialogAction @click="handleSaveAndPrint">
                   Continue
                 </ShadcnAlertDialogAction>
               </ShadcnAlertDialogFooter>
@@ -155,7 +175,7 @@ async function handleGenerate(skipStore?: boolean) {
         #bodyRight
       >
         <DocumentAction>
-          <ShadcnButton @click="() => handleGenerate(true)">
+          <ShadcnButton @click="handlePrintOnly">
             Print
           </ShadcnButton>
         </DocumentAction>

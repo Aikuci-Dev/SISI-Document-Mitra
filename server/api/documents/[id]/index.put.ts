@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
 
   const user = await verifyUserAuthorizationByName(event);
 
-  const original = await getWorkDocumentByNameAndId({ name: user.name!, id });
+  const original = await getWorkDocumentOriginalByNameAndId({ name: user.name!, id });
 
   await useDB()
     .insert(tables.documentMitra)
@@ -28,6 +28,8 @@ export default defineEventHandler(async (event) => {
         revisedAt: new Date(),
       },
     });
+
+  await useStorage('cache').removeItem(`nitro:functions:datatable:datatable.json`);
 
   return workDocument;
 });

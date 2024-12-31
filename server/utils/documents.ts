@@ -1,10 +1,15 @@
 import { overrideValues } from './utils';
 import type { SheetValues, ValueRange } from '~~/types/google';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow } from '~~/types/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/types/document';
 import { STATUSES } from '~~/types/document';
 
-// --- WorkDocument Utility Functions ---
+// --- Utility Functions ---
+
+// Checks if the provided status is a valid `STATUSES_TYPE`.
+export function isValidStatusType(type: string): type is STATUSES_TYPE {
+  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
+}
 
 // Creates and returns a new `WorkDocument` with default values.
 function makeWorkDocument(): WorkDocument {
@@ -36,7 +41,7 @@ function makeWorkDocument(): WorkDocument {
 }
 
 // Returns the status of multiple work documents based on their IDs.
-export function getWorkDocumentStatus(
+export function getWorkDocumentStatusFromFlags(
   ids: string[],
   data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null; revisedAt: Date | null }[],
 ): { id: string; status: STATUSES_TYPE }[] {
@@ -77,8 +82,8 @@ const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[
     });
 }, {
   maxAge: 365 * 24 * 60 * 60,
-  group: 'document',
-  getKey: () => 'columns',
+  name: 'spreadsheet',
+  getKey: () => 'mapping-columns',
 });
 
 // Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
@@ -114,14 +119,14 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
         key: workKey,
         value,
         meta: {
-          mapped_work: workDocument,
+          mapped_work: { original: workDocument, value: workDocument },
           key: workKey,
           status: isDraft ? STATUSES.draft : STATUSES.initiated,
         },
       };
     })
-    .filter(value => value.meta.mapped_work.poNumber)
-    .sort((prev, curr) => curr.meta.mapped_work.bappDateTs - prev.meta.mapped_work.bappDateTs);
+    .filter(value => value.meta.mapped_work.original.poNumber)
+    .sort((prev, curr) => curr.meta.mapped_work.original.bappDateTs - prev.meta.mapped_work.original.bappDateTs);
 }
 
 // --- Core Data Fetching Functions ---
@@ -136,8 +141,8 @@ const getSpreadsheetData = defineCachedFunction<SheetValues>(async () => {
   return { headers, values: rest };
 }, {
   maxAge: 30 * 60,
-  group: 'sheetData',
-  getKey: () => 'all',
+  name: 'spreadsheet',
+  getKey: () => 'raw-data',
 });
 
 // --- Data Retrieval Functions ---
@@ -182,6 +187,7 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
   const workDocuments = await useDB()
     .select({
       id: tables.documentMitra.id,
+      value: tables.documentMitra.value,
       isValidated: tables.documentMitra.isValidated,
       isApproved: tables.documentMitra.isApproved,
       signedAt: tables.documentMitra.signedAt,
@@ -190,12 +196,17 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
     .from(tables.documentMitra)
     .where(inArray(tables.documentMitra.id, ids));
 
-  const statuses = getWorkDocumentStatus(ids, workDocuments);
+  const statuses = getWorkDocumentStatusFromFlags(ids, workDocuments);
   const statusesMap = new Map(statuses.map(status => [status.id, status.status]));
+  const workDocumentsMap = new Map(workDocuments.map(workDocument => [workDocument.id, workDocument]));
 
   datatables.rows = datatables.rows.map((row) => {
     const { meta, ...rest } = row;
-    const { key, mapped_work, status } = meta;
+    const { key, status } = meta;
+
+    const original = meta.mapped_work.original;
+    const workDocument = workDocumentsMap.get(key);
+    const mapped_work: MappedWork = workDocument ? { original, ...workDocument } : { original, value: original };
 
     const finalStatus = statusesMap.has(key) && statusesMap.get(key) !== STATUSES.nil
       ? statusesMap.get(key)!
@@ -214,17 +225,16 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
   return datatables;
 }, {
   maxAge: 5 * 60,
-  group: 'document',
-  getKey:
-    (context: { name?: string; type?: string; role?: 'admin' }) =>
-      `datatable${context.type ? `-${context.type}` : ''}${context.name ? `-${context.name.trim()}` : ''}`,
+  name: 'datatable',
+  shouldBypassCache: (context: { name?: string; type?: string; role?: 'admin' }) => !!context.name,
+  getKey: () => 'datatable',
 });
 
-// Fetches a specific `WorkDocument` based on name and ID.
-export async function getWorkDocumentByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
+// Fetches a specific original `WorkDocument` based on name and ID.
+export async function getWorkDocumentOriginalByNameAndId(context: { name: string; id: string }): Promise<WorkDocument> {
   const { name, id } = context;
 
-  const dataTables = await fetchWorkDocumentTableWithStatus(name);
+  const dataTables = await fetchWorkDocumentTableWithStatus({ name });
   const dataTable = dataTables.rows.find(row => row.key === id);
   if (!dataTable)
     throw createError({
@@ -232,12 +242,5 @@ export async function getWorkDocumentByNameAndId(context: { name: string; id: st
       statusMessage: 'Something went wrong. >> Please refresh the page OR try again later.',
     });
 
-  return dataTable.meta.mapped_work;
+  return dataTable.meta.mapped_work.original;
 };
-
-// --- Utility Function ---
-
-// Checks if the provided status is a valid `STATUSES_TYPE`.
-export function isValidStatusType(type: string): type is STATUSES_TYPE {
-  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
-}
