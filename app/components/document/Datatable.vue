@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
-import { isStatusInitiatedOrRejected, isStatusNotNilOrDraft } from '~/lib/documents';
+import { isStatusInitiatedOrRejected, isStatusNotInitiated, isStatusNotNilOrDraft } from '~/lib/documents';
 import type { CreateOrView } from '~~/types/action';
-import { DOCUMENTS_TABLE, STATUSES, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
+import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import type { User } from '~~/types/session';
 
 type DatatableEmits = {
   createOrView: [{ type: CreateOrView; id: string }];
+  print: [{ id: string }];
   formFill: [{ id: string }];
 };
 defineEmits<DatatableEmits>();
@@ -62,13 +63,13 @@ defineProps<DatatableProps>();
                   v-if="type === DOCUMENTS_TABLE.employee && isStatusInitiatedOrRejected(row.meta.status)"
                   @click="$emit('createOrView', { type: 'create', id: row.key })"
                 >
-                  <span v-if="row.meta.status === STATUSES.rejected">Revise</span>
+                  <span v-if="isStatusNotInitiated(row.meta.status)">Revise</span>
                   <span v-else>Create</span>
                 </ShadcnDropdownMenuItem>
 
                 <!-- View option -->
                 <ShadcnDropdownMenuItem
-                  v-if="row.meta.status !== STATUSES.initiated"
+                  v-if="isStatusNotInitiated(row.meta.status)"
                   @click="$emit('createOrView', { type: 'view', id: row.key })"
                 >
                   View
@@ -78,6 +79,12 @@ defineProps<DatatableProps>();
                 <template v-if="type === DOCUMENTS_TABLE.employee">
                   <ShadcnDropdownMenuSeparator />
                   <ShadcnDropdownMenuLabel>Others</ShadcnDropdownMenuLabel>
+                  <ShadcnDropdownMenuItem
+                    v-if="isStatusNotInitiated(row.meta.status)"
+                    @click="$emit('print', { id: row.key })"
+                  >
+                    Print
+                  </ShadcnDropdownMenuItem>
                   <ShadcnDropdownMenuItem @click="$emit('formFill', { id: row.key })">
                     Fill Form
                   </ShadcnDropdownMenuItem>

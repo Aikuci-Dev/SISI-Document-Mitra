@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useVueToPrint } from 'vue-to-print';
 import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { CreateOrView } from '~~/types/action';
@@ -41,17 +42,40 @@ const columns = computed(() => mitraTableData.value?.[datatableType.value].colum
 const rows = computed(() => mitraTableData.value?.[datatableType.value].rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-function handleCreateOrView(context: { type: CreateOrView; id: string }) {
-  const { id, type } = context;
+const documentId = ref();
+const form = computed(() => {
+  const row = documentId.value
+    ? rows.value.find(row => row.key === documentId.value)
+    : rows.value[0];
 
-  if (type === 'create') navigateTo(`/documents/${id}/create`);
-  else navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
+  return row?.meta.mapped_work.value;
+});
+
+// VueToPrint
+const documentComponentRef = ref();
+const { handlePrint } = useVueToPrint({
+  content: documentComponentRef,
+  documentTitle: `document_${form.value?.poNumber}`,
+  removeAfterPrint: true,
+});
+
+function handleCreateOrView(context: { type: CreateOrView; id: string }) {
+  documentId.value = context.id;
+
+  if (context.type === 'create') navigateTo(`/documents/${documentId.value}/create`);
+  else navigateTo(`/documents/${documentId.value}`, { open: { target: '_blank' } });
+}
+async function handlePrePrint(context: { id: string }) {
+  documentId.value = context.id;
+
+  await nextTick();
+  handlePrint();
 }
 async function handleFillForm(context: { id: string }) {
-  const { id } = context;
+  documentId.value = context.id;
 
   const formUrl = await $fetch('/api/documents/form/generate-url', {
-    params: { id, name: user.value!.name },
+    params: { id: documentId.value, name: user.value!.name },
     onResponseError: ({ response }) => handleResponseError(response),
   })
     .catch(catchFetchError);
@@ -104,10 +128,28 @@ async function handleFillForm(context: { id: string }) {
                     :user="user!"
                     :type="datatableType"
                     @create-or-view="handleCreateOrView"
+                    @print="handlePrePrint"
                     @form-fill="handleFillForm"
                   />
                 </ShadcnTabsContent>
               </ShadcnTabs>
+            </div>
+
+            <div
+              ref="documentComponentRef"
+              class="hidden print:block"
+            >
+              <template v-if="form">
+                <DocumentContent
+                  type="BAPP"
+                  :data="form"
+                />
+                <DocumentContent
+                  v-if="form.bastNumber?.length"
+                  type="BAST"
+                  :data="form"
+                />
+              </template>
             </div>
           </ShadcnCardContent>
         </ShadcnCard>

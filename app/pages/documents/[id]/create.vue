@@ -12,7 +12,12 @@ const { id } = useRoute().params;
 
 const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
 function getWork() {
-  if (!id || !datatable.value) throw createError({ statusCode: 404, fatal: true });
+  if (!datatable.value) {
+    navigateTo('/documents');
+    return;
+  }
+
+  if (!id) throw createError({ statusCode: 404, fatal: true });
 
   const row = datatable.value.employee.rows.find(row => row.key === id);
   if (!row) throw createError({ statusCode: 404, fatal: true });
@@ -21,10 +26,12 @@ function getWork() {
   return row.meta.mapped_work.value;
 };
 const form = ref(getWork());
+const documentFormRef = ref();
+const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
-  form.value.bastNumber?.length ? { key: 'BAST' } : undefined,
+  form.value?.bastNumber?.length ? { key: 'BAST' } : undefined,
 ].filter(Boolean) as { key: BAPPOrBAST }[]);
 const documentType = ref<BAPPOrBAST>('BAPP');
 
@@ -33,13 +40,13 @@ const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: computed(() => documentComponentRef.value[0]),
   documentTitle: documentType.value === 'BAPP'
-    ? `BAPP_${form.value.bappNumber}`
-    : `BAST_${form.value.bastNumber}`,
+    ? `BAPP_${form.value?.bappNumber}`
+    : `BAST_${form.value?.bastNumber}`,
   removeAfterPrint: true,
 });
 
 // SIGN by User
-const formSign = ref(form.value.employeeSignUrl || '');
+const formSign = ref(form.value?.employeeSignUrl || '');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
@@ -74,8 +81,7 @@ async function handleGenerate() {
 
   await nextTick();
 
-  if (skipStore.value) handlePrint();
-  else {
+  if (!skipStore.value)
     await $fetch(`/api/documents/${id}`, {
       method: 'PUT',
       params: { name: form.value!.employeeName },
@@ -88,11 +94,8 @@ async function handleGenerate() {
       },
     })
       .catch(catchFetchError);
-    // TODO: Implement PDF generation on the server (similar to `handlePrint`)
 
-    // Remove when server-side implementation is done
-    handlePrint();
-  }
+  handlePrint();
 
   isLoading.value = false;
 }
@@ -112,6 +115,7 @@ async function handleGenerate() {
         #bodyLeft
       >
         <DocumentForm
+          ref="documentFormRef"
           v-model="form"
           :is-disabled-action="isDisabledAction"
           @generate="() => showAlertDialog = true"
@@ -175,7 +179,10 @@ async function handleGenerate() {
         #bodyRight
       >
         <DocumentAction>
-          <ShadcnButton @click="handlePrintOnly">
+          <ShadcnButton
+            :disabled="!isDocumentFormValid"
+            @click="handlePrintOnly"
+          >
             Print
           </ShadcnButton>
         </DocumentAction>

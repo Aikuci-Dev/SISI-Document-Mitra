@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     .get();
 
   const document = workDocuments?.value || await getWorkDocumentOriginalByNameAndId({ name, id });
-  const links = workDocuments ? `[Document] ${host}/documents/${id}/public` : '';
+  const links = workDocuments ? `[Document] ${host}/documents/${id}` : '';
 
   if (!document) throw createError({ statusCode: 404 });
 

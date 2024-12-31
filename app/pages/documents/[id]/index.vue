@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { CircleArrowLeft } from 'lucide-vue-next';
 import type { FetchResponse } from 'ofetch';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { ApproveOrReject } from '~~/types/action';
@@ -178,7 +179,10 @@ async function handleSign() {
             @sign="handleSign"
           />
 
-          <div class="container">
+          <div class="container flex items-center gap-4">
+            <NuxtLink to="/documents">
+              <CircleArrowLeft class="size-8" />
+            </NuxtLink>
             <DocumentAlertStatus :status="data.status" />
           </div>
           <div class="grid place-content-center">

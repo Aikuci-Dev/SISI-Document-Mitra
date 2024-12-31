@@ -1,11 +1,6 @@
 import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
 
 // --- Utility Function ---
-
-// Checks if a type is one of the accepted document statuses.
-export function isValidStatusType(type: string): type is STATUSES_TYPE {
-  return Object.values(STATUSES).includes(type as STATUSES_TYPE);
-}
-
+export const isStatusNotInitiated = (status: STATUSES_TYPE) => status !== STATUSES.initiated;
 export const isStatusNotNilOrDraft = (status: STATUSES_TYPE) => status !== STATUSES.nil && status !== STATUSES.draft;
 export const isStatusInitiatedOrRejected = (status: STATUSES_TYPE) => [STATUSES.initiated, STATUSES.rejected].includes(status as 'initiated' | 'rejected');
