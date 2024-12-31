@@ -21,6 +21,8 @@ function getWork() {
   return row.meta.mapped_work.value;
 };
 const form = ref(getWork());
+const documentFormRef = ref();
+const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
@@ -108,6 +110,7 @@ async function handleGenerate() {
         #bodyLeft
       >
         <DocumentForm
+          ref="documentFormRef"
           v-model="form"
           :is-disabled-action="isDisabledAction"
           @generate="() => showAlertDialog = true"
@@ -171,7 +174,10 @@ async function handleGenerate() {
         #bodyRight
       >
         <DocumentAction>
-          <ShadcnButton @click="handlePrintOnly">
+          <ShadcnButton
+            :disabled="!isDocumentFormValid"
+            @click="handlePrintOnly"
+          >
             Print
           </ShadcnButton>
         </DocumentAction>

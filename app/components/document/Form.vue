@@ -52,6 +52,7 @@ const form = useForm({
   },
   validateOnMount: true,
 });
+const isFormValid = computed(() => form.meta.value.valid);
 
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
@@ -74,6 +75,8 @@ watch(() => form.values.detail?.invoiceNominal, (invoice) => {
 async function handleSubmit() {
   emits('generate');
 }
+
+defineExpose({ form });
 </script>
 
 <template>
@@ -184,7 +187,7 @@ async function handleSubmit() {
         <div class="col-span-2 mt-4 flex justify-end">
           <ShadcnButton
             type="submit"
-            :disabled="isDisabledAction || !form.meta.value.valid"
+            :disabled="isDisabledAction || !isFormValid"
           >
             Generate
           </ShadcnButton>
