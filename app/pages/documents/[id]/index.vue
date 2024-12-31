@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import type { FetchResponse } from 'ofetch';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { ApproveOrReject } from '~~/types/action';
-import type { BAPPOrBAST, DocumentTable } from '~~/types/document';
+import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable, MappedWork } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -9,13 +10,13 @@ definePageMeta({
 
 const { id } = useRoute().params;
 
-const { data: datatable } = useNuxtData<DocumentTable>('datatable');
-const { data, error, refresh } = useLazyFetch(`/api/documents/${id}`, {
+const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
+const { data, error } = useLazyFetch(`/api/documents/${id}`, {
   key: `datatable-${id}`,
   default() {
-    if (!id) return;
+    if (!id || !datatable.value) return;
 
-    const row = datatable.value?.rows.find(row => row.key === id);
+    const row = Object.values(datatable.value).flatMap(item => item.rows).find(row => row.key === id);
     if (row) {
       const { mapped_work, status } = row.meta;
       return { ...mapped_work, status };
@@ -34,6 +35,17 @@ const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   data.value?.value.bastNumber?.length ? { key: 'BAST' } : undefined,
 ].filter(Boolean) as { key: BAPPOrBAST }[]);
 const type = ref<BAPPOrBAST>('BAPP');
+
+async function handleResponse(response: FetchResponse<unknown>) {
+  if (response.ok) {
+    const { isValidated, isApproved, revisedAt, signedAt } = response._data as MappedWork;
+    data.value!.isValidated = isValidated;
+    data.value!.isApproved = isApproved;
+    data.value!.revisedAt = revisedAt;
+    data.value!.signedAt = signedAt;
+  }
+  await refreshNuxtData('datatable');
+}
 
 // REVIEW by Admin
 const isLoading = ref(false);
@@ -54,10 +66,9 @@ async function handleApproveOrReject() {
 
       isLoading.value = false;
     },
+    onResponse: async ({ response }) => await handleResponse(response),
   })
     .catch(catchFetchError);
-
-  refresh();
 
   isLoading.value = false;
 }
@@ -70,10 +81,9 @@ async function handleSign() {
     method: 'PATCH',
     body: { sign: formSign.value, name: supervisorName.value },
     onResponseError: ({ response }) => handleResponseError(response),
+    onResponse: async ({ response }) => await handleResponse(response),
   })
     .catch(catchFetchError);
-
-  refresh();
 
   showDialogSign.value = false;
 }
