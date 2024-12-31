@@ -7,6 +7,7 @@ import type { User } from '~~/types/session';
 
 type DatatableEmits = {
   createOrView: [{ type: CreateOrView; id: string }];
+  print: [{ id: string }];
   formFill: [{ id: string }];
 };
 defineEmits<DatatableEmits>();
@@ -78,6 +79,9 @@ defineProps<DatatableProps>();
                 <template v-if="type === DOCUMENTS_TABLE.employee">
                   <ShadcnDropdownMenuSeparator />
                   <ShadcnDropdownMenuLabel>Others</ShadcnDropdownMenuLabel>
+                  <ShadcnDropdownMenuItem @click="$emit('print', { id: row.key })">
+                    Print
+                  </ShadcnDropdownMenuItem>
                   <ShadcnDropdownMenuItem @click="$emit('formFill', { id: row.key })">
                     Fill Form
                   </ShadcnDropdownMenuItem>

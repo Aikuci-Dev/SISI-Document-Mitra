@@ -74,8 +74,7 @@ async function handleGenerate() {
 
   await nextTick();
 
-  if (skipStore.value) handlePrint();
-  else {
+  if (!skipStore.value)
     await $fetch(`/api/documents/${id}`, {
       method: 'PUT',
       params: { name: form.value!.employeeName },
@@ -88,11 +87,8 @@ async function handleGenerate() {
       },
     })
       .catch(catchFetchError);
-    // TODO: Implement PDF generation on the server (similar to `handlePrint`)
 
-    // Remove when server-side implementation is done
-    handlePrint();
-  }
+  handlePrint();
 
   isLoading.value = false;
 }
