@@ -197,13 +197,27 @@ defineExpose({ form });
         </template>
 
         <template #detail="slotProps">
-          <DocumentFormDetail
-            v-model="formValue"
-            :show-non-editable-fields
-            v-bind="slotProps"
-            :is-disabled-input
-            class="col-span-2 m-4"
-          />
+          <template v-if="showNonEditableFields">
+            <DocumentFormDetailWrapper class="col-span-2 m-4">
+              <DocumentFormDetail
+                v-model="formValue"
+                :show-non-editable-fields
+                v-bind="slotProps"
+                :is-disabled-input
+              />
+            </DocumentFormDetailWrapper>
+          </template>
+          <div
+            v-else
+            class="col-span-2 p-0"
+          >
+            <DocumentFormDetail
+              v-model="formValue"
+              :show-non-editable-fields
+              v-bind="slotProps"
+              :is-disabled-input
+            />
+          </div>
         </template>
 
         <div class="col-span-2 mt-4 flex justify-end">
