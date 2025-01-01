@@ -8,7 +8,6 @@ import { beautifyObjectName } from '@/components/shadcn/ui/auto-form/utils';
 
 const props = defineProps<FieldProps & { class?: HTMLAttributes['class'] }>();
 
-console.log('props', props);
 const df = new DateFormatter('en-US', {
   dateStyle: 'long',
 });

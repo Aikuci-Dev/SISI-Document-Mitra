@@ -40,41 +40,38 @@ function handleSelectItem(item: Item) {
     v-bind="forwardedProps"
     :class="cn('w-full', props.class)"
   >
-    <template #default="slotProps">
-      <pre>slotProps - {{ slotProps }}</pre>
-      <ShadcnPopover>
-        <ShadcnPopoverTrigger as-child>
-          <ShadcnFormControl>
-            <ShadcnButton
-              variant="outline"
-              role="combobox"
-              :class="cn('w-[200px] justify-between', !value && 'text-muted-foreground')"
-            >
-              {{ value ? itemsWithCurrent.find((item) => item.value === value)?.label : 'Select item...' }}
-              <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
-            </ShadcnButton>
-          </ShadcnFormControl>
-        </ShadcnPopoverTrigger>
-        <ShadcnPopoverContent class="w-[200px] p-0">
-          <ShadcnCommand v-model:search-term="searchTerm">
-            <ShadcnCommandInput />
-            <ShadcnCommandEmpty />
-            <ShadcnCommandList>
-              <ShadcnCommandGroup>
-                <ShadcnCommandItem
-                  v-for="item in itemsWithCurrent"
-                  :key="item.value"
-                  :value="item.label"
-                  @select="() => handleSelectItem(item)"
-                >
-                  <Check :class="cn('mr-2 h-4 w-4', item.value === value ? 'opacity-100' : 'opacity-0')" />
-                  {{ item.label }}
-                </ShadcnCommandItem>
-              </ShadcnCommandGroup>
-            </ShadcnCommandList>
-          </ShadcnCommand>
-        </ShadcnPopoverContent>
-      </ShadcnPopover>
-    </template>
+    <ShadcnPopover>
+      <ShadcnPopoverTrigger as-child>
+        <ShadcnFormControl>
+          <ShadcnButton
+            variant="outline"
+            role="combobox"
+            :class="cn('w-[200px] justify-between', !value && 'text-muted-foreground')"
+          >
+            {{ value ? itemsWithCurrent.find((item) => item.value === value)?.label : 'Select item...' }}
+            <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
+          </ShadcnButton>
+        </ShadcnFormControl>
+      </ShadcnPopoverTrigger>
+      <ShadcnPopoverContent class="w-[200px] p-0">
+        <ShadcnCommand v-model:search-term="searchTerm">
+          <ShadcnCommandInput />
+          <ShadcnCommandEmpty />
+          <ShadcnCommandList>
+            <ShadcnCommandGroup>
+              <ShadcnCommandItem
+                v-for="item in itemsWithCurrent"
+                :key="item.value"
+                :value="item.label"
+                @select="() => handleSelectItem(item)"
+              >
+                <Check :class="cn('mr-2 h-4 w-4', item.value === value ? 'opacity-100' : 'opacity-0')" />
+                {{ item.label }}
+              </ShadcnCommandItem>
+            </ShadcnCommandGroup>
+          </ShadcnCommandList>
+        </ShadcnCommand>
+      </ShadcnPopoverContent>
+    </ShadcnPopover>
   </ShadcnAutoFormFieldInput>
 </template>
