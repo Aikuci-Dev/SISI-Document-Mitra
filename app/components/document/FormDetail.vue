@@ -35,37 +35,33 @@ const delegatedProps = computed(() => {
       >
         <template #po="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.poNumber"
             v-bind="slotProps"
             label="PO"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #bapp="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.bappNumber"
             v-bind="slotProps"
             label="BAPP"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #invoice="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.invoiceNumber"
             v-bind="slotProps"
             label="Invoice"
             disabled
             required
-            :class="{ 'col-span-2': !showNonEditableFields }"
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #invoiceNominal="slotProps">
           <!-- TODO: Masking using `maska` -->
@@ -74,15 +70,17 @@ const delegatedProps = computed(() => {
             label="Invoice Nominal"
             :disabled="isDisabledInput"
             required
+            :class="{ 'col-span-2': !showNonEditableFields }"
           />
         </template>
         <template #bast="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields && formValue.bastNumber?.length"
+            v-if="formValue.bastNumber?.length"
             v-model="formValue.bastNumber"
             v-bind="slotProps"
-            disabled
             label="BAST"
+            disabled
+            :class="{ hidden: !showNonEditableFields }"
           />
           <span v-else />
         </template>

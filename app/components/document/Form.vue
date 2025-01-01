@@ -84,15 +84,17 @@ defineExpose({ form });
 <template>
   <ShadcnCard v-if="formValue">
     <ShadcnCardHeader>
-      <ShadcnCardTitle>Document Form</ShadcnCardTitle>
+      <ShadcnCardTitle>
+        <div class="flex items-center justify-between">
+          Document Form
+          <ShadcnToggle v-model:pressed="showNonEditableFields">
+            <Eye class="size-4" />
+          </ShadcnToggle>
+        </div>
+      </ShadcnCardTitle>
       <ShadcnCardDescription>
         The input used within the document to replace placeholders.
       </ShadcnCardDescription>
-      <ShadcnCardFooter class="justify-end p-0">
-        <ShadcnToggle v-model:pressed="showNonEditableFields">
-          <Eye class="size-4" />
-        </ShadcnToggle>
-      </ShadcnCardFooter>
     </ShadcnCardHeader>
     <ShadcnCardContent>
       <ShadcnAutoForm
@@ -103,12 +105,11 @@ defineExpose({ form });
       >
         <template #number="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.detailsNumber"
             v-bind="slotProps"
             disabled
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #title="slotProps">
           <ShadcnAutoFormFieldInput
@@ -120,28 +121,25 @@ defineExpose({ form });
         </template>
         <template #dateStart="slotProps">
           <ShadcnAutoFormFieldDate
-            v-if="showNonEditableFields"
             v-bind="slotProps"
             label="Start Date (per period)"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #dateEnd="slotProps">
           <ShadcnAutoFormFieldDate
-            v-if="showNonEditableFields"
             v-bind="slotProps"
             label="End Date (per period)"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
 
         <template #employeeSeparator>
           <section
-            v-if="showNonEditableFields"
             class="col-span-2 mt-4"
           >
             <ShadcnSeparator />
@@ -149,57 +147,51 @@ defineExpose({ form });
               <span>Employee Info</span>
             </ShadcnLabel>
           </section>
-          <span v-else />
         </template>
         <template #employeeName="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.employeeName"
             v-bind="slotProps"
             label="Name"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #employeeRole="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.employeeRole"
             v-bind="slotProps"
             label="Role"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
         <template #supervisorName="slotProps">
-          <template v-if="showNonEditableFields">
-            <section class="col-span-2 mt-4">
-              <ShadcnSeparator
-                label="Supervisor"
-              />
-            </section>
-            <ShadcnAutoFormFieldInput
-              v-model="formValue.supervisorName"
-              v-bind="slotProps"
-              label="Name"
-              disabled
-              required
+          <section class="col-span-2 mt-4">
+            <ShadcnSeparator
+              label="Supervisor"
             />
-          </template>
-          <span v-else />
+          </section>
+          <ShadcnAutoFormFieldInput
+            v-model="formValue.supervisorName"
+            v-bind="slotProps"
+            label="Name"
+            disabled
+            required
+            :class="{ hidden: !showNonEditableFields }"
+          />
         </template>
         <template #supervisorRole="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="showNonEditableFields"
             v-model="formValue.supervisorRole"
             v-bind="slotProps"
             label="Role"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
-          <span v-else />
         </template>
 
         <template #detail="slotProps">
