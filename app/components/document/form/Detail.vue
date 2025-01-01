@@ -11,6 +11,7 @@ const props = withDefaults(defineProps<{
 }>(), { showNonEditableFields: true });
 
 const formValue = defineModel<WorkDocument>();
+const invoiceNominal = defineModel<string>('invoiceNominal', { default: '0' });
 
 const delegatedProps = computed(() => {
   if (props.shape?.type === 'ZodObject')
@@ -57,9 +58,12 @@ const delegatedProps = computed(() => {
     </template>
     <template #invoiceNominal="slotProps">
       <!-- TODO: Masking using `maska` -->
-      <ShadcnAutoFormFieldInput
+      <BaseInputCombobox
+        v-model="invoiceNominal"
         v-bind="slotProps"
+        :items="[{ label: '1', value: '1' }]"
         label="Invoice Nominal"
+        placeholder="0"
         :disabled="isDisabledInput"
         required
         :class="{ 'col-span-2': !showNonEditableFields }"

@@ -22,6 +22,8 @@ const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { de
 const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
 const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
 
+const invoiceNominal = ref(String(formValue.value?.invoiceNominal) || '0');
+
 const schema = z.object({
   number: z.string().min(1, 'Project number is required.'),
   title: z.string().min(1, 'Project title is required.'),
@@ -47,10 +49,6 @@ const form = useForm({
   initialValues: {
     dateStart: parseAbsolute(new Date(dateStartTS).toISOString(), getLocalTimeZone()),
     dateEnd: parseAbsolute(new Date(dateEndTS).toISOString(), getLocalTimeZone()),
-
-    detail: {
-      invoiceNominal: formValue.value?.invoiceNominal?.toString(),
-    },
   },
   validateOnMount: true,
 });
@@ -70,8 +68,8 @@ watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
     formValue.value!.detailsDateEnd = dateValue.toISOString();
   }
 });
-watch(() => form.values.detail?.invoiceNominal, (invoice) => {
-  if (invoice) formValue.value!.invoiceNominal = +invoice.replace(/\D+/g, '');
+watch(invoiceNominal, (value) => {
+  if (value) formValue.value!.invoiceNominal = +value.replace(/\D+/g, '');
 });
 
 async function handleSubmit() {
@@ -115,7 +113,8 @@ defineExpose({ form });
           <BaseInputCombobox
             v-model="formValue.detailsTitle"
             v-bind="slotProps"
-            :items="[]"
+            :items="[{ label: 'a', value: 'a' }]"
+            placeholder="Project Title"
             :disabled="isDisabledInput"
             :class="{ 'col-span-2': !showNonEditableFields }"
           />
@@ -214,6 +213,7 @@ defineExpose({ form });
           >
             <DocumentFormDetail
               v-model="formValue"
+              v-model:invoice-nominal="invoiceNominal"
               :show-non-editable-fields
               v-bind="slotProps"
               :is-disabled-input
