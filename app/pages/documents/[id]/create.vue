@@ -28,6 +28,7 @@ function getWork() {
 const form = ref(getWork());
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
+const showNonEditableFields = ref(false);
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
@@ -117,6 +118,7 @@ async function handleGenerate() {
         <DocumentForm
           ref="documentFormRef"
           v-model="form"
+          v-model:show-non-editable-fields="showNonEditableFields"
           :is-disabled-action="isDisabledAction"
           @generate="() => showAlertDialog = true"
         />

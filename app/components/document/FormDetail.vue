@@ -3,11 +3,12 @@ import type { ZodObject, ZodRawShape } from 'zod';
 import type { Shape } from '../shadcn/ui/auto-form/interface';
 import type { WorkDocument } from '~~/types/schema/document';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   fieldName: string;
   shape: Shape;
+  showNonEditableFields?: boolean;
   isDisabledInput?: boolean;
-}>();
+}>(), { showNonEditableFields: true });
 
 const formValue = defineModel<WorkDocument>();
 
@@ -34,30 +35,37 @@ const delegatedProps = computed(() => {
       >
         <template #po="slotProps">
           <ShadcnAutoFormFieldInput
+            v-if="showNonEditableFields"
             v-model="formValue.poNumber"
             v-bind="slotProps"
             label="PO"
             disabled
             required
           />
+          <span v-else />
         </template>
         <template #bapp="slotProps">
           <ShadcnAutoFormFieldInput
+            v-if="showNonEditableFields"
             v-model="formValue.bappNumber"
             v-bind="slotProps"
             label="BAPP"
             disabled
             required
           />
+          <span v-else />
         </template>
         <template #invoice="slotProps">
           <ShadcnAutoFormFieldInput
+            v-if="showNonEditableFields"
             v-model="formValue.invoiceNumber"
             v-bind="slotProps"
             label="Invoice"
             disabled
             required
+            :class="{ 'col-span-2': !showNonEditableFields }"
           />
+          <span v-else />
         </template>
         <template #invoiceNominal="slotProps">
           <!-- TODO: Masking using `maska` -->
@@ -70,7 +78,7 @@ const delegatedProps = computed(() => {
         </template>
         <template #bast="slotProps">
           <ShadcnAutoFormFieldInput
-            v-if="formValue.bastNumber?.length"
+            v-if="showNonEditableFields && formValue.bastNumber?.length"
             v-model="formValue.bastNumber"
             v-bind="slotProps"
             disabled
