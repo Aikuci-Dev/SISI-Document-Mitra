@@ -7,7 +7,7 @@ import type { FieldProps } from '@/components/shadcn/ui/auto-form';
 
 export interface Item { label: string; value: string }
 
-const props = defineProps<FieldProps & { class?: HTMLAttributes['class']; items: Item[] }>();
+const props = defineProps<FieldProps & { items: Item[]; class?: HTMLAttributes['class']; placeholder?: string }>();
 
 const delegatedProps = computed(() => {
   const { class: _class, items: _items, ...delegated } = props;
@@ -23,8 +23,8 @@ const searchTerm = ref<string>('');
 const itemsWithCurrent = computed(() =>
   [
     ...props.items,
-    value.value?.length ? { label: value.value, value: value.value } : undefined,
-    searchTerm.value.length ? { label: searchTerm.value, value: searchTerm.value } : undefined,
+    value.value && value.value.length && !props.items.find(item => item.value === value.value) ? { label: value.value, value: value.value } : undefined,
+    searchTerm.value.length && !props.items.find(item => item.value === searchTerm.value) ? { label: searchTerm.value, value: searchTerm.value } : undefined,
   ]
     .filter(Boolean) as Item[],
 );
@@ -40,20 +40,20 @@ function handleSelectItem(item: Item) {
     v-bind="forwardedProps"
     :class="cn('w-full', props.class)"
   >
-    <ShadcnPopover>
+    <ShadcnPopover class="flex">
       <ShadcnPopoverTrigger as-child>
         <ShadcnFormControl>
           <ShadcnButton
             variant="outline"
             role="combobox"
-            :class="cn('w-[200px] justify-between', !value && 'text-muted-foreground')"
+            :class="cn('w-full justify-between', !value && 'text-muted-foreground')"
           >
-            {{ value ? itemsWithCurrent.find((item) => item.value === value)?.label : 'Select item...' }}
+            {{ value ? itemsWithCurrent.find((item) => item.value === value)?.label : placeholder || 'Select item...' }}
             <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
           </ShadcnButton>
         </ShadcnFormControl>
       </ShadcnPopoverTrigger>
-      <ShadcnPopoverContent class="w-[200px] p-0">
+      <ShadcnPopoverContent class="p-0">
         <ShadcnCommand v-model:search-term="searchTerm">
           <ShadcnCommandInput />
           <ShadcnCommandEmpty />
@@ -65,7 +65,7 @@ function handleSelectItem(item: Item) {
                 :value="item.label"
                 @select="() => handleSelectItem(item)"
               >
-                <Check :class="cn('mr-2 h-4 w-4', item.value === value ? 'opacity-100' : 'opacity-0')" />
+                <Check :class="cn('mr-2 size-4', item.value === value ? 'opacity-100' : 'opacity-0')" />
                 {{ item.label }}
               </ShadcnCommandItem>
             </ShadcnCommandGroup>
