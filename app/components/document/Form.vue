@@ -120,7 +120,7 @@ defineExpose({ form });
           />
         </template>
         <template #dateStart="slotProps">
-          <ShadcnAutoFormFieldDate
+          <BaseInputAutoFormFieldDate
             v-bind="slotProps"
             label="Start Date (per period)"
             disabled
@@ -129,7 +129,7 @@ defineExpose({ form });
           />
         </template>
         <template #dateEnd="slotProps">
-          <ShadcnAutoFormFieldDate
+          <BaseInputAutoFormFieldDate
             v-bind="slotProps"
             label="End Date (per period)"
             disabled
@@ -141,6 +141,7 @@ defineExpose({ form });
         <template #employeeSeparator>
           <section
             class="col-span-2 mt-4"
+            :class="{ hidden: !showNonEditableFields }"
           >
             <ShadcnSeparator />
             <ShadcnLabel>
@@ -172,6 +173,7 @@ defineExpose({ form });
           <section class="col-span-2 mt-4">
             <ShadcnSeparator
               label="Supervisor"
+              :class="{ hidden: !showNonEditableFields }"
             />
           </section>
           <ShadcnAutoFormFieldInput
