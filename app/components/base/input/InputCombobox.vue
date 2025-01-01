@@ -17,16 +17,17 @@ const delegatedProps = computed(() => {
 
 const forwardedProps = useForwardProps(delegatedProps);
 
-const value = defineModel<string>();
+const value = defineModel<string>({ default: '' });
 const searchTerm = ref<string>('');
 
-const itemsWithCurrent = computed(() =>
-  [
-    ...props.items,
-    value.value && value.value.length && !props.items.find(item => item.value === value.value) ? { label: value.value, value: value.value } : undefined,
-    searchTerm.value.length && !props.items.find(item => item.value === searchTerm.value) ? { label: searchTerm.value, value: searchTerm.value } : undefined,
-  ]
-    .filter(Boolean) as Item[],
+const itemsWithCurrent = computed(() => {
+  const itemsMap = new Map(props.items.map(item => [item.value, item]));
+
+  if (value.value.length) itemsMap.set(value.value, { label: value.value, value: value.value });
+  if (searchTerm.value.length) itemsMap.set(searchTerm.value, { label: searchTerm.value, value: searchTerm.value });
+
+  return Array.from(itemsMap, ([_key, item]) => item);
+},
 );
 
 function handleSelectItem(item: Item) {
@@ -47,6 +48,7 @@ function handleSelectItem(item: Item) {
             variant="outline"
             role="combobox"
             :class="cn('w-full justify-between', !value && 'text-muted-foreground')"
+            @click="() => searchTerm = value"
           >
             {{ value ? itemsWithCurrent.find((item) => item.value === value)?.label : placeholder || 'Select item...' }}
             <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
