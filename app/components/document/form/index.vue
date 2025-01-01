@@ -112,9 +112,10 @@ defineExpose({ form });
           />
         </template>
         <template #title="slotProps">
-          <ShadcnAutoFormFieldInput
+          <BaseInputCombobox
             v-model="formValue.detailsTitle"
             v-bind="slotProps"
+            :items="[]"
             :disabled="isDisabledInput"
             :class="{ 'col-span-2': !showNonEditableFields }"
           />
