@@ -54,13 +54,11 @@ const form = useForm({
 });
 const isFormValid = computed(() => form.meta.value.valid);
 
-onMounted(() => {
-  form.resetForm({
-    values: {
-      title: formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '',
-      detail: {
-        invoiceNominal: formValue.value?.invoiceNominal ? String(formValue.value?.invoiceNominal) : props.items.nominal[0]?.value,
-      },
+onBeforeMount(() => {
+  form.setValues({
+    title: formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '',
+    detail: {
+      invoiceNominal: formValue.value?.invoiceNominal ? String(formValue.value?.invoiceNominal) : props.items.nominal[0]?.value,
     },
   });
 });
@@ -214,8 +212,8 @@ defineExpose({ form });
             <DocumentFormDetailWrapper class="col-span-2 m-4">
               <DocumentFormDetail
                 v-model="formValue"
-                :show-non-editable-fields
                 v-bind="slotProps"
+                :show-non-editable-fields
                 :is-disabled-input
                 :items
               />
@@ -227,8 +225,8 @@ defineExpose({ form });
           >
             <DocumentFormDetail
               v-model="formValue"
-              :show-non-editable-fields
               v-bind="slotProps"
+              :show-non-editable-fields
               :is-disabled-input
               :items
             />
