@@ -34,24 +34,22 @@ const formItems = computed(() => {
   let title = [] as Item[];
   let nominal = [] as Item[];
 
-  if (datatable.value) {
-    const datatableMap = new Map(Object.values(datatable.value).flatMap(item => item.rows).map(row => [row.key, row.meta.mapped_work.value]));
+  if (form.value && datatable.value) {
+    const datatableMap = new Map(Object.values(datatable.value).flatMap(item => item.rows).filter(row => row.key !== id).map(row => [row.key, row.meta.mapped_work.value]));
     nominal = Array.from(
       buildRecommendationList(
-        Array.from(datatableMap.entries())
-          .map(([key, value]) => ({ key, value: value.invoiceNominal }))
-          .filter(item => item.key !== id),
-        String(id),
+        Array.from(datatableMap.values())
+          .map(item => ({ key: item.poNumber, value: item.invoiceNominal })),
+        form.value.poNumber,
       ).values(),
     )
       .map(item => ({ label: String(item.value), value: String(item.value) }));
 
     title = Array.from(
       buildRecommendationList(
-        Array.from(datatableMap.entries())
-          .map(([key, value]) => ({ key, value: value.detailsTitle }))
-          .filter(item => item.key !== id),
-        String(id),
+        Array.from(datatableMap.values())
+          .map(item => ({ key: item.poNumber, value: item.detailsTitle })),
+        form.value.poNumber,
       ).values(),
     )
       .map(item => ({ label: String(item.value), value: String(item.value) }));
