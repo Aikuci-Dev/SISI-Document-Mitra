@@ -13,7 +13,6 @@ const props = withDefaults(defineProps<{
 }>(), { showNonEditableFields: true, items: () => ({ nominal: [] as Item[] }) });
 
 const formValue = defineModel<WorkDocument>();
-const invoiceNominal = defineModel<string>('invoiceNominal', { default: '0' });
 
 const delegatedProps = computed(() => {
   if (props.shape?.type === 'ZodObject')
@@ -61,7 +60,6 @@ const delegatedProps = computed(() => {
     <template #invoiceNominal="slotProps">
       <!-- TODO: Masking using `maska` -->
       <BaseInputCombobox
-        v-model="invoiceNominal"
         v-bind="slotProps"
         :items="items.nominal"
         label="Invoice Nominal"

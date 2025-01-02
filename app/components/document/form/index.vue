@@ -24,8 +24,6 @@ const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { de
 const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
 const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
 
-const invoiceNominal = ref(String(formValue.value?.invoiceNominal) || '0');
-
 const schema = z.object({
   number: z.string().min(1, 'Project number is required.'),
   title: z.string().min(1, 'Project title is required.'),
@@ -56,6 +54,12 @@ const form = useForm({
 });
 const isFormValid = computed(() => form.meta.value.valid);
 
+watch(() => form.values.title, (value) => {
+  if (value) formValue.value!.detailsTitle = value;
+});
+watch(() => form.values.detail?.invoiceNominal, (value) => {
+  if (value) formValue.value!.invoiceNominal = +value.replace(/\D+/g, '');
+});
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
     const dateValue = date.toDate(getLocalTimeZone());
@@ -69,9 +73,6 @@ watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
     formValue.value!.detailsDateTsEnd = dateValue.getTime();
     formValue.value!.detailsDateEnd = dateValue.toISOString();
   }
-});
-watch(invoiceNominal, (value) => {
-  if (value) formValue.value!.invoiceNominal = +value.replace(/\D+/g, '');
 });
 
 async function handleSubmit() {
@@ -113,7 +114,6 @@ defineExpose({ form });
         </template>
         <template #title="slotProps">
           <BaseInputCombobox
-            v-model="formValue.detailsTitle"
             v-bind="slotProps"
             :items="items.title"
             placeholder="Project Title"
@@ -204,7 +204,6 @@ defineExpose({ form });
             <DocumentFormDetailWrapper class="col-span-2 m-4">
               <DocumentFormDetail
                 v-model="formValue"
-                v-model:invoice-nominal="invoiceNominal"
                 :show-non-editable-fields
                 v-bind="slotProps"
                 :is-disabled-input
@@ -218,7 +217,6 @@ defineExpose({ form });
           >
             <DocumentFormDetail
               v-model="formValue"
-              v-model:invoice-nominal="invoiceNominal"
               :show-non-editable-fields
               v-bind="slotProps"
               :is-disabled-input
