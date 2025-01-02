@@ -4,8 +4,10 @@ import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
 import { Eye } from 'lucide-vue-next';
-import type { WorkDocument } from '~~/types/schema/document';
+import { isStatusNotInitiated } from '~/lib/documents';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
+import type { WorkDocument } from '~~/types/schema/document';
+import type { STATUSES_TYPE } from '~~/types/document';
 
 type FormEmits = {
   generate: [];
@@ -13,6 +15,7 @@ type FormEmits = {
 const emits = defineEmits<FormEmits>();
 
 const props = defineProps<{
+  status: STATUSES_TYPE;
   items: Record<'title' | 'nominal', Item[]>;
   isDisabledAction?: boolean;
   isDisabledInput?: boolean;
@@ -23,12 +26,6 @@ const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { de
 
 const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
 const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
-function getInitiateTitle() {
-  return formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '';
-}
-function getInitiateInvoiceNominal() {
-  return formValue.value?.invoiceNominal || props.items.nominal[0]?.value;
-}
 
 const schema = z.object({
   number: z.string().min(1, 'Project number is required.'),
@@ -64,18 +61,29 @@ onMounted(() => {
   form.resetField('title', { value: getInitiateTitle() });
   form.resetField('detail.invoiceNominal', { value: getInitiateInvoiceNominal() });
 });
+
+const isFieldTitleDirty = computed(() => form.isFieldDirty('title'));
+function getInitiateTitle() {
+  return isStatusNotInitiated(props.status) || isFieldTitleDirty.value ? formValue.value!.detailsTitle : props.items.title[0]?.value || '';
+}
 watch(() => props.items.title, (value) => {
   if (value.length) form.resetField('title', { value: getInitiateTitle() });
 });
 watch(() => form.values.title, (value) => {
   if (value) formValue.value!.detailsTitle = value;
 });
+
+const isFieldInvoiceNominalDirty = computed(() => form.isFieldDirty('detail.invoiceNominal'));
+function getInitiateInvoiceNominal() {
+  return isStatusNotInitiated(props.status) || isFieldInvoiceNominalDirty.value ? formValue.value!.invoiceNominal : props.items.nominal[0]?.value;
+}
 watch(() => props.items.nominal, (value) => {
   if (value.length) form.resetField('detail.invoiceNominal', { value: getInitiateInvoiceNominal() });
 });
 watch(() => form.values.detail?.invoiceNominal, (value) => {
   formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
 });
+
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
     const dateValue = date.toDate(getLocalTimeZone());
