@@ -12,7 +12,7 @@ type FormEmits = {
 };
 const emits = defineEmits<FormEmits>();
 
-defineProps<{
+const props = defineProps<{
   items: Record<'title' | 'nominal', Item[]>;
   isDisabledAction?: boolean;
   isDisabledInput?: boolean;
@@ -54,6 +54,16 @@ const form = useForm({
 });
 const isFormValid = computed(() => form.meta.value.valid);
 
+onMounted(() => {
+  form.resetForm({
+    values: {
+      title: formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '',
+      detail: {
+        invoiceNominal: formValue.value?.invoiceNominal ? String(formValue.value?.invoiceNominal) : props.items.nominal[0]?.value,
+      },
+    },
+  });
+});
 watch(() => form.values.title, (value) => {
   if (value) formValue.value!.detailsTitle = value;
 });
