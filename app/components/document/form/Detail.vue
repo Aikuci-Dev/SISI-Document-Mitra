@@ -62,6 +62,7 @@ const delegatedProps = computed(() => {
       <BaseInputCombobox
         v-bind="slotProps"
         :items="items.nominal"
+        :removed-items="['0']"
         label="Invoice Nominal"
         placeholder="0"
         :disabled="isDisabledInput"

@@ -7,10 +7,13 @@ import type { FieldProps } from '@/components/shadcn/ui/auto-form';
 
 export interface Item { label: string; value: string }
 
-const props = defineProps<FieldProps & { items: Item[]; class?: HTMLAttributes['class']; placeholder?: string }>();
+const props = withDefaults(
+  defineProps<FieldProps & { items: Item[]; removedItems?: string[]; class?: HTMLAttributes['class']; placeholder?: string }>(),
+  { removedItems: () => [] as string[] },
+);
 
 const delegatedProps = computed(() => {
-  const { class: _class, items: _items, ...delegated } = props;
+  const { class: _class, items: _items, removedItems: _removedItems, ...delegated } = props;
 
   return delegated;
 });
@@ -26,7 +29,7 @@ const itemsWithCurrent = computed(() => {
   if (value.value.length) itemsMap.set(value.value, { label: value.value, value: value.value });
   if (searchTerm.value.length) itemsMap.set(searchTerm.value, { label: searchTerm.value, value: searchTerm.value });
 
-  return Array.from(itemsMap, ([_key, item]) => item);
+  return Array.from(itemsMap, ([_key, item]) => item).filter(item => !props.removedItems.includes(item.value));
 },
 );
 </script>
