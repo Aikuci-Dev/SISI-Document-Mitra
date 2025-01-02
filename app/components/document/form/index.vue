@@ -66,7 +66,7 @@ watch(() => form.values.title, (value) => {
   if (value) formValue.value!.detailsTitle = value;
 });
 watch(() => form.values.detail?.invoiceNominal, (value) => {
-  if (value) formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
+  formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
 });
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {

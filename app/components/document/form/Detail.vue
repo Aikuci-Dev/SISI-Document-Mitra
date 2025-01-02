@@ -64,11 +64,12 @@ const delegatedProps = computed(() => {
         :items="items.nominal"
         :removed-items="['0']"
         label="Invoice Nominal"
-        placeholder="0"
         :disabled="isDisabledInput"
         required
         :class="{ 'col-span-2': !showNonEditableFields }"
-      />
+      >
+        {{ formValue.invoiceNominal }}
+      </BaseInputCombobox>
     </template>
     <template #bast="slotProps">
       <ShadcnAutoFormFieldInput

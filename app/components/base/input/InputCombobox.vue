@@ -49,7 +49,9 @@ const itemsWithCurrent = computed(() => {
               :class="cn('w-full justify-between', !slotProps.componentField.modelValue && 'text-muted-foreground')"
               @click="() => searchTerm = value"
             >
-              {{ slotProps.componentField.modelValue.length ? itemsWithCurrent.find((item) => item.value === slotProps.componentField.modelValue)?.label : placeholder || 'Select item...' }}
+              <slot>
+                {{ slotProps.componentField.modelValue.length ? itemsWithCurrent.find((item) => item.value === slotProps.componentField.modelValue)?.label : placeholder || 'Select item...' }}
+              </slot>
               <ChevronsUpDown class="ml-2 size-4 shrink-0 opacity-50" />
             </ShadcnButton>
           </ShadcnFormControl>
