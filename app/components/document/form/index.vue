@@ -40,7 +40,7 @@ const schema = z.object({
     po: z.string().min(1, 'PO number is required.'),
     bapp: z.string().min(1, 'BAPP number is required.'),
     invoice: z.string().min(1, 'Invoice number is required.'),
-    invoiceNominal: z.string().min(1, 'Invoice nominal is required.').refine(val => +val.replace(/\D+/g, '') > 0, 'Invoice nominal is required.'),
+    invoiceNominal: z.preprocess(val => +String(val).replace(/\D+/g, ''), z.number().min(1, 'Invoice nominal is required.')),
     bast: z.string().optional(),
   }),
 });
@@ -58,7 +58,7 @@ onBeforeMount(() => {
   form.setValues({
     title: formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '',
     detail: {
-      invoiceNominal: formValue.value?.invoiceNominal ? String(formValue.value?.invoiceNominal) : props.items.nominal[0]?.value,
+      invoiceNominal: formValue.value?.invoiceNominal ? formValue.value?.invoiceNominal : props.items.nominal[0]?.value,
     },
   });
 });
@@ -66,7 +66,7 @@ watch(() => form.values.title, (value) => {
   if (value) formValue.value!.detailsTitle = value;
 });
 watch(() => form.values.detail?.invoiceNominal, (value) => {
-  if (value) formValue.value!.invoiceNominal = +value.replace(/\D+/g, '');
+  if (value) formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
 });
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
