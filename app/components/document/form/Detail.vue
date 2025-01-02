@@ -2,13 +2,15 @@
 import type { ZodObject, ZodRawShape } from 'zod';
 import type { Shape } from '@/components/shadcn/ui/auto-form/interface';
 import type { WorkDocument } from '~~/types/schema/document';
+import type { Item } from '~/components/base/input/InputCombobox.vue';
 
 const props = withDefaults(defineProps<{
   fieldName: string;
   shape: Shape;
-  showNonEditableFields?: boolean;
   isDisabledInput?: boolean;
-}>(), { showNonEditableFields: true });
+  showNonEditableFields?: boolean;
+  items?: Record<'nominal', Item[]>;
+}>(), { showNonEditableFields: true, items: () => ({ nominal: [] as Item[] }) });
 
 const formValue = defineModel<WorkDocument>();
 const invoiceNominal = defineModel<string>('invoiceNominal', { default: '0' });
@@ -61,7 +63,7 @@ const delegatedProps = computed(() => {
       <BaseInputCombobox
         v-model="invoiceNominal"
         v-bind="slotProps"
-        :items="[{ label: '1', value: '1' }]"
+        :items="items.nominal"
         label="Invoice Nominal"
         placeholder="0"
         :disabled="isDisabledInput"

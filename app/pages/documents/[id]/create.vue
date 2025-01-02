@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
+import type { Item } from '~/components/base/input/InputCombobox.vue';
 import { isStatusInitiatedOrRejected } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable } from '~~/types/document';
@@ -29,6 +30,20 @@ const form = ref(getWork());
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 const showNonEditableFields = ref(false);
+const formItems = computed(() => {
+  const title = [] as Item[];
+  const nominal = [] as Item[];
+
+  if (datatable.value) {
+    const datatableMap = new Map(Object.values(datatable.value).flatMap(item => item.rows).map(row => [row.key, row.meta.mapped_work.value]));
+    datatableMap.forEach((value) => {
+      if (value.detailsTitle.length) title.push({ label: value.detailsTitle, value: value.detailsTitle });
+      nominal.push({ label: String(value.invoiceNominal), value: String(value.invoiceNominal) });
+    });
+  }
+
+  return { title, nominal };
+});
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
@@ -119,6 +134,7 @@ async function handleGenerate() {
           ref="documentFormRef"
           v-model="form"
           v-model:show-non-editable-fields="showNonEditableFields"
+          :items="formItems"
           :is-disabled-action="isDisabledAction"
           @generate="() => showAlertDialog = true"
         />

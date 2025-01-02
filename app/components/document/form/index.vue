@@ -5,6 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
 import { Eye } from 'lucide-vue-next';
 import type { WorkDocument } from '~~/types/schema/document';
+import type { Item } from '~/components/base/input/InputCombobox.vue';
 
 type FormEmits = {
   generate: [];
@@ -12,6 +13,7 @@ type FormEmits = {
 const emits = defineEmits<FormEmits>();
 
 defineProps<{
+  items: Record<'title' | 'nominal', Item[]>;
   isDisabledAction?: boolean;
   isDisabledInput?: boolean;
 }>();
@@ -113,9 +115,10 @@ defineExpose({ form });
           <BaseInputCombobox
             v-model="formValue.detailsTitle"
             v-bind="slotProps"
-            :items="[{ label: 'a', value: 'a' }]"
+            :items="items.title"
             placeholder="Project Title"
             :disabled="isDisabledInput"
+            required
             :class="{ 'col-span-2': !showNonEditableFields }"
           />
         </template>
@@ -201,9 +204,11 @@ defineExpose({ form });
             <DocumentFormDetailWrapper class="col-span-2 m-4">
               <DocumentFormDetail
                 v-model="formValue"
+                v-model:invoice-nominal="invoiceNominal"
                 :show-non-editable-fields
                 v-bind="slotProps"
                 :is-disabled-input
+                :items
               />
             </DocumentFormDetailWrapper>
           </template>
@@ -217,6 +222,7 @@ defineExpose({ form });
               :show-non-editable-fields
               v-bind="slotProps"
               :is-disabled-input
+              :items
             />
           </div>
         </template>
