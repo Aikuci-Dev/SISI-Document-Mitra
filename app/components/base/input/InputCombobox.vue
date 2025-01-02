@@ -5,7 +5,7 @@ import { Check, ChevronsUpDown } from 'lucide-vue-next';
 import { cn } from '@/lib/utils';
 import type { FieldProps } from '@/components/shadcn/ui/auto-form';
 
-export interface Item { label: string; value: string }
+export interface Item { label: string; value: string; [key: string]: unknown }
 
 const props = withDefaults(
   defineProps<FieldProps & { items: Item[]; removedItems?: string[]; class?: HTMLAttributes['class']; placeholder?: string }>(),
