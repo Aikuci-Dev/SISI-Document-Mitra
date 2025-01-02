@@ -37,7 +37,7 @@ const formItems = computed(() => {
   const filteredRows = Object.values(datatable.value).flatMap(item => item.rows).filter(row => row.key !== id);
   const datatableMap = new Map(filteredRows.map(row => [row.key, row.meta.mapped_work.value]));
 
-  const titles = Array.from(datatableMap.values()).map(item => ({ key: item.poNumber, value: item.detailsTitle }));
+  const titles = Array.from(datatableMap.values()).map(item => ({ key: item.detailsNumber, value: item.detailsTitle }));
   const nominals = Array.from(datatableMap.values()).map(item => ({ key: item.poNumber, value: item.invoiceNominal || 0 }));
 
   function createRecommendations<T>(values: DataItem<T>[], keyToMatch: string) {
@@ -45,7 +45,7 @@ const formItems = computed(() => {
       .map(item => ({ label: String(item.value), value: String(item.value), weight: item.weight }));
   }
 
-  let title = createRecommendations<string>(titles, form.value.poNumber);
+  let title = createRecommendations<string>(titles, form.value.detailsNumber);
   if (formItemsTitle.value && formItemsTitle.value.length) {
     const sortedTitles = [...formItemsTitle.value, ...title].sort((a, b) => b.weight - a.weight);
     title = Array.from(new Map(sortedTitles.map(item => [item.value, item])).values());
