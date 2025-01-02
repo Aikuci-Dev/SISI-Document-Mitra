@@ -23,6 +23,12 @@ const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { de
 
 const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
 const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
+function getInitiateTitle() {
+  return formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '';
+}
+function getInitiateInvoiceNominal() {
+  return formValue.value?.invoiceNominal || props.items.nominal[0]?.value;
+}
 
 const schema = z.object({
   number: z.string().min(1, 'Project number is required.'),
@@ -54,16 +60,18 @@ const form = useForm({
 });
 const isFormValid = computed(() => form.meta.value.valid);
 
-onBeforeMount(() => {
-  form.setValues({
-    title: formValue.value?.detailsTitle.length ? formValue.value?.detailsTitle : props.items.title[0]?.value || '',
-    detail: {
-      invoiceNominal: formValue.value?.invoiceNominal ? formValue.value?.invoiceNominal : props.items.nominal[0]?.value,
-    },
-  });
+onMounted(() => {
+  form.resetField('title', { value: getInitiateTitle() });
+  form.resetField('detail.invoiceNominal', { value: getInitiateInvoiceNominal() });
+});
+watch(() => props.items.title, (value) => {
+  if (value.length) form.resetField('title', { value: getInitiateTitle() });
 });
 watch(() => form.values.title, (value) => {
   if (value) formValue.value!.detailsTitle = value;
+});
+watch(() => props.items.nominal, (value) => {
+  if (value.length) form.resetField('detail.invoiceNominal', { value: getInitiateInvoiceNominal() });
 });
 watch(() => form.values.detail?.invoiceNominal, (value) => {
   formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
