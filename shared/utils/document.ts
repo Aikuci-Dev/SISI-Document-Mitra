@@ -1,4 +1,4 @@
-type DataItem<T> = {
+export type DataItem<T> = {
   key: number | string;
   value: T;
 };

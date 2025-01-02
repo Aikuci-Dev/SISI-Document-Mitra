@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
-import type { Item } from '~/components/base/input/InputCombobox.vue';
 import { isStatusInitiatedOrRejected } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable } from '~~/types/document';
@@ -31,31 +30,23 @@ const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 const showNonEditableFields = ref(false);
 const formItems = computed(() => {
-  let title = [] as Item[];
-  let nominal = [] as Item[];
+  if (!form.value || !datatable.value) return { title: [], nominal: [] };
 
-  if (form.value && datatable.value) {
-    const datatableMap = new Map(Object.values(datatable.value).flatMap(item => item.rows).filter(row => row.key !== id).map(row => [row.key, row.meta.mapped_work.value]));
-    nominal = Array.from(
-      buildRecommendationList(
-        Array.from(datatableMap.values())
-          .map(item => ({ key: item.poNumber, value: item.invoiceNominal })),
-        form.value.poNumber,
-      ).values(),
-    )
-      .map(item => ({ label: String(item.value), value: String(item.value) }));
+  const filteredRows = Object.values(datatable.value).flatMap(item => item.rows).filter(row => row.key !== id);
+  const datatableMap = new Map(filteredRows.map(row => [row.key, row.meta.mapped_work.value]));
 
-    title = Array.from(
-      buildRecommendationList(
-        Array.from(datatableMap.values())
-          .map(item => ({ key: item.poNumber, value: item.detailsTitle })),
-        form.value.poNumber,
-      ).values(),
-    )
+  const titles = Array.from(datatableMap.values()).map(item => ({ key: item.poNumber, value: item.detailsTitle }));
+  const nominals = Array.from(datatableMap.values()).map(item => ({ key: item.poNumber, value: item.invoiceNominal || 0 }));
+
+  function createRecommendations<T>(values: DataItem<T>[], keyToMatch: string) {
+    return Array.from(buildRecommendationList<T>(values, keyToMatch).values())
       .map(item => ({ label: String(item.value), value: String(item.value) }));
   }
 
-  return { title, nominal };
+  return {
+    title: createRecommendations<string>(titles, form.value.poNumber),
+    nominal: createRecommendations<number>(nominals, form.value.poNumber),
+  };
 });
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
