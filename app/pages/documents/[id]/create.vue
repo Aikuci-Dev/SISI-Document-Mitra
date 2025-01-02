@@ -31,15 +31,30 @@ const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 const showNonEditableFields = ref(false);
 const formItems = computed(() => {
-  const title = [] as Item[];
-  const nominal = [] as Item[];
+  let title = [] as Item[];
+  let nominal = [] as Item[];
 
   if (datatable.value) {
     const datatableMap = new Map(Object.values(datatable.value).flatMap(item => item.rows).map(row => [row.key, row.meta.mapped_work.value]));
-    datatableMap.forEach((value) => {
-      if (value.detailsTitle.length) title.push({ label: value.detailsTitle, value: value.detailsTitle });
-      nominal.push({ label: String(value.invoiceNominal), value: String(value.invoiceNominal) });
-    });
+    nominal = Array.from(
+      buildRecommendationList(
+        Array.from(datatableMap.entries())
+          .map(([key, value]) => ({ key, value: value.invoiceNominal }))
+          .filter(item => item.key !== id),
+        String(id),
+      ).values(),
+    )
+      .map(item => ({ label: String(item.value), value: String(item.value) }));
+
+    title = Array.from(
+      buildRecommendationList(
+        Array.from(datatableMap.entries())
+          .map(([key, value]) => ({ key, value: value.detailsTitle }))
+          .filter(item => item.key !== id),
+        String(id),
+      ).values(),
+    )
+      .map(item => ({ label: String(item.value), value: String(item.value) }));
   }
 
   return { title, nominal };
