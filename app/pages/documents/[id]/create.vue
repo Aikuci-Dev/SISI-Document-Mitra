@@ -2,7 +2,7 @@
 import { useVueToPrint } from 'vue-to-print';
 import { isStatusInitiatedOrRejected } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable } from '~~/types/document';
+import { STATUSES, type BAPPOrBAST, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -11,7 +11,7 @@ definePageMeta({
 const { id } = useRoute().params;
 
 const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
-function getWork() {
+function getWorkAndStatus() {
   if (!datatable.value) {
     navigateTo('/documents');
     return;
@@ -23,12 +23,14 @@ function getWork() {
   if (!row) throw createError({ statusCode: 404, fatal: true });
   if (!isStatusInitiatedOrRejected(row.meta.status)) throw createError({ statusCode: 404, fatal: true });
 
-  return row.meta.mapped_work.value;
+  return { work: row.meta.mapped_work.value, status: row.meta.status };
 };
-const form = ref(getWork());
+const form = ref(getWorkAndStatus()?.work);
+const formStatus = computed(() => getWorkAndStatus()?.status || STATUSES.initiated);
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 const showNonEditableFields = ref(false);
+const { data: formItemsTitle } = useLazyFetch('/api/documents/form/items/recommendations', { params: { type: 'title' } });
 const formItems = computed(() => {
   if (!form.value || !datatable.value) return { title: [], nominal: [] };
 
@@ -40,11 +42,17 @@ const formItems = computed(() => {
 
   function createRecommendations<T>(values: DataItem<T>[], keyToMatch: string) {
     return Array.from(buildRecommendationList<T>(values, keyToMatch).values())
-      .map(item => ({ label: String(item.value), value: String(item.value) }));
+      .map(item => ({ label: String(item.value), value: String(item.value), weight: item.weight }));
+  }
+
+  let title = createRecommendations<string>(titles, form.value.poNumber);
+  if (formItemsTitle.value && formItemsTitle.value.length) {
+    const sortedTitles = [...formItemsTitle.value, ...title].sort((a, b) => b.weight - a.weight);
+    title = Array.from(new Map(sortedTitles.map(item => [item.value, item])).values());
   }
 
   return {
-    title: createRecommendations<string>(titles, form.value.poNumber),
+    title,
     nominal: createRecommendations<number>(nominals, form.value.poNumber),
   };
 });
@@ -138,6 +146,7 @@ async function handleGenerate() {
           ref="documentFormRef"
           v-model="form"
           v-model:show-non-editable-fields="showNonEditableFields"
+          :status="formStatus"
           :items="formItems"
           :is-disabled-action="isDisabledAction"
           @generate="() => showAlertDialog = true"
