@@ -30,29 +30,19 @@ const formStatus = computed(() => getWorkAndStatus()?.status || STATUSES.initiat
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 const showNonEditableFields = ref(false);
-const { data: formItemsTitle } = useLazyFetch('/api/documents/form/items/recommendations', { params: { type: 'title' } });
+const { data: formItemsTitle } = useLazyFetch('/api/documents/form/items/recommendations', { params: { id, type: 'title' } });
 const formItems = computed(() => {
   if (!form.value || !datatable.value) return { title: [], nominal: [] };
 
   const filteredRows = Object.values(datatable.value).flatMap(item => item.rows).filter(row => row.key !== id);
   const datatableMap = new Map(filteredRows.map(row => [row.key, row.meta.mapped_work.value]));
 
-  const titles = Array.from(datatableMap.values()).map(item => ({ key: item.detailsNumber, value: item.detailsTitle }));
+  let titles = Array.from(datatableMap.values()).filter(item => item.detailsTitle !== '').map(item => ({ key: item.detailsNumber, value: item.detailsTitle }));
+  if (formItemsTitle.value?.length) titles = [...formItemsTitle.value, ...titles];
   const nominals = Array.from(datatableMap.values()).map(item => ({ key: item.poNumber, value: item.invoiceNominal || 0 }));
 
-  function createRecommendations<T>(values: DataItem<T>[], keyToMatch: string) {
-    return Array.from(buildRecommendationList<T>(values, keyToMatch).values())
-      .map(item => ({ label: String(item.value), value: String(item.value), weight: item.weight }));
-  }
-
-  let title = createRecommendations<string>(titles, form.value.detailsNumber);
-  if (formItemsTitle.value && formItemsTitle.value.length) {
-    const sortedTitles = [...formItemsTitle.value, ...title].sort((a, b) => b.weight - a.weight);
-    title = Array.from(new Map(sortedTitles.map(item => [item.value, item])).values());
-  }
-
   return {
-    title,
+    title: createRecommendations<string>(titles, form.value.detailsNumber),
     nominal: createRecommendations<number>(nominals, form.value.poNumber),
   };
 });

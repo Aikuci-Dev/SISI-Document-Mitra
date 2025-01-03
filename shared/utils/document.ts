@@ -1,4 +1,4 @@
-export type DataItem<T> = {
+type DataItem<T> = {
   key: number | string;
   value: T;
 };
@@ -8,7 +8,7 @@ type RecommendationItem<T> = {
 };
 type RecommendationMap<T> = Map<T, RecommendationItem<T>>;
 
-export function buildRecommendationList<T>(items: DataItem<T>[], searchKey: number | string): RecommendationMap<T> {
+function buildRecommendationList<T>(items: DataItem<T>[], searchKey: number | string): RecommendationMap<T> {
   const weights = new Map<T, RecommendationItem<T>>();
 
   // Calculate weights based on the matching criteria and accumulate them
@@ -25,4 +25,9 @@ export function buildRecommendationList<T>(items: DataItem<T>[], searchKey: numb
     .map(item => [item.value, item] as [T, RecommendationItem<T>]); // Create tuples for the Map
 
   return new Map(sortedEntries);
+}
+
+export function createRecommendations<T>(values: DataItem<T>[], keyToMatch: string) {
+  return Array.from(buildRecommendationList<T>(values, keyToMatch).values())
+    .map(item => ({ label: String(item.value), value: String(item.value), weight: item.weight }));
 }
