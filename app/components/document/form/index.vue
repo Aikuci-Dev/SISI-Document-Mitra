@@ -57,18 +57,10 @@ const form = useForm({
 });
 const isFormValid = computed(() => form.meta.value.valid);
 
-onMounted(() => {
-  form.resetField('title', { value: getInitiateTitle() });
-  form.resetField('detail.invoiceNominal', { value: getInitiateInvoiceNominal() });
-});
-
 const isFieldTitleDirty = computed(() => form.isFieldDirty('title'));
 function getInitiateTitle() {
   return isStatusNotInitiated(props.status) || isFieldTitleDirty.value ? formValue.value!.detailsTitle : props.items.title[0]?.value || '';
 }
-watch(() => props.items.title, (value) => {
-  if (value.length) form.resetField('title', { value: getInitiateTitle() });
-});
 watch(() => form.values.title, (value) => {
   if (value) formValue.value!.detailsTitle = value;
 });
@@ -77,9 +69,6 @@ const isFieldInvoiceNominalDirty = computed(() => form.isFieldDirty('detail.invo
 function getInitiateInvoiceNominal() {
   return isStatusNotInitiated(props.status) || isFieldInvoiceNominalDirty.value ? formValue.value!.invoiceNominal : props.items.nominal[0]?.value;
 }
-watch(() => props.items.nominal, (value) => {
-  if (value.length) form.resetField('detail.invoiceNominal', { value: getInitiateInvoiceNominal() });
-});
 watch(() => form.values.detail?.invoiceNominal, (value) => {
   formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
 });
@@ -97,6 +86,23 @@ watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
     formValue.value!.detailsDateTsEnd = dateValue.getTime();
     formValue.value!.detailsDateEnd = dateValue.toISOString();
   }
+});
+
+function resetForm() {
+  form.setValues({
+    title: getInitiateTitle(),
+    detail: {
+      invoiceNominal: getInitiateInvoiceNominal(),
+    },
+  });
+}
+
+onMounted(() => {
+  resetForm();
+});
+
+watch(() => props.items, () => {
+  resetForm();
 });
 
 async function handleSubmit() {
