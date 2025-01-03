@@ -7,6 +7,7 @@ import type { User } from '~~/types/session';
 
 type DatatableEmits = {
   createOrView: [{ type: CreateOrView; id: string }];
+  autoFill: [{ id: string }];
   print: [{ id: string }];
   formFill: [{ id: string }];
 };
@@ -59,13 +60,15 @@ defineProps<DatatableProps>();
               <ShadcnDropdownMenuContent align="end">
                 <ShadcnDropdownMenuLabel>DOCUMENT</ShadcnDropdownMenuLabel>
 
-                <ShadcnDropdownMenuItem
-                  v-if="type === DOCUMENTS_TABLE.employee && isStatusInitiatedOrRejected(row.meta.status)"
-                  @click="$emit('createOrView', { type: 'create', id: row.key })"
-                >
-                  <span v-if="isStatusNotInitiated(row.meta.status)">Revise</span>
-                  <span v-else>Create</span>
-                </ShadcnDropdownMenuItem>
+                <template v-if="type === DOCUMENTS_TABLE.employee && isStatusInitiatedOrRejected(row.meta.status)">
+                  <ShadcnDropdownMenuItem @click="$emit('createOrView', { type: 'create', id: row.key })">
+                    <span v-if="isStatusNotInitiated(row.meta.status)">Revise</span>
+                    <span v-else>Create</span>
+                  </ShadcnDropdownMenuItem>
+                  <ShadcnDropdownMenuItem @click="$emit('autoFill', { id: row.key })">
+                    Auto Fill
+                  </ShadcnDropdownMenuItem>
+                </template>
 
                 <!-- View option -->
                 <ShadcnDropdownMenuItem

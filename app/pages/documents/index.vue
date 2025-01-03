@@ -55,6 +55,17 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
+const poFile = ref();
+const showDialogUploadFile = ref(false);
+async function handleUploadedFile() {
+  console.log('handleUploadedFile', poFile.value);
+  showDialogUploadFile.value = false;
+}
+function handleAutoFill() {
+  // TODO-Last: Implement OCR to extract data from PDF file then use it for fill form
+  showDialogUploadFile.value = true;
+}
+
 function handleCreateOrView(context: { type: CreateOrView; id: string }) {
   documentId.value = context.id;
 
@@ -123,6 +134,7 @@ async function handleFillForm(context: { id: string }) {
                     :rows
                     :user="user!"
                     :type="datatableType"
+                    @auto-fill="handleAutoFill"
                     @create-or-view="handleCreateOrView"
                     @print="handlePrePrint"
                     @form-fill="handleFillForm"
@@ -147,6 +159,12 @@ async function handleFillForm(context: { id: string }) {
                 />
               </template>
             </div>
+
+            <DocumentDialogUploadPO
+              v-model:open="showDialogUploadFile"
+              v-model="poFile"
+              @submit="handleUploadedFile"
+            />
           </ShadcnCardContent>
         </ShadcnCard>
       </template>
