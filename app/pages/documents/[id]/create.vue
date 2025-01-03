@@ -26,7 +26,7 @@ function getWorkAndStatus() {
   return { work: row.meta.mapped_work.value, status: row.meta.status };
 };
 const form = ref(getWorkAndStatus()?.work);
-const formStatus = computed(() => getWorkAndStatus()?.status || STATUSES.initiated);
+const formStatus = getWorkAndStatus()?.status || STATUSES.initiated;
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
 const showNonEditableFields = ref(false);
