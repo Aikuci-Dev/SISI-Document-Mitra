@@ -2,7 +2,7 @@
 import { useVueToPrint } from 'vue-to-print';
 import { isStatusInitiatedOrRejected } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable } from '~~/types/document';
+import { STATUSES, type BAPPOrBAST, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -11,7 +11,7 @@ definePageMeta({
 const { id } = useRoute().params;
 
 const { data: datatable } = useNuxtData<Record<DOCUMENTS_TABLE_TYPE, DocumentTable>>('datatable');
-function getWork() {
+function getWorkAndStatus() {
   if (!datatable.value) {
     navigateTo('/documents');
     return;
@@ -23,11 +23,29 @@ function getWork() {
   if (!row) throw createError({ statusCode: 404, fatal: true });
   if (!isStatusInitiatedOrRejected(row.meta.status)) throw createError({ statusCode: 404, fatal: true });
 
-  return row.meta.mapped_work.value;
+  return { work: row.meta.mapped_work.value, status: row.meta.status };
 };
-const form = ref(getWork());
+const form = ref(getWorkAndStatus()?.work);
+const formStatus = getWorkAndStatus()?.status || STATUSES.initiated;
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
+const showNonEditableFields = ref(false);
+const { data: formItemsTitle } = useLazyFetch('/api/documents/form/items/recommendations', { params: { id, type: 'title' } });
+const formItems = computed(() => {
+  if (!form.value || !datatable.value) return { title: [], nominal: [] };
+
+  const filteredRows = Object.values(datatable.value).flatMap(item => item.rows).filter(row => row.key !== id);
+  const datatableMap = new Map(filteredRows.map(row => [row.key, row.meta.mapped_work.value]));
+
+  let titles = Array.from(datatableMap.values()).filter(item => item.detailsTitle !== '').map(item => ({ key: item.detailsNumber, value: item.detailsTitle }));
+  if (formItemsTitle.value?.length) titles = [...formItemsTitle.value, ...titles];
+  const nominals = Array.from(datatableMap.values()).map(item => ({ key: item.poNumber, value: item.invoiceNominal || 0 }));
+
+  return {
+    title: createRecommendations<string>(titles, form.value.detailsNumber),
+    nominal: createRecommendations<number>(nominals, form.value.poNumber),
+  };
+});
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
@@ -117,6 +135,9 @@ async function handleGenerate() {
         <DocumentForm
           ref="documentFormRef"
           v-model="form"
+          v-model:show-non-editable-fields="showNonEditableFields"
+          :status="formStatus"
+          :items="formItems"
           :is-disabled-action="isDisabledAction"
           @generate="() => showAlertDialog = true"
         />

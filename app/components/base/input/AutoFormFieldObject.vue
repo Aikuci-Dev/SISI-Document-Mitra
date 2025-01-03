@@ -2,8 +2,8 @@
 import type { ZodAny, ZodObject, ZodRawShape } from 'zod';
 import { FieldContextKey, useField } from 'vee-validate';
 import { computed, provide } from 'vue';
-import type { Shape } from '~/components/shadcn/ui/auto-form/interface';
-import { getBaseSchema, getBaseType, getDefaultValueInZodStack } from '~/components/shadcn/ui/auto-form/utils';
+import type { Shape } from '@/components/shadcn/ui/auto-form/interface';
+import { getBaseSchema, getBaseType, getDefaultValueInZodStack } from '@/components/shadcn/ui/auto-form/utils';
 
 const props = defineProps<{
   fieldName: string;

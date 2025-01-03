@@ -3,19 +3,26 @@ import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
+import { Eye } from 'lucide-vue-next';
+import { isStatusNotInitiated } from '~/lib/documents';
+import type { Item } from '~/components/base/input/InputCombobox.vue';
 import type { WorkDocument } from '~~/types/schema/document';
+import type { STATUSES_TYPE } from '~~/types/document';
 
 type FormEmits = {
   generate: [];
 };
 const emits = defineEmits<FormEmits>();
 
-defineProps<{
+const props = defineProps<{
+  status: STATUSES_TYPE;
+  items: Record<'title' | 'nominal', Item[]>;
   isDisabledAction?: boolean;
   isDisabledInput?: boolean;
 }>();
 
 const formValue = defineModel<WorkDocument>();
+const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { default: true });
 
 const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
 const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
@@ -36,7 +43,7 @@ const schema = z.object({
     po: z.string().min(1, 'PO number is required.'),
     bapp: z.string().min(1, 'BAPP number is required.'),
     invoice: z.string().min(1, 'Invoice number is required.'),
-    invoiceNominal: z.string().min(1, 'Invoice nominal is required.').refine(val => +val.replace(/\D+/g, '') > 0, 'Invoice nominal is required.'),
+    invoiceNominal: z.preprocess(val => +String(val).replace(/\D+/g, ''), z.number().min(1, 'Invoice nominal is required.')),
     bast: z.string().optional(),
   }),
 });
@@ -45,14 +52,26 @@ const form = useForm({
   initialValues: {
     dateStart: parseAbsolute(new Date(dateStartTS).toISOString(), getLocalTimeZone()),
     dateEnd: parseAbsolute(new Date(dateEndTS).toISOString(), getLocalTimeZone()),
-
-    detail: {
-      invoiceNominal: formValue.value?.invoiceNominal?.toString(),
-    },
   },
   validateOnMount: true,
 });
 const isFormValid = computed(() => form.meta.value.valid);
+
+const isFieldTitleDirty = computed(() => form.isFieldDirty('title'));
+function getInitiateTitle() {
+  return isStatusNotInitiated(props.status) || isFieldTitleDirty.value ? formValue.value!.detailsTitle : props.items.title[0]?.value || '';
+}
+watch(() => form.values.title, (value) => {
+  if (value) formValue.value!.detailsTitle = value;
+});
+
+const isFieldInvoiceNominalDirty = computed(() => form.isFieldDirty('detail.invoiceNominal'));
+function getInitiateInvoiceNominal() {
+  return isStatusNotInitiated(props.status) || isFieldInvoiceNominalDirty.value ? formValue.value!.invoiceNominal : props.items.nominal[0]?.value;
+}
+watch(() => form.values.detail?.invoiceNominal, (value) => {
+  formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
+});
 
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
@@ -68,8 +87,22 @@ watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
     formValue.value!.detailsDateEnd = dateValue.toISOString();
   }
 });
-watch(() => form.values.detail?.invoiceNominal, (invoice) => {
-  if (invoice) formValue.value!.invoiceNominal = +invoice.replace(/\D+/g, '');
+
+function resetForm() {
+  form.setValues({
+    title: getInitiateTitle(),
+    detail: {
+      invoiceNominal: getInitiateInvoiceNominal(),
+    },
+  });
+}
+
+onMounted(() => {
+  resetForm();
+});
+
+watch(() => props.items, () => {
+  resetForm();
 });
 
 async function handleSubmit() {
@@ -82,7 +115,14 @@ defineExpose({ form });
 <template>
   <ShadcnCard v-if="formValue">
     <ShadcnCardHeader>
-      <ShadcnCardTitle>Document Form</ShadcnCardTitle>
+      <ShadcnCardTitle>
+        <div class="flex items-center justify-between">
+          Document Form
+          <ShadcnToggle v-model:pressed="showNonEditableFields">
+            <Eye class="size-4" />
+          </ShadcnToggle>
+        </div>
+      </ShadcnCardTitle>
       <ShadcnCardDescription>
         The input used within the document to replace placeholders.
       </ShadcnCardDescription>
@@ -99,34 +139,43 @@ defineExpose({ form });
             v-model="formValue.detailsNumber"
             v-bind="slotProps"
             disabled
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
         <template #title="slotProps">
-          <ShadcnAutoFormFieldInput
-            v-model="formValue.detailsTitle"
+          <BaseInputCombobox
             v-bind="slotProps"
+            :items="items.title"
+            placeholder="Project Title"
             :disabled="isDisabledInput"
+            required
+            :class="{ 'col-span-2': !showNonEditableFields }"
           />
         </template>
         <template #dateStart="slotProps">
-          <ShadcnAutoFormFieldDate
+          <BaseInputAutoFormFieldDate
             v-bind="slotProps"
             label="Start Date (per period)"
-            :disabled="isDisabledInput"
+            disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
         <template #dateEnd="slotProps">
-          <ShadcnAutoFormFieldDate
+          <BaseInputAutoFormFieldDate
             v-bind="slotProps"
             label="End Date (per period)"
-            :disabled="isDisabledInput"
+            disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
 
         <template #employeeSeparator>
-          <section class="col-span-2 mt-4">
+          <section
+            class="col-span-2 mt-4"
+            :class="{ hidden: !showNonEditableFields }"
+          >
             <ShadcnSeparator />
             <ShadcnLabel>
               <span>Employee Info</span>
@@ -140,6 +189,7 @@ defineExpose({ form });
             label="Name"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
         <template #employeeRole="slotProps">
@@ -149,12 +199,14 @@ defineExpose({ form });
             label="Role"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
         <template #supervisorName="slotProps">
           <section class="col-span-2 mt-4">
             <ShadcnSeparator
               label="Supervisor"
+              :class="{ hidden: !showNonEditableFields }"
             />
           </section>
           <ShadcnAutoFormFieldInput
@@ -163,6 +215,7 @@ defineExpose({ form });
             label="Name"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
         <template #supervisorRole="slotProps">
@@ -172,16 +225,34 @@ defineExpose({ form });
             label="Role"
             disabled
             required
+            :class="{ hidden: !showNonEditableFields }"
           />
         </template>
 
         <template #detail="slotProps">
-          <DocumentFormDetail
-            v-model="formValue"
-            v-bind="slotProps"
-            :is-disabled-input
-            class="col-span-2 m-4"
-          />
+          <template v-if="showNonEditableFields">
+            <DocumentFormDetailWrapper class="col-span-2 m-4">
+              <DocumentFormDetail
+                v-model="formValue"
+                v-bind="slotProps"
+                :show-non-editable-fields
+                :is-disabled-input
+                :items
+              />
+            </DocumentFormDetailWrapper>
+          </template>
+          <div
+            v-else
+            class="col-span-2 p-0"
+          >
+            <DocumentFormDetail
+              v-model="formValue"
+              v-bind="slotProps"
+              :show-non-editable-fields
+              :is-disabled-input
+              :items
+            />
+          </div>
         </template>
 
         <div class="col-span-2 mt-4 flex justify-end">
