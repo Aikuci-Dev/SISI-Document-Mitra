@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
-import { Eye } from 'lucide-vue-next';
 import { isStatusNotInitiated } from '~/lib/documents';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
 import type { WorkDocument } from '~~/types/schema/document';
@@ -15,12 +14,13 @@ export type FormEmits = {
 const emits = defineEmits<FormEmits>();
 
 export type FormProps = {
+  items: Record<'title' | 'nominal', Item[]>;
+  removedItems?: Record<'title' | 'nominal', string[]>;
   status?: STATUSES_TYPE;
-  items?: Record<'title' | 'nominal', Item[]>;
   isDisabledAction?: boolean;
   isDisabledInput?: boolean;
 };
-const props = withDefaults(defineProps<FormProps>(), { status: STATUSES.initiated, items: () => ({ title: [] as Item[], nominal: [] as Item[] }) });
+const props = withDefaults(defineProps<FormProps>(), { status: STATUSES.initiated, removedItems: () => ({ title: [], nominal: ['0'] }) });
 
 const formValue = defineModel<WorkDocument>();
 const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { default: true });
@@ -114,157 +114,144 @@ defineExpose({ form });
 </script>
 
 <template>
-  <ShadcnCard v-if="formValue">
-    <ShadcnCardHeader>
-      <ShadcnCardTitle>
-        <div class="flex items-center justify-between">
-          Document Form
-          <ShadcnToggle v-model:pressed="showNonEditableFields">
-            <Eye class="size-4" />
-          </ShadcnToggle>
-        </div>
-      </ShadcnCardTitle>
-      <ShadcnCardDescription>
-        The input used within the document to replace placeholders.
-      </ShadcnCardDescription>
-    </ShadcnCardHeader>
-    <ShadcnCardContent>
-      <ShadcnAutoForm
-        :schema
-        :form
-        class="grid grid-cols-2 gap-x-4"
-        @submit="handleSubmit"
+  <ShadcnAutoForm
+    v-if="formValue"
+    :schema
+    :form
+    class="grid grid-cols-2 gap-x-4"
+    @submit="handleSubmit"
+  >
+    <template #number="slotProps">
+      <ShadcnAutoFormFieldInput
+        v-model="formValue.detailsNumber"
+        v-bind="slotProps"
+        disabled
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
+    <template #title="slotProps">
+      <BaseInputCombobox
+        v-bind="slotProps"
+        :items="items.title"
+        :removed-items="removedItems.title"
+        placeholder="Project Title"
+        :disabled="isDisabledInput"
+        required
+        :class="{ 'col-span-2': !showNonEditableFields }"
+      />
+    </template>
+    <template #dateStart="slotProps">
+      <BaseInputAutoFormFieldDate
+        v-bind="slotProps"
+        label="Start Date (per period)"
+        disabled
+        required
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
+    <template #dateEnd="slotProps">
+      <BaseInputAutoFormFieldDate
+        v-bind="slotProps"
+        label="End Date (per period)"
+        disabled
+        required
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
+
+    <template #employeeSeparator>
+      <section
+        class="col-span-2 mt-4"
+        :class="{ hidden: !showNonEditableFields }"
       >
-        <template #number="slotProps">
-          <ShadcnAutoFormFieldInput
-            v-model="formValue.detailsNumber"
-            v-bind="slotProps"
-            disabled
-            :class="{ hidden: !showNonEditableFields }"
-          />
-        </template>
-        <template #title="slotProps">
-          <BaseInputCombobox
-            v-bind="slotProps"
-            :items="items.title"
-            placeholder="Project Title"
-            :disabled="isDisabledInput"
-            required
-            :class="{ 'col-span-2': !showNonEditableFields }"
-          />
-        </template>
-        <template #dateStart="slotProps">
-          <BaseInputAutoFormFieldDate
-            v-bind="slotProps"
-            label="Start Date (per period)"
-            disabled
-            required
-            :class="{ hidden: !showNonEditableFields }"
-          />
-        </template>
-        <template #dateEnd="slotProps">
-          <BaseInputAutoFormFieldDate
-            v-bind="slotProps"
-            label="End Date (per period)"
-            disabled
-            required
-            :class="{ hidden: !showNonEditableFields }"
-          />
-        </template>
+        <ShadcnSeparator />
+        <ShadcnLabel>
+          <span>Employee Info</span>
+        </ShadcnLabel>
+      </section>
+    </template>
+    <template #employeeName="slotProps">
+      <ShadcnAutoFormFieldInput
+        v-model="formValue.employeeName"
+        v-bind="slotProps"
+        label="Name"
+        disabled
+        required
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
+    <template #employeeRole="slotProps">
+      <ShadcnAutoFormFieldInput
+        v-model="formValue.employeeRole"
+        v-bind="slotProps"
+        label="Role"
+        disabled
+        required
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
+    <template #supervisorName="slotProps">
+      <section class="col-span-2 mt-4">
+        <ShadcnSeparator
+          label="Supervisor"
+          :class="{ hidden: !showNonEditableFields }"
+        />
+      </section>
+      <ShadcnAutoFormFieldInput
+        v-model="formValue.supervisorName"
+        v-bind="slotProps"
+        label="Name"
+        disabled
+        required
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
+    <template #supervisorRole="slotProps">
+      <ShadcnAutoFormFieldInput
+        v-model="formValue.supervisorRole"
+        v-bind="slotProps"
+        label="Role"
+        disabled
+        required
+        :class="{ hidden: !showNonEditableFields }"
+      />
+    </template>
 
-        <template #employeeSeparator>
-          <section
-            class="col-span-2 mt-4"
-            :class="{ hidden: !showNonEditableFields }"
-          >
-            <ShadcnSeparator />
-            <ShadcnLabel>
-              <span>Employee Info</span>
-            </ShadcnLabel>
-          </section>
-        </template>
-        <template #employeeName="slotProps">
-          <ShadcnAutoFormFieldInput
-            v-model="formValue.employeeName"
+    <template #detail="slotProps">
+      <template v-if="showNonEditableFields">
+        <DocumentFormDetailWrapper class="col-span-2 m-4">
+          <DocumentFormDetail
+            v-model="formValue"
             v-bind="slotProps"
-            label="Name"
-            disabled
-            required
-            :class="{ hidden: !showNonEditableFields }"
+            :show-non-editable-fields
+            :is-disabled-input
+            :items
+            :removed-items
           />
-        </template>
-        <template #employeeRole="slotProps">
-          <ShadcnAutoFormFieldInput
-            v-model="formValue.employeeRole"
-            v-bind="slotProps"
-            label="Role"
-            disabled
-            required
-            :class="{ hidden: !showNonEditableFields }"
-          />
-        </template>
-        <template #supervisorName="slotProps">
-          <section class="col-span-2 mt-4">
-            <ShadcnSeparator
-              label="Supervisor"
-              :class="{ hidden: !showNonEditableFields }"
-            />
-          </section>
-          <ShadcnAutoFormFieldInput
-            v-model="formValue.supervisorName"
-            v-bind="slotProps"
-            label="Name"
-            disabled
-            required
-            :class="{ hidden: !showNonEditableFields }"
-          />
-        </template>
-        <template #supervisorRole="slotProps">
-          <ShadcnAutoFormFieldInput
-            v-model="formValue.supervisorRole"
-            v-bind="slotProps"
-            label="Role"
-            disabled
-            required
-            :class="{ hidden: !showNonEditableFields }"
-          />
-        </template>
+        </DocumentFormDetailWrapper>
+      </template>
+      <div
+        v-else
+        class="col-span-2 p-0"
+      >
+        <DocumentFormDetail
+          v-model="formValue"
+          v-bind="slotProps"
+          :show-non-editable-fields
+          :is-disabled-input
+          :items
+          :removed-items
+        />
+      </div>
+    </template>
 
-        <template #detail="slotProps">
-          <template v-if="showNonEditableFields">
-            <DocumentFormDetailWrapper class="col-span-2 m-4">
-              <DocumentFormDetail
-                v-model="formValue"
-                v-bind="slotProps"
-                :show-non-editable-fields
-                :is-disabled-input
-                :items
-              />
-            </DocumentFormDetailWrapper>
-          </template>
-          <div
-            v-else
-            class="col-span-2 p-0"
-          >
-            <DocumentFormDetail
-              v-model="formValue"
-              v-bind="slotProps"
-              :show-non-editable-fields
-              :is-disabled-input
-              :items
-            />
-          </div>
-        </template>
-
-        <div class="col-span-2 mt-4 flex justify-end">
-          <ShadcnButton
-            type="submit"
-            :disabled="isDisabledAction || !isFormValid"
-          >
-            Generate
-          </ShadcnButton>
-        </div>
-      </ShadcnAutoForm>
-    </ShadcnCardContent>
-  </ShadcnCard>
+    <div class="col-span-2 mt-4 flex justify-end">
+      <ShadcnButton
+        type="submit"
+        :disabled="isDisabledAction || !isFormValid"
+      >
+        Generate
+      </ShadcnButton>
+    </div>
+  </ShadcnAutoForm>
 </template>
