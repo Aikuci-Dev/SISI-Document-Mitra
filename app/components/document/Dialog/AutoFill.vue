@@ -6,13 +6,6 @@ import type { FormEmits, FormProps } from '@/components/document/form/index.vue'
 import type { WorkDocument } from '~~/types/schema/document';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
 
-const file = ref('');
-const showForm = ref(false);
-
-const schema = z.object({
-  file: z.string(),
-});
-
 // Tesseract
 export interface TesseractWorker {
   recognize: (image: string) => Promise<{ data: { text: string } }>;
@@ -54,13 +47,25 @@ function convertToText(imageUrl: string) {
   });
 }
 
+defineEmits<FormEmits>();
+const props = defineProps<Omit<FormProps, 'items'>>();
+const open = defineModel<boolean>('open');
+const form = defineModel<WorkDocument>();
+
+// File
+const file = ref('');
+const schema = z.object({
+  file: z.string(),
+});
 function handleUploadedPO() {
   triggerTesseract.value = true;
   convertToText(file.value);
 }
 
-const open = defineModel<boolean>('open');
-const form = defineModel<WorkDocument>();
+// FORM
+const showForm = ref(false);
+const formSign = ref(form.value?.employeeSignUrl || '');
+const hasSigned = computed(() => !!form.value?.employeeSignUrl?.length);
 const formItems = ref({ title: [] as Item[], nominal: [] as Item[] });
 const MESSAGE = {
   FAILED_EXTRACT_TITLE: 'FAILED to extract `title`',
@@ -79,9 +84,10 @@ watch(open, () => {
   convertedText.value = '';
   showForm.value = false;
 });
+function handleSign() {
+  form.value!.employeeSignUrl = formSign.value;
+}
 
-defineEmits<FormEmits>();
-const props = defineProps<Omit<FormProps, 'items'>>();
 const delegatedProps = computed(() => ({ props, items: formItems }));
 const forwardedProps = useForwardProps(delegatedProps);
 </script>
@@ -94,15 +100,26 @@ const forwardedProps = useForwardProps(delegatedProps);
         Take a screenshot of your PO and upload it here to automatically fill out the form and generate your document.
       </ShadcnDialogDescription>
 
-      <DocumentForm
-        v-if="showForm"
-        v-model="form"
-        v-bind="forwardedProps"
-        :items="formItems"
-        :removed-items="{ title: [MESSAGE.FAILED_EXTRACT_TITLE], nominal: [MESSAGE.FAILED_EXTRACT_PRICE] }"
-        :show-non-editable-fields="false"
-        @generate="$emit('generate')"
-      />
+      <template v-if="showForm">
+        <DocumentForm
+          v-model="form"
+          v-bind="forwardedProps"
+          :items="formItems"
+          :removed-items="{ title: [MESSAGE.FAILED_EXTRACT_TITLE], nominal: [MESSAGE.FAILED_EXTRACT_PRICE] }"
+          :show-non-editable-fields="false"
+          :is-disabled-action="!hasSigned"
+          @generate="$emit('generate')"
+        >
+          <template #extra-field>
+            <div class="p-5">
+              <DocumentFormSign
+                v-model="formSign"
+                @sign="handleSign"
+              />
+            </div>
+          </template>
+        </DocumentForm>
+      </template>
 
       <ShadcnAutoForm
         v-else

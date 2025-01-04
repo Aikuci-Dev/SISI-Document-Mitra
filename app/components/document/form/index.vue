@@ -245,6 +245,10 @@ defineExpose({ form });
       </div>
     </template>
 
+    <div class="col-span-2">
+      <slot name="extra-field" />
+    </div>
+
     <div class="col-span-2 mt-4 flex justify-end">
       <ShadcnButton
         type="submit"
