@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import { z } from 'zod';
 import { useForwardProps } from 'radix-vue';
-import type { FormProps } from '../form/index.vue';
+import { Loader2 } from 'lucide-vue-next';
+import type { FormEmits, FormProps } from '@/components/document/form/index.vue';
 import type { WorkDocument } from '~~/types/schema/document';
-
-const props = defineProps<FormProps>();
-const forwardedProps = useForwardProps(props);
-
-const form = defineModel<WorkDocument>();
+import type { Item } from '~/components/base/input/InputCombobox.vue';
 
 const file = ref('');
 const showForm = ref(false);
@@ -34,6 +31,7 @@ declare global {
 
 const triggerTesseract = ref(false);
 const convertedText = ref('');
+const isConverting = ref(false);
 const { onLoaded } = useScript<TesseractApi>(
   'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
   {
@@ -45,12 +43,14 @@ const { onLoaded } = useScript<TesseractApi>(
 );
 function convertToText(imageUrl: string) {
   onLoaded(async ({ Tesseract }) => {
+    isConverting.value = true;
     const worker = await Tesseract.createWorker();
 
     const { data: { text } } = await worker.recognize(imageUrl);
     convertedText.value = text;
 
     await worker.terminate();
+    isConverting.value = false;
   });
 }
 
@@ -59,21 +59,35 @@ function handleUploadedPO() {
   convertToText(file.value);
 }
 
+const open = defineModel<boolean>('open');
+const form = defineModel<WorkDocument>();
+const formItems = ref({ title: [] as Item[], nominal: [] as Item[] });
+const MESSAGE = {
+  FAILED_EXTRACT_TITLE: 'FAILED to extract `title`',
+  FAILED_EXTRACT_PRICE: 'FAILED to extract `price`',
+};
 watch(convertedText, (val) => {
   if (val.length) {
-    form.value!.detailsTitle = val.match(/Jasa Pekerjaan\s+([^\n]+)/)?.[1] ?? 'FAILED to extract `title`';
-    form.value!.invoiceNominal = val.match(/Rp\.\s*([\d,]+\.\d{2})/)?.[0] ?? 'FAILED to extract `price`';
+    const title = val.match(/Jasa Pekerjaan\s+([^\n]+)/)?.[1] ?? MESSAGE.FAILED_EXTRACT_TITLE;
+    const nominal = val.match(/Rp\.\s*([\d,]+)/)?.[0] ?? MESSAGE.FAILED_EXTRACT_PRICE;
+    formItems.value.title[0] = { label: title, value: title };
+    formItems.value.nominal[0] = { label: nominal, value: nominal };
     showForm.value = true;
   }
 });
+watch(open, () => {
+  convertedText.value = '';
+  showForm.value = false;
+});
 
-function handleGenerate() {
-  console.log('generate');
-}
+defineEmits<FormEmits>();
+const props = defineProps<Omit<FormProps, 'items'>>();
+const delegatedProps = computed(() => ({ props, items: formItems }));
+const forwardedProps = useForwardProps(delegatedProps);
 </script>
 
 <template>
-  <ShadcnDialog>
+  <ShadcnDialog v-model:open="open">
     <ShadcnDialogContent class="sm:max-w-[425px]">
       <ShadcnDialogTitle>Upload Your PO</ShadcnDialogTitle>
       <ShadcnDialogDescription>
@@ -84,8 +98,10 @@ function handleGenerate() {
         v-if="showForm"
         v-model="form"
         v-bind="forwardedProps"
+        :items="formItems"
+        :removed-items="{ title: [MESSAGE.FAILED_EXTRACT_TITLE], nominal: [MESSAGE.FAILED_EXTRACT_PRICE] }"
         :show-non-editable-fields="false"
-        @generate="handleGenerate"
+        @generate="$emit('generate')"
       />
 
       <ShadcnAutoForm
@@ -102,10 +118,14 @@ function handleGenerate() {
 
         <div class="mt-2 flex justify-end">
           <ShadcnButton
-            class="w-full"
             type="submit"
+            :disabled="isConverting"
           >
-            Next
+            <Loader2
+              v-if="isConverting"
+              class="mr-2 size-4 animate-spin"
+            />
+            {{ isConverting ? 'Converting' : 'Next' }}
           </ShadcnButton>
         </div>
       </ShadcnAutoForm>

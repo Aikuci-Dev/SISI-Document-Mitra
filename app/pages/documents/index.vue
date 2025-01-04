@@ -44,8 +44,10 @@ const form = computed(() => {
     ? rows.value.find(row => row.key === documentId.value)
     : rows.value[0];
 
-  return row?.meta.mapped_work.value;
+  return row!.meta.mapped_work.value;
 });
+const formAutoFill = ref();
+watch(form, val => formAutoFill.value = val);
 
 // VueToPrint
 const documentComponentRef = ref();
@@ -55,9 +57,14 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
+const isAutoFill = ref(false);
 const showDialogAutoFill = ref(false);
-async function handleSubmittedAutoFill() {
+async function handleGenerateAutoFill() {
   showDialogAutoFill.value = false;
+  isAutoFill.value = true;
+
+  await nextTick();
+  handlePrint();
 }
 function handleAutoFill(context: { id: string }) {
   documentId.value = context.id;
@@ -73,6 +80,7 @@ function handleCreateOrView(context: { type: CreateOrView; id: string }) {
 }
 async function handlePrePrint(context: { id: string }) {
   documentId.value = context.id;
+  isAutoFill.value = false;
 
   await nextTick();
   handlePrint();
@@ -146,23 +154,21 @@ async function handleFillForm(context: { id: string }) {
               ref="documentComponentRef"
               class="hidden print:block"
             >
-              <template v-if="form">
-                <DocumentContent
-                  type="BAPP"
-                  :data="form"
-                />
-                <DocumentContent
-                  v-if="form.bastNumber?.length"
-                  type="BAST"
-                  :data="form"
-                />
-              </template>
+              <DocumentContent
+                type="BAPP"
+                :data="isAutoFill ? formAutoFill : form"
+              />
+              <DocumentContent
+                v-if="form.bastNumber?.length"
+                type="BAST"
+                :data="isAutoFill ? formAutoFill : form"
+              />
             </div>
 
             <DocumentDialogAutoFill
               v-model:open="showDialogAutoFill"
-              v-model="form"
-              @submit="handleSubmittedAutoFill"
+              :model-value="formAutoFill"
+              @generate="handleGenerateAutoFill"
             />
           </ShadcnCardContent>
         </ShadcnCard>

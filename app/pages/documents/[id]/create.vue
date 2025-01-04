@@ -132,15 +132,17 @@ async function handleGenerate() {
         v-if="form"
         #bodyLeft
       >
-        <DocumentForm
-          ref="documentFormRef"
-          v-model="form"
-          v-model:show-non-editable-fields="showNonEditableFields"
-          :status="formStatus"
-          :items="formItems"
-          :is-disabled-action="isDisabledAction"
-          @generate="() => showAlertDialog = true"
-        />
+        <DocumentFormWrapper v-model:show-non-editable-fields="showNonEditableFields">
+          <DocumentForm
+            ref="documentFormRef"
+            v-model="form"
+            v-model:show-non-editable-fields="showNonEditableFields"
+            :status="formStatus"
+            :items="formItems"
+            :is-disabled-action="isDisabledAction"
+            @generate="() => showAlertDialog = true"
+          />
+        </DocumentFormWrapper>
       </template>
       <template
         v-if="form"
