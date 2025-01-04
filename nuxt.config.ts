@@ -4,6 +4,7 @@ export default defineNuxtConfig({
     'shadcn-nuxt',
     '@nuxt/eslint',
     'nuxt-signature-pad',
+    '@nuxt/scripts',
   ],
   devtools: { enabled: false },
   runtimeConfig: {

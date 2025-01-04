@@ -55,14 +55,54 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
+// Tesseract
+export interface TesseractWorker {
+  recognize: (image: string) => Promise<{ data: { text: string } }>;
+  terminate: () => Promise<void>;
+}
+export interface TesseractApi {
+  Tesseract: {
+    createWorker: () => Promise<TesseractWorker>;
+  };
+}
+declare global {
+  interface Window {
+    Tesseract: TesseractApi['Tesseract'];
+  }
+}
+
+const triggerTesseract = ref(false);
+const convertedText = ref('');
+const { onLoaded } = useScript<TesseractApi>(
+  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+  {
+    trigger: triggerTesseract,
+    use() {
+      return { Tesseract: window.Tesseract };
+    },
+  },
+);
+function convertToText(imageUrl: string) {
+  onLoaded(async ({ Tesseract }) => {
+    const worker = await Tesseract.createWorker();
+
+    const { data: { text } } = await worker.recognize(imageUrl);
+    convertedText.value = text;
+    console.log('convertedText', convertedText.value);
+    // TODO-LAST: Extract and fill
+
+    await worker.terminate();
+  });
+}
+
 const poFile = ref();
 const showDialogUploadFile = ref(false);
 async function handleUploadedFile() {
-  console.log('handleUploadedFile', poFile.value);
+  convertToText(poFile.value);
   showDialogUploadFile.value = false;
 }
 function handleAutoFill() {
-  // TODO-Last: Implement OCR to extract data from PDF file then use it for fill form
+  triggerTesseract.value = true;
   showDialogUploadFile.value = true;
 }
 
