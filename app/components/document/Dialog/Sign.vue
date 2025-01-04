@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useForwardPropsEmits } from 'radix-vue';
-import type { SignEmits } from '@/components/document/form/Sign.vue';
+import type { SignEmits, SignProps } from '@/components/document/form/Sign.vue';
 
-const props = defineProps<{ modelValue: string }>();
-const emits = defineEmits<SignEmits & { 'update:modelValue': [value: string] }>();
+const props = defineProps<SignProps>();
+const emits = defineEmits<SignEmits>();
 const forwarded = useForwardPropsEmits(props, emits);
 </script>
 

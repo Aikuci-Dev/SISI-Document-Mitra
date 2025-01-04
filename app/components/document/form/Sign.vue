@@ -1,12 +1,18 @@
 <script setup lang="ts">
+import { useVModel } from '@vueuse/core';
 import { z } from 'zod';
 
+export type SignProps = {
+  modelValue: string;
+};
+const props = defineProps<SignProps>();
 export type SignEmits = {
-  sign: [];
+  'update:modelValue': [value: string];
+  'sign': [];
 };
 const emits = defineEmits<SignEmits>();
 
-const signValue = defineModel<string>();
+const signValue = useVModel(props, 'modelValue', emits);
 
 const schema = z.object({
   file: z.string().optional(),
