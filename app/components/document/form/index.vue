@@ -7,19 +7,20 @@ import { Eye } from 'lucide-vue-next';
 import { isStatusNotInitiated } from '~/lib/documents';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
 import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE } from '~~/types/document';
+import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
 
-type FormEmits = {
+export type FormEmits = {
   generate: [];
 };
 const emits = defineEmits<FormEmits>();
 
-const props = defineProps<{
-  status: STATUSES_TYPE;
-  items: Record<'title' | 'nominal', Item[]>;
+export type FormProps = {
+  status?: STATUSES_TYPE;
+  items?: Record<'title' | 'nominal', Item[]>;
   isDisabledAction?: boolean;
   isDisabledInput?: boolean;
-}>();
+};
+const props = withDefaults(defineProps<FormProps>(), { status: STATUSES.initiated, items: () => ({ title: [] as Item[], nominal: [] as Item[] }) });
 
 const formValue = defineModel<WorkDocument>();
 const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { default: true });

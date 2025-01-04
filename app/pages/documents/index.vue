@@ -55,55 +55,14 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
-// Tesseract
-export interface TesseractWorker {
-  recognize: (image: string) => Promise<{ data: { text: string } }>;
-  terminate: () => Promise<void>;
+const showDialogAutoFill = ref(false);
+async function handleSubmittedAutoFill() {
+  showDialogAutoFill.value = false;
 }
-export interface TesseractApi {
-  Tesseract: {
-    createWorker: () => Promise<TesseractWorker>;
-  };
-}
-declare global {
-  interface Window {
-    Tesseract: TesseractApi['Tesseract'];
-  }
-}
+function handleAutoFill(context: { id: string }) {
+  documentId.value = context.id;
 
-const triggerTesseract = ref(false);
-const convertedText = ref('');
-const { onLoaded } = useScript<TesseractApi>(
-  'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
-  {
-    trigger: triggerTesseract,
-    use() {
-      return { Tesseract: window.Tesseract };
-    },
-  },
-);
-function convertToText(imageUrl: string) {
-  onLoaded(async ({ Tesseract }) => {
-    const worker = await Tesseract.createWorker();
-
-    const { data: { text } } = await worker.recognize(imageUrl);
-    convertedText.value = text;
-    console.log('convertedText', convertedText.value);
-    // TODO-LAST: Extract and fill
-
-    await worker.terminate();
-  });
-}
-
-const poFile = ref();
-const showDialogUploadFile = ref(false);
-async function handleUploadedFile() {
-  convertToText(poFile.value);
-  showDialogUploadFile.value = false;
-}
-function handleAutoFill() {
-  triggerTesseract.value = true;
-  showDialogUploadFile.value = true;
+  showDialogAutoFill.value = true;
 }
 
 function handleCreateOrView(context: { type: CreateOrView; id: string }) {
@@ -200,10 +159,10 @@ async function handleFillForm(context: { id: string }) {
               </template>
             </div>
 
-            <DocumentDialogUploadPO
-              v-model:open="showDialogUploadFile"
-              v-model="poFile"
-              @submit="handleUploadedFile"
+            <DocumentDialogAutoFill
+              v-model:open="showDialogAutoFill"
+              v-model="form"
+              @submit="handleSubmittedAutoFill"
             />
           </ShadcnCardContent>
         </ShadcnCard>
