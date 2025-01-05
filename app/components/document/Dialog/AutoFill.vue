@@ -47,10 +47,10 @@ function convertToText(imageUrl: string) {
   });
 }
 
-defineEmits<FormEmits>();
-const props = defineProps<Omit<FormProps, 'items'>>();
 const open = defineModel<boolean>('open');
 const form = defineModel<WorkDocument>();
+const props = defineProps<Omit<FormProps, 'items'>>();
+const emits = defineEmits<FormEmits>();
 
 // File
 const file = ref('');
@@ -65,7 +65,7 @@ function handleUploadedPO() {
 // FORM
 const showForm = ref(false);
 const formSign = ref(form.value?.employeeSignUrl || '');
-const hasSigned = computed(() => !!form.value?.employeeSignUrl?.length);
+const hasSigned = computed(() => !!formSign.value?.length);
 const formItems = ref({ title: [] as Item[], nominal: [] as Item[] });
 const MESSAGE = {
   FAILED_EXTRACT_TITLE: 'FAILED to extract `title`',
@@ -84,7 +84,8 @@ watch(open, () => {
   convertedText.value = '';
   showForm.value = false;
 });
-function handleSign() {
+function handleGenerate() {
+  emits('generate');
   form.value!.employeeSignUrl = formSign.value;
 }
 
@@ -108,14 +109,15 @@ const forwardedProps = useForwardProps(delegatedProps);
           :removed-items="{ title: [MESSAGE.FAILED_EXTRACT_TITLE], nominal: [MESSAGE.FAILED_EXTRACT_PRICE] }"
           :show-non-editable-fields="false"
           :is-disabled-action="!hasSigned"
-          @generate="$emit('generate')"
+          @generate="handleGenerate"
         >
           <template #extra-field>
             <div class="p-5">
-              <DocumentFormSign
-                v-model="formSign"
-                @sign="handleSign"
-              />
+              <DocumentFormSign v-model="formSign">
+                <template #action>
+                  &nbsp;
+                </template>
+              </DocumentFormSign>
             </div>
           </template>
         </DocumentForm>

@@ -56,6 +56,7 @@ function handleSignatureClear() {
     </div>
     <div class="flex h-9 justify-around">
       <ShadcnButton
+        type="button"
         variant="ghost"
         @click="handleSignatureClear"
       >
@@ -63,6 +64,7 @@ function handleSignatureClear() {
       </ShadcnButton>
       <ShadcnSeparator orientation="vertical" />
       <ShadcnButton
+        type="button"
         variant="ghost"
         @click="handleSignatureUndo"
       >
@@ -70,6 +72,7 @@ function handleSignatureClear() {
       </ShadcnButton>
       <ShadcnSeparator orientation="vertical" />
       <ShadcnButton
+        type="button"
         variant="ghost"
         @click="handleSignatureSave"
       >

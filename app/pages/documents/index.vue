@@ -44,7 +44,7 @@ const form = computed(() => {
     ? rows.value.find(row => row.key === documentId.value)
     : rows.value[0];
 
-  return row!.meta.mapped_work.value;
+  return row?.meta.mapped_work.value;
 });
 const formAutoFill = ref();
 watch(form, val => formAutoFill.value = val);
@@ -154,15 +154,17 @@ async function handleFillForm(context: { id: string }) {
               ref="documentComponentRef"
               class="hidden print:block"
             >
-              <DocumentContent
-                type="BAPP"
-                :data="isAutoFill ? formAutoFill : form"
-              />
-              <DocumentContent
-                v-if="form.bastNumber?.length"
-                type="BAST"
-                :data="isAutoFill ? formAutoFill : form"
-              />
+              <template v-if="form">
+                <DocumentContent
+                  type="BAPP"
+                  :data="isAutoFill ? formAutoFill : form"
+                />
+                <DocumentContent
+                  v-if="form?.bastNumber?.length"
+                  type="BAST"
+                  :data="isAutoFill ? formAutoFill : form"
+                />
+              </template>
             </div>
 
             <DocumentDialogAutoFill

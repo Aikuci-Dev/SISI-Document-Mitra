@@ -48,9 +48,11 @@ function handleSubmit() {
         </template>
 
         <div class="mt-2 flex justify-end">
-          <ShadcnButton type="submit">
-            Save
-          </ShadcnButton>
+          <slot name="action">
+            <ShadcnButton type="submit">
+              Save
+            </ShadcnButton>
+          </slot>
         </div>
       </ShadcnAutoForm>
     </ShadcnTabsContent>
