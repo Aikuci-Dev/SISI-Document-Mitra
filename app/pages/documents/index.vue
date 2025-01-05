@@ -46,6 +46,8 @@ const form = computed(() => {
 
   return row?.meta.mapped_work.value;
 });
+const formAutoFill = ref();
+watch(form, val => formAutoFill.value = val);
 
 // VueToPrint
 const documentComponentRef = ref();
@@ -55,6 +57,21 @@ const { handlePrint } = useVueToPrint({
   removeAfterPrint: true,
 });
 
+const isAutoFill = ref(false);
+const showDialogAutoFill = ref(false);
+async function handleGenerateAutoFill() {
+  showDialogAutoFill.value = false;
+  isAutoFill.value = true;
+
+  await nextTick();
+  handlePrint();
+}
+function handleAutoFill(context: { id: string }) {
+  documentId.value = context.id;
+
+  showDialogAutoFill.value = true;
+}
+
 function handleCreateOrView(context: { type: CreateOrView; id: string }) {
   documentId.value = context.id;
 
@@ -63,6 +80,7 @@ function handleCreateOrView(context: { type: CreateOrView; id: string }) {
 }
 async function handlePrePrint(context: { id: string }) {
   documentId.value = context.id;
+  isAutoFill.value = false;
 
   await nextTick();
   handlePrint();
@@ -123,6 +141,7 @@ async function handleFillForm(context: { id: string }) {
                     :rows
                     :user="user!"
                     :type="datatableType"
+                    @auto-fill="handleAutoFill"
                     @create-or-view="handleCreateOrView"
                     @print="handlePrePrint"
                     @form-fill="handleFillForm"
@@ -138,15 +157,21 @@ async function handleFillForm(context: { id: string }) {
               <template v-if="form">
                 <DocumentContent
                   type="BAPP"
-                  :data="form"
+                  :data="isAutoFill ? formAutoFill : form"
                 />
                 <DocumentContent
-                  v-if="form.bastNumber?.length"
+                  v-if="form?.bastNumber?.length"
                   type="BAST"
-                  :data="form"
+                  :data="isAutoFill ? formAutoFill : form"
                 />
               </template>
             </div>
+
+            <DocumentDialogAutoFill
+              v-model:open="showDialogAutoFill"
+              :model-value="formAutoFill"
+              @generate="handleGenerateAutoFill"
+            />
           </ShadcnCardContent>
         </ShadcnCard>
       </template>

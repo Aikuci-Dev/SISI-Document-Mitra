@@ -28,18 +28,19 @@ const signatureOptions = reactive({
 const signature = ref();
 
 function handleSignatureSave() {
-  if (signature.value.isCanvasEmpty()) return;
-
-  signUrl.value = signature.value.saveSignature();
+  if (signature.value.isCanvasEmpty()) signUrl.value = '';
+  else signUrl.value = signature.value.saveSignature();
   emits('save');
 }
 function handleSignatureUndo() {
+  signature.value.undo();
   emits('undo');
-  return signature.value.undo();
+  return;
 }
 function handleSignatureClear() {
+  signature.value.clearCanvas();
   emits('clear');
-  return signature.value.clearCanvas();
+  return;
 }
 </script>
 
@@ -56,6 +57,7 @@ function handleSignatureClear() {
     </div>
     <div class="flex h-9 justify-around">
       <ShadcnButton
+        type="button"
         variant="ghost"
         @click="handleSignatureClear"
       >
@@ -63,6 +65,7 @@ function handleSignatureClear() {
       </ShadcnButton>
       <ShadcnSeparator orientation="vertical" />
       <ShadcnButton
+        type="button"
         variant="ghost"
         @click="handleSignatureUndo"
       >
@@ -70,6 +73,7 @@ function handleSignatureClear() {
       </ShadcnButton>
       <ShadcnSeparator orientation="vertical" />
       <ShadcnButton
+        type="button"
         variant="ghost"
         @click="handleSignatureSave"
       >

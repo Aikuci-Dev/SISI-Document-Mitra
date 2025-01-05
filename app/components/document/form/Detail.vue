@@ -10,7 +10,8 @@ const props = withDefaults(defineProps<{
   isDisabledInput?: boolean;
   showNonEditableFields?: boolean;
   items?: Record<'nominal', Item[]>;
-}>(), { showNonEditableFields: true, items: () => ({ nominal: [] as Item[] }) });
+  removedItems?: Record<'nominal', string[]>;
+}>(), { showNonEditableFields: true, items: () => ({ nominal: [] as Item[] }), removedItems: () => ({ nominal: ['0'] }) });
 
 const formValue = defineModel<WorkDocument>();
 
@@ -62,7 +63,7 @@ const delegatedProps = computed(() => {
       <BaseInputCombobox
         v-bind="slotProps"
         :items="items.nominal"
-        :removed-items="['0']"
+        :removed-items="removedItems.nominal"
         label="Invoice Nominal"
         :disabled="isDisabledInput"
         required
