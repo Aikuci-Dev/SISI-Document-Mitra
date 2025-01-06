@@ -45,9 +45,9 @@ export default defineEventHandler(async (event) => {
           break;
         case 'date': {
           if (workDocumentKey) {
-            const value = String(getValueByKey(document, workDocumentKey));
+            const value = getValueByKey(document, workDocumentKey);
             if (value) {
-              const date = new Date(value);
+              const date = new Date(+value);
               prev[`${entryKey}_year`] = String(date.getFullYear());
               prev[`${entryKey}_month`] = String(date.getMonth() + 1);
               prev[`${entryKey}_day`] = String(date.getDate());
