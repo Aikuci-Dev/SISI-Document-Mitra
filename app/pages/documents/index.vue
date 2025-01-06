@@ -3,6 +3,7 @@ import { useVueToPrint } from 'vue-to-print';
 import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
 import type { CreateOrView } from '~~/types/action';
+import { makeWorkDocument } from '~/lib/documents';
 
 definePageMeta({
   layout: false,
@@ -38,58 +39,56 @@ const columns = computed(() => mitraTableData.value?.[datatableType.value].colum
 const rows = computed(() => mitraTableData.value?.[datatableType.value].rows || []);
 if (error.value) throw createError({ ...error.value, fatal: true });
 
-const documentId = ref();
-const form = computed(() => {
-  const row = documentId.value
-    ? rows.value.find(row => row.key === documentId.value)
+const form = ref(makeWorkDocument());
+function getFormById(id: string) {
+  const row = id
+    ? rows.value.find(row => row.key === id)
     : rows.value[0];
 
-  return row?.meta.mapped_work.value;
-});
-const formAutoFill = ref();
-watch(form, val => formAutoFill.value = val);
+  return row!.meta.mapped_work.value;
+};
 
 // VueToPrint
 const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: documentComponentRef,
-  documentTitle: `document_${form.value?.poNumber}`,
+  documentTitle: `document_${form.value.poNumber}`,
   removeAfterPrint: true,
 });
 
-const isAutoFill = ref(false);
 const showDialogAutoFill = ref(false);
 async function handleGenerateAutoFill() {
   showDialogAutoFill.value = false;
-  isAutoFill.value = true;
 
   await nextTick();
   handlePrint();
 }
 function handleAutoFill(context: { id: string }) {
-  documentId.value = context.id;
+  form.value = getFormById(context.id);
 
   showDialogAutoFill.value = true;
 }
 
 function handleCreateOrView(context: { type: CreateOrView; id: string }) {
-  documentId.value = context.id;
+  const { type, id } = context;
+  form.value = getFormById(id);
 
-  if (context.type === 'create') navigateTo(`/documents/${documentId.value}/create`);
-  else navigateTo(`/documents/${documentId.value}`, { open: { target: '_blank' } });
+  if (type === 'create') navigateTo(`/documents/${id}/create`);
+  else navigateTo(`/documents/${id}`, { open: { target: '_blank' } });
 }
 async function handlePrePrint(context: { id: string }) {
-  documentId.value = context.id;
-  isAutoFill.value = false;
+  const { id } = context;
+  form.value = getFormById(id);
 
   await nextTick();
   handlePrint();
 }
 async function handleFillForm(context: { id: string }) {
-  documentId.value = context.id;
+  const { id } = context;
+  form.value = getFormById(id);
 
   const formUrl = await $fetch('/api/documents/form/generate-url', {
-    params: { id: documentId.value, name: user.value!.name },
+    params: { id, name: user.value!.name },
     onResponseError: ({ response }) => handleResponseError(response),
   })
     .catch(catchFetchError);
@@ -154,22 +153,20 @@ async function handleFillForm(context: { id: string }) {
               ref="documentComponentRef"
               class="hidden print:block"
             >
-              <template v-if="form">
-                <DocumentContent
-                  type="BAPP"
-                  :data="isAutoFill ? formAutoFill : form"
-                />
-                <DocumentContent
-                  v-if="form?.bastNumber?.length"
-                  type="BAST"
-                  :data="isAutoFill ? formAutoFill : form"
-                />
-              </template>
+              <DocumentContent
+                type="BAPP"
+                :data="form"
+              />
+              <DocumentContent
+                v-if="form.bastNumber?.length"
+                type="BAST"
+                :data="form"
+              />
             </div>
 
             <DocumentDialogAutoFill
               v-model:open="showDialogAutoFill"
-              :model-value="formAutoFill"
+              :model-value="form"
               @generate="handleGenerateAutoFill"
             />
           </ShadcnCardContent>
