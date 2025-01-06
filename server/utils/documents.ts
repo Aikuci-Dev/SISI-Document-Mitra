@@ -83,6 +83,13 @@ const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[
   getKey: () => 'mapping-columns',
 });
 
+// Transform a date string (dd/mm/yyyy) into a Date object
+function parseDate(date: string): Date {
+  const [day, month, year] = date.split('/');
+  if (day && month && year) return new Date(Number(year), Number(month) - 1, Number(day));
+  return new Date();
+}
+
 // Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
 function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: SheetValues['values']): DocumentTableRow[] {
   return values
@@ -94,19 +101,15 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
         if (mapped_key) overrideValues(workDocument, mapped_key, item.trim());
       });
 
-      const [startDay, startMonth, startYear] = workDocument.detailsDateStart.split('/');
-      const [endDay, endMonth, endYear] = workDocument.detailsDateEnd.split('/');
-      const dateStart = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay));
-      const dateEnd = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay));
+      const dateStart = parseDate(workDocument.detailsDateStart);
       workDocument.detailsDateTsStart = dateStart.getTime();
-      workDocument.detailsDateTsEnd = dateEnd.getTime();
       workDocument.detailsDateStart = dateStart.toISOString(); // Reformat
+      const dateEnd = parseDate(workDocument.detailsDateEnd);
+      workDocument.detailsDateTsEnd = dateEnd.getTime();
       workDocument.detailsDateEnd = dateEnd.toISOString(); // Reformat
 
-      const [bappDay, bappMonth, bappYear] = workDocument.bappDate.split('/');
-      const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoiceDate.split('/');
-      workDocument.bappDateTs = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
-      workDocument.invoiceDateTs = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
+      workDocument.bappDateTs = parseDate(workDocument.bappDate).getTime();
+      workDocument.invoiceDateTs = parseDate(workDocument.invoiceDate).getTime();
 
       workDocument.supervisorRole = 'Project Manager';
 
