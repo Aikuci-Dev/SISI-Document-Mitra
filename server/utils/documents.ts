@@ -1,35 +1,5 @@
-import { overrideValues } from './utils';
 import type { WorkDocument } from '~~/shared/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/shared/types/document';
-
-// --- Utility Functions ---
-export const isStatusNotInitiated = (status: STATUSES_TYPE) => status !== STATUSES.initiated;
-export const isStatusNotNilOrDraft = (status: STATUSES_TYPE) => status !== STATUSES.nil && status !== STATUSES.draft;
-
-// Creates and returns a new `WorkDocument` with default values.
-function makeWorkDocument(): WorkDocument {
-  return {
-    detailsNumber: '',
-    detailsTitle: '',
-    detailsDateStart: 0,
-    detailsDateEnd: 0,
-
-    employeeName: '',
-    employeeRole: '',
-    employeeSignUrl: '',
-    supervisorName: '',
-    supervisorRole: '',
-    supervisorSignUrl: '',
-
-    poNumber: '',
-    bappNumber: '',
-    bappDate: 0,
-    invoiceNumber: '',
-    invoiceNominal: 0,
-    invoiceDate: 0,
-    bastNumber: '',
-  };
-}
+// import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/shared/types/document';
 
 // Retrieves and maps spreadsheet headers to column definitions based on configuration settings.
 const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[]>(async (headers: SheetValues['headers']) => {
