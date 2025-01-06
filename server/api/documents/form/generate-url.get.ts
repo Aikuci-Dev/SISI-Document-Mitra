@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { getValueByKey } from '~~/server/utils/utils';
 
 const payloadSchema = z.object({
   id: z.string(),

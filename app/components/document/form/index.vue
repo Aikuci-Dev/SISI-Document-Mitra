@@ -3,7 +3,6 @@ import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, fromAbsolute } from '@internationalized/date';
-import { isStatusNotInitiated, makeWorkDocument } from '~/lib/documents';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
 import type { WorkDocument } from '~~/shared/types/schema/document';
 

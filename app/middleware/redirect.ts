@@ -1,5 +1,3 @@
-import { redirectKey } from '~/lib/const';
-
 export default defineNuxtRouteMiddleware(() => {
   if (import.meta.server) return;
 

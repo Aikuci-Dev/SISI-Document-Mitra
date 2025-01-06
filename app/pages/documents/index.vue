@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import { makeWorkDocument } from '~/lib/documents';
 
 definePageMeta({
   layout: false,

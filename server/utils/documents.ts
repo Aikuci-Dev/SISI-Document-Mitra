@@ -1,5 +1,4 @@
 import type { WorkDocument } from '~~/shared/types/schema/document';
-// import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/shared/types/document';
 
 // Retrieves and maps spreadsheet headers to column definitions based on configuration settings.
 const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[]>(async (headers: SheetValues['headers']) => {
