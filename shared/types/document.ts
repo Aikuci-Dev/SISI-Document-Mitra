@@ -1,5 +1,5 @@
 import type { TableColumn, TableRow } from './table';
-import type { WorkDocument, WorkDocumentKeys } from './schema/document';
+import type { WorkDocument, WorkDocumentKeys } from '~~/shared/types/schema/document';
 
 // META
 export type MappedWork = {
