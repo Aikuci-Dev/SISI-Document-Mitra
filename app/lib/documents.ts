@@ -11,10 +11,8 @@ export function makeWorkDocument(): WorkDocument {
   return {
     detailsNumber: '',
     detailsTitle: '',
-    detailsDateStart: '',
-    detailsDateEnd: '',
-    detailsDateTsStart: 0,
-    detailsDateTsEnd: 0,
+    detailsDateStart: 0,
+    detailsDateEnd: 0,
 
     employeeName: '',
     employeeRole: '',
@@ -25,12 +23,10 @@ export function makeWorkDocument(): WorkDocument {
 
     poNumber: '',
     bappNumber: '',
-    bappDate: '',
-    bappDateTs: 0,
+    bappDate: 0,
     invoiceNumber: '',
     invoiceNominal: 0,
-    invoiceDate: '',
-    invoiceDateTs: 0,
+    invoiceDate: 0,
     bastNumber: '',
   };
 }

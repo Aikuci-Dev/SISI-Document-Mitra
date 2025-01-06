@@ -13,19 +13,15 @@ export type EmployeeInfo = z.infer<typeof employeeInfoSchema>;
 export const workDocumentSchema = employeeInfoSchema.extend({
   detailsNumber: z.string(),
   detailsTitle: z.string(),
-  detailsDateStart: z.string(),
-  detailsDateEnd: z.string(),
-  detailsDateTsStart: z.number(),
-  detailsDateTsEnd: z.number(),
+  detailsDateStart: z.number(),
+  detailsDateEnd: z.number(),
 
   poNumber: z.string(),
   bappNumber: z.string(),
-  bappDate: z.string(),
-  bappDateTs: z.number(),
+  bappDate: z.number(),
   invoiceNumber: z.string(),
   invoiceNominal: z.number().optional(),
-  invoiceDate: z.string(),
-  invoiceDateTs: z.number(),
+  invoiceDate: z.number(),
   bastNumber: z.string().optional(),
 });
 export type WorkDocument = z.infer<typeof workDocumentSchema>;

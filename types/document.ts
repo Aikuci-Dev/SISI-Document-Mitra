@@ -43,17 +43,13 @@ export const WORK_DOCUMENT: Partial<Record<WorkDocumentKeys, string | null>> = {
   detailsTitle: 'Project Title',
   detailsDateStart: 'Start Date',
   detailsDateEnd: 'End Date',
-  detailsDateTsStart: 'Start Date (TS)',
-  detailsDateTsEnd: 'End Date (TS)',
 
   poNumber: 'PO',
   bappNumber: 'BAPP',
   bappDate: 'BAPP Date',
-  bappDateTs: 'BAPP Date (TS)',
   invoiceNumber: 'Invoice',
   invoiceNominal: 'Invoice Nominal',
   invoiceDate: 'Invoice Date',
-  invoiceDateTs: 'Invoice Date (TS)',
   bastNumber: 'BAST',
 };
 

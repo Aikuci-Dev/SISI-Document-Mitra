@@ -13,10 +13,8 @@ function makeWorkDocument(): WorkDocument {
   return {
     detailsNumber: '',
     detailsTitle: '',
-    detailsDateStart: '',
-    detailsDateEnd: '',
-    detailsDateTsStart: 0,
-    detailsDateTsEnd: 0,
+    detailsDateStart: 0,
+    detailsDateEnd: 0,
 
     employeeName: '',
     employeeRole: '',
@@ -27,12 +25,10 @@ function makeWorkDocument(): WorkDocument {
 
     poNumber: '',
     bappNumber: '',
-    bappDate: '',
-    bappDateTs: 0,
+    bappDate: 0,
     invoiceNumber: '',
     invoiceNominal: 0,
-    invoiceDate: '',
-    invoiceDateTs: 0,
+    invoiceDate: 0,
     bastNumber: '',
   };
 }
@@ -87,22 +83,15 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
       columns.forEach((column, colIndex) => {
         const { meta: { mapped_key, type } } = column;
         if (mapped_key) {
-          const finalValue = type === 'date' ? parseDate(value[colIndex].trim()).toISOString() : value[colIndex].trim();
-          value[colIndex] = finalValue;
+          const finalValue = type === 'date' ? parseDate(value[colIndex].trim()).getTime() : value[colIndex].trim();
+          value[colIndex] = String(finalValue);
           overrideValues(workDocument, mapped_key, finalValue);
         }
       });
-
-      workDocument.detailsDateTsStart = new Date(workDocument.detailsDateStart).getTime();
-      workDocument.detailsDateTsEnd = new Date(workDocument.detailsDateEnd).getTime();
-
-      workDocument.bappDateTs = new Date(workDocument.bappDate).getTime();
-      workDocument.invoiceDateTs = new Date(workDocument.invoiceDate).getTime();
-
       workDocument.supervisorRole = 'Project Manager';
 
       const isDraft = workDocument.poNumber.toLowerCase() === 'draft';
-      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}${isDraft ? index : ''}`;
+      const workKey = `${workDocument.poNumber}${workDocument.detailsDateEnd}${isDraft ? index : ''}`;
       return {
         key: workKey,
         value,
@@ -114,7 +103,7 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
       };
     })
     .filter(value => value.meta.mapped_work.original.poNumber)
-    .sort((prev, curr) => curr.meta.mapped_work.original.bappDateTs - prev.meta.mapped_work.original.bappDateTs);
+    .sort((prev, curr) => curr.meta.mapped_work.original.bappDate - prev.meta.mapped_work.original.bappDate);
 }
 
 // Returns the status of multiple work documents based on their IDs.

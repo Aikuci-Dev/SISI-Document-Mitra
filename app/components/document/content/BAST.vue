@@ -4,7 +4,7 @@ import type { WorkDocument } from '~~/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dataDateEnd = computed(() => new Date(props.data.detailsDateTsEnd));
+const dataDateEnd = computed(() => new Date(props.data.detailsDateEnd));
 
 const dateEnd = useDateFormat(dataDateEnd, 'DD MMMM YYYY', { locales: 'id-ID' });
 const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
@@ -39,14 +39,14 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
           Pada hari ini,
           <slot
             name="details-day-end"
-            :value="data.detailsDateTsEnd"
+            :value="data.detailsDateEnd"
           >
             {{ dayEnd }}
           </slot>
           tanggal
           <slot
             name="details-date-end"
-            :value="data.detailsDateTsEnd"
+            :value="data.detailsDateEnd"
           >
             {{ dateEnd }}
           </slot>
@@ -92,7 +92,7 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
               tanggal
               <slot
                 name="details-date-end"
-                :value="data.detailsDateTsEnd"
+                :value="data.detailsDateEnd"
               >
                 {{ dateEnd }}
               </slot>

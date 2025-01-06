@@ -25,8 +25,8 @@ const props = withDefaults(defineProps<FormProps>(), { status: STATUSES.initiate
 const formValue = defineModel<WorkDocument>();
 const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { default: true });
 
-const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
-const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
+const dateStartTS = formValue.value?.detailsDateStart || new Date().getTime();
+const dateEndTS = formValue.value?.detailsDateEnd || new Date().getTime();
 
 const schema = z.object({
   number: z.string().min(1, 'Project number is required.'),
@@ -77,15 +77,13 @@ watch(() => form.values.detail?.invoiceNominal, (value) => {
 watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
   if (date) {
     const dateValue = date.toDate(getLocalTimeZone());
-    formValue.value!.detailsDateTsStart = dateValue.getTime();
-    formValue.value!.detailsDateStart = dateValue.toISOString();
+    formValue.value!.detailsDateStart = dateValue.getTime();
   }
 });
 watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
   if (date) {
     const dateValue = date.toDate(getLocalTimeZone());
-    formValue.value!.detailsDateTsEnd = dateValue.getTime();
-    formValue.value!.detailsDateEnd = dateValue.toISOString();
+    formValue.value!.detailsDateEnd = dateValue.getTime();
   }
 });
 

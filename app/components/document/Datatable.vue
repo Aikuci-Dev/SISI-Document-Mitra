@@ -112,7 +112,7 @@ const df = new DateFormatter('en-US', { dateStyle: 'long' });
           >
             {{
               columns?.[index]?.meta.type === 'date'
-                ? df.format(new Date(value))
+                ? df.format(new Date(+value))
                 : value
             }}
           </ShadcnTableCell>
