@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { useForwardProps } from 'radix-vue';
 import { Loader2 } from 'lucide-vue-next';
 import type { FormEmits, FormProps } from '@/components/document/form/index.vue';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
 
 // Tesseract

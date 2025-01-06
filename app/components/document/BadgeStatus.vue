@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { BadgeVariants } from '@/components/shadcn/ui/badge';
-import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
 
 defineProps<{ status: STATUSES_TYPE }>();
 

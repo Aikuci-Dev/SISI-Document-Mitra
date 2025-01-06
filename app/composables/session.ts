@@ -1,5 +1,4 @@
 import { catchFetchError } from '~/lib/exceptions';
-import type { UserSession, UserSessionComposable } from '~~/types/session';
 
 const useSessionState = () => useState<UserSession>('nuxt-session', () => ({}));
 

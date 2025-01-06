@@ -1,8 +1,6 @@
 import { overrideValues } from './utils';
-import type { SheetValues, ValueRange } from '~~/types/google';
-import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/types/document';
-import { STATUSES } from '~~/types/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
+import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/shared/types/document';
 
 // --- Utility Functions ---
 export const isStatusNotInitiated = (status: STATUSES_TYPE) => status !== STATUSES.initiated;

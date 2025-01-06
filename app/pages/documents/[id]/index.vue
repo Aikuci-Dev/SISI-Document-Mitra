@@ -2,8 +2,6 @@
 import { CircleArrowLeft } from 'lucide-vue-next';
 import type { FetchResponse } from 'ofetch';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import type { ApproveOrReject } from '~~/types/action';
-import type { BAPPOrBAST, DOCUMENTS_TABLE_TYPE, DocumentTable, MappedWork } from '~~/types/document';
 
 definePageMeta({
   layout: false,

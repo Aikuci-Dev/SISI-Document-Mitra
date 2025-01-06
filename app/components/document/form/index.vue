@@ -5,8 +5,7 @@ import { toTypedSchema } from '@vee-validate/zod';
 import { getLocalTimeZone, fromAbsolute } from '@internationalized/date';
 import { isStatusNotInitiated, makeWorkDocument } from '~/lib/documents';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
-import type { WorkDocument } from '~~/types/schema/document';
-import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 export type FormEmits = {
   generate: [];

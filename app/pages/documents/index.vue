@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
-import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import type { CreateOrView } from '~~/types/action';
 import { makeWorkDocument } from '~/lib/documents';
 
 definePageMeta({

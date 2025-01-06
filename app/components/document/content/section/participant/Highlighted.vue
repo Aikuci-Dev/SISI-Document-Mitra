@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { highlightLevel } from '~/components/base/field/const';
-import type { EmployeeInfo } from '~~/types/schema/document';
+import type { EmployeeInfo } from '~~/shared/types/schema/document';
 
 defineProps<{ original: EmployeeInfo; employee: EmployeeInfo }>();
 </script>

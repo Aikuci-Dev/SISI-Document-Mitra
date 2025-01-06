@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { EmployeeInfo } from '~~/types/schema/document';
+import type { EmployeeInfo } from '~~/shared/types/schema/document';
 
 defineProps<{ employee: EmployeeInfo }>();
 </script>

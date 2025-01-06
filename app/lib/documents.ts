@@ -1,5 +1,4 @@
-import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 // --- Utility Function ---
 export const isStatusNotInitiated = (status: STATUSES_TYPE) => status !== STATUSES.initiated;

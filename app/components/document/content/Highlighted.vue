@@ -2,8 +2,7 @@
 import { formatDate } from '@vueuse/core';
 import { highlightLevel } from '~/components/base/field/const';
 import { formatCurrency } from '~/lib/utils';
-import type { BAPPOrBAST } from '~~/types/document';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
 </script>

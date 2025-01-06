@@ -2,7 +2,6 @@
 import { useVueToPrint } from 'vue-to-print';
 import { isStatusInitiatedOrRejected, makeWorkDocument } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import { STATUSES, type BAPPOrBAST, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 
 definePageMeta({
   layout: false,

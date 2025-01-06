@@ -1,5 +1,5 @@
 import { useValidatedBody } from 'h3-zod';
-import { workDocumentSchema } from '~~/types/schema/document';
+import { workDocumentSchema } from '~~/shared/types/schema/document';
 
 export default defineEventHandler(async (event) => {
   const id = decodeURI(getRouterParam(event, 'id') || '');

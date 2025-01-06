@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useDateFormat } from '@vueuse/core';
 import { formatCurrency } from '~/lib/utils';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 

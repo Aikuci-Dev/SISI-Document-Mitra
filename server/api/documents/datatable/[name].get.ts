@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { type DocumentTable, DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE } from '~~/types/document';
 
 const payloadSchema = z.object({
   type: z.enum(Object.values(DOCUMENTS_TABLE) as [DOCUMENTS_TABLE_TYPE, ...DOCUMENTS_TABLE_TYPE[]]),
