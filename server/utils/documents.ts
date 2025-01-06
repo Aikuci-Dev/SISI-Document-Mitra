@@ -55,7 +55,15 @@ const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[
   return headers
     .map((column, index) => {
       const key = spreadSheetColumnMap.get(column);
-      return { key: key || String(index), label: column, meta: { mapped_key: columnMap.get(key!) } };
+      const finalKey = key || String(index);
+      const mapped_key = columnMap.get(finalKey);
+      return {
+        key: finalKey,
+        label: column,
+        meta: {
+          mapped_key,
+          type: mapped_key?.toLowerCase().includes('date') ? 'date' : 'default' },
+      };
     });
 }, {
   maxAge: 365 * 24 * 60 * 60,
@@ -77,11 +85,9 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
       const workDocument = makeWorkDocument();
 
       columns.forEach((column, colIndex) => {
-        const { meta: { mapped_key } } = column;
+        const { meta: { mapped_key, type } } = column;
         if (mapped_key) {
-          const finalValue = ['detailsDateStart', 'detailsDateEnd', 'bappDate', 'invoiceDate'].includes(mapped_key)
-            ? parseDate(value[colIndex].trim()).toISOString()
-            : value[colIndex].trim();
+          const finalValue = type === 'date' ? parseDate(value[colIndex].trim()).toISOString() : value[colIndex].trim();
           value[colIndex] = finalValue;
           overrideValues(workDocument, mapped_key, finalValue);
         }

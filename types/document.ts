@@ -15,6 +15,7 @@ export type MappedWork = {
 export interface DocumentTableColumn extends TableColumn {
   meta: {
     mapped_key?: string;
+    type: 'default' | 'date';
   };
 }
 export interface DocumentTableRow extends TableRow {
