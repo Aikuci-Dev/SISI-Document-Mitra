@@ -204,6 +204,12 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
     const original = meta.mapped_work.original;
     const workDocument = workDocumentsMap.get(key);
     const mapped_work: MappedWork = workDocument ? { original, ...workDocument } : { original, value: original };
+    const value = workDocument
+      ? datatables.columns.map((column) => {
+        if (column.meta.mapped_key) return String(workDocument.value[column.meta.mapped_key as keyof WorkDocument]);
+        return '';
+      })
+      : row.value;
 
     const finalStatus = statusesMap.has(key) && statusesMap.get(key) !== STATUSES.nil
       ? statusesMap.get(key)!
@@ -211,6 +217,7 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
 
     return {
       ...rest,
+      value,
       meta: {
         mapped_work,
         key,
