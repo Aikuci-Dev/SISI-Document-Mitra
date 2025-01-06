@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
+import { DateFormatter } from '@internationalized/date';
 import { isStatusInitiatedOrRejected, isStatusNotInitiated, isStatusNotNilOrDraft } from '~/lib/documents';
 import type { CreateOrView } from '~~/types/action';
 import { DOCUMENTS_TABLE, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
@@ -18,6 +19,8 @@ type DatatableProps = DocumentTable & {
   user: User;
 };
 defineProps<DatatableProps>();
+
+const df = new DateFormatter('en-US', { dateStyle: 'long' });
 </script>
 
 <template>
@@ -107,7 +110,11 @@ defineProps<DatatableProps>();
             :key="`${row.key}-${index}`"
             class="text-nowrap border"
           >
-            {{ value }}
+            {{
+              columns?.[index]?.meta.type === 'date'
+                ? df.format(new Date(value))
+                : value
+            }}
           </ShadcnTableCell>
         </ShadcnTableRow>
       </template>
