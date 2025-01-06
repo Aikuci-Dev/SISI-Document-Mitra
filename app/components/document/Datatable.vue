@@ -2,6 +2,7 @@
 import { MoreVertical, MessageCircleWarning } from 'lucide-vue-next';
 import { DateFormatter } from '@internationalized/date';
 import { isStatusInitiatedOrRejected, isStatusNotInitiated, isStatusNotNilOrDraft } from '~/lib/documents';
+import type { DocumentTable } from '~~/shared/types/document';
 
 type DatatableEmits = {
   createOrView: [{ type: CreateOrView; id: string }];
