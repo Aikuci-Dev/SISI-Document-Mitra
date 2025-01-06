@@ -37,26 +37,6 @@ function makeWorkDocument(): WorkDocument {
   };
 }
 
-// Returns the status of multiple work documents based on their IDs.
-export function getWorkDocumentStatusFromFlags(
-  ids: string[],
-  data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null; revisedAt: Date | null }[],
-): { id: string; status: STATUSES_TYPE }[] {
-  const dataMap = new Map(data.map(item => [item.id, item]));
-
-  return ids.map((id) => {
-    const item = dataMap.get(id);
-    if (!item) return { id, status: STATUSES.nil };
-
-    if (item.revisedAt) return { id, status: STATUSES.revised };
-    if (!item.isValidated) return { id, status: STATUSES.created };
-    if (!item.isApproved) return { id, status: STATUSES.rejected };
-    if (item.signedAt) return { id, status: STATUSES.signed };
-
-    return { id, status: STATUSES.approved };
-  });
-}
-
 // Retrieves and maps spreadsheet headers to column definitions based on configuration settings.
 const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[]>(async (headers: SheetValues['headers']) => {
   const mappingColumn = await useDB()
@@ -96,20 +76,22 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
     .map((value, index) => {
       const workDocument = makeWorkDocument();
 
-      value.forEach((item, index) => {
-        const mapped_key = columns[index].meta.mapped_key;
-        if (mapped_key) overrideValues(workDocument, mapped_key, item.trim());
+      columns.forEach((column, colIndex) => {
+        const { meta: { mapped_key } } = column;
+        if (mapped_key) {
+          const finalValue = ['detailsDateStart', 'detailsDateEnd', 'bappDate', 'invoiceDate'].includes(mapped_key)
+            ? parseDate(value[colIndex].trim()).toISOString()
+            : value[colIndex].trim();
+          value[colIndex] = finalValue;
+          overrideValues(workDocument, mapped_key, finalValue);
+        }
       });
 
-      const dateStart = parseDate(workDocument.detailsDateStart);
-      workDocument.detailsDateTsStart = dateStart.getTime();
-      workDocument.detailsDateStart = dateStart.toISOString(); // Reformat
-      const dateEnd = parseDate(workDocument.detailsDateEnd);
-      workDocument.detailsDateTsEnd = dateEnd.getTime();
-      workDocument.detailsDateEnd = dateEnd.toISOString(); // Reformat
+      workDocument.detailsDateTsStart = new Date(workDocument.detailsDateStart).getTime();
+      workDocument.detailsDateTsEnd = new Date(workDocument.detailsDateEnd).getTime();
 
-      workDocument.bappDateTs = parseDate(workDocument.bappDate).getTime();
-      workDocument.invoiceDateTs = parseDate(workDocument.invoiceDate).getTime();
+      workDocument.bappDateTs = new Date(workDocument.bappDate).getTime();
+      workDocument.invoiceDateTs = new Date(workDocument.invoiceDate).getTime();
 
       workDocument.supervisorRole = 'Project Manager';
 
@@ -127,6 +109,26 @@ function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: 
     })
     .filter(value => value.meta.mapped_work.original.poNumber)
     .sort((prev, curr) => curr.meta.mapped_work.original.bappDateTs - prev.meta.mapped_work.original.bappDateTs);
+}
+
+// Returns the status of multiple work documents based on their IDs.
+export function getWorkDocumentStatusFromFlags(
+  ids: string[],
+  data: { id: string; isValidated: boolean | null; isApproved: boolean | null; signedAt: Date | null; revisedAt: Date | null }[],
+): { id: string; status: STATUSES_TYPE }[] {
+  const dataMap = new Map(data.map(item => [item.id, item]));
+
+  return ids.map((id) => {
+    const item = dataMap.get(id);
+    if (!item) return { id, status: STATUSES.nil };
+
+    if (item.revisedAt) return { id, status: STATUSES.revised };
+    if (!item.isValidated) return { id, status: STATUSES.created };
+    if (!item.isApproved) return { id, status: STATUSES.rejected };
+    if (item.signedAt) return { id, status: STATUSES.signed };
+
+    return { id, status: STATUSES.approved };
+  });
 }
 
 // --- Core Data Fetching Functions ---
