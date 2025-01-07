@@ -1,40 +1,76 @@
-import { overrideValues } from './utils';
-import type { SheetValues, ValueRange } from '~~/types/google';
-import type { WorkDocument } from '~~/types/schema/document';
-import type { STATUSES_TYPE, DocumentTable, DocumentTableColumn, DocumentTableRow, MappedWork } from '~~/types/document';
-import { STATUSES } from '~~/types/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
-// --- Utility Functions ---
-export const isStatusNotInitiated = (status: STATUSES_TYPE) => status !== STATUSES.initiated;
-export const isStatusNotNilOrDraft = (status: STATUSES_TYPE) => status !== STATUSES.nil && status !== STATUSES.draft;
+// Retrieves and maps spreadsheet headers to column definitions based on configuration settings.
+const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[]>(async (headers: SheetValues['headers']) => {
+  const mappingColumn = await useDB()
+    .select({
+      value: tables.mapping.value,
+      map: tables.mapping.map,
+      other: tables.mapping.other,
+    })
+    .from(tables.mapping)
+    .where(eq(tables.mapping.type, 'column'))
+    .get();
+  if (!mappingColumn || !mappingColumn.other) return [];
 
-// Creates and returns a new `WorkDocument` with default values.
-function makeWorkDocument(): WorkDocument {
-  return {
-    detailsNumber: '',
-    detailsTitle: '',
-    detailsDateStart: '',
-    detailsDateEnd: '',
-    detailsDateTsStart: 0,
-    detailsDateTsEnd: 0,
+  const columnMap = new Map(Object.entries(invertKeyValue(mappingColumn.value)));
+  const spreadSheetColumnMap = new Map(Object.entries(invertKeyValue(mappingColumn.other.spreadsheet)));
+  return headers
+    .map((column, index) => {
+      const key = spreadSheetColumnMap.get(column);
+      const finalKey = key || String(index);
+      const mapped_key = columnMap.get(finalKey);
+      return {
+        key: finalKey,
+        label: column,
+        meta: {
+          mapped_key,
+          type: mapped_key?.toLowerCase().includes('date') ? 'date' : 'default' },
+      };
+    });
+}, {
+  maxAge: 365 * 24 * 60 * 60,
+  name: 'spreadsheet',
+  getKey: () => 'mapping-columns',
+});
 
-    employeeName: '',
-    employeeRole: '',
-    employeeSignUrl: '',
-    supervisorName: '',
-    supervisorRole: '',
-    supervisorSignUrl: '',
+// Transform a date string (dd/mm/yyyy) into a Date object
+function parseDate(date: string): Date {
+  const [day, month, year] = date.split('/');
+  if (day && month && year) return new Date(Number(year), Number(month) - 1, Number(day));
+  return new Date();
+}
 
-    poNumber: '',
-    bappNumber: '',
-    bappDate: '',
-    bappDateTs: 0,
-    invoiceNumber: '',
-    invoiceNominal: 0,
-    invoiceDate: '',
-    invoiceDateTs: 0,
-    bastNumber: '',
-  };
+// Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
+function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: SheetValues['values']): DocumentTableRow[] {
+  return values
+    .map((value, index) => {
+      const workDocument = makeWorkDocument();
+
+      columns.forEach((column, colIndex) => {
+        const { meta: { mapped_key, type } } = column;
+        if (mapped_key) {
+          const finalValue = type === 'date' ? parseDate(value[colIndex].trim()).getTime() : value[colIndex].trim();
+          value[colIndex] = String(finalValue);
+          overrideValues(workDocument, mapped_key, finalValue);
+        }
+      });
+      workDocument.supervisorRole = 'Project Manager';
+
+      const isDraft = workDocument.poNumber.toLowerCase() === 'draft';
+      const workKey = `${workDocument.poNumber}${workDocument.detailsDateEnd}${isDraft ? index : ''}`;
+      return {
+        key: workKey,
+        value,
+        meta: {
+          mapped_work: { original: workDocument, value: workDocument },
+          key: workKey,
+          status: isDraft ? STATUSES.draft : STATUSES.initiated,
+        },
+      };
+    })
+    .filter(value => value.meta.mapped_work.original.poNumber)
+    .sort((prev, curr) => curr.meta.mapped_work.original.bappDate - prev.meta.mapped_work.original.bappDate);
 }
 
 // Returns the status of multiple work documents based on their IDs.
@@ -55,75 +91,6 @@ export function getWorkDocumentStatusFromFlags(
 
     return { id, status: STATUSES.approved };
   });
-}
-
-// Retrieves and maps spreadsheet headers to column definitions based on configuration settings.
-const mapSpreadsheetHeadersToColumns = defineCachedFunction<DocumentTableColumn[]>(async (headers: SheetValues['headers']) => {
-  const mappingColumn = await useDB()
-    .select({
-      value: tables.mapping.value,
-      map: tables.mapping.map,
-      other: tables.mapping.other,
-    })
-    .from(tables.mapping)
-    .where(eq(tables.mapping.type, 'column'))
-    .get();
-  if (!mappingColumn || !mappingColumn.other) return [];
-
-  const columnMap = new Map(Object.entries(invertKeyValue(mappingColumn.value)));
-  const spreadSheetColumnMap = new Map(Object.entries(invertKeyValue(mappingColumn.other.spreadsheet)));
-  return headers
-    .map((column, index) => {
-      const key = spreadSheetColumnMap.get(column);
-      return { key: key || String(index), label: column, meta: { mapped_key: columnMap.get(key!) } };
-    });
-}, {
-  maxAge: 365 * 24 * 60 * 60,
-  name: 'spreadsheet',
-  getKey: () => 'mapping-columns',
-});
-
-// Converts raw spreadsheet data into structured `WorkDocument` objects based on the provided columns
-function transformSpreadsheetDataToRows(columns: DocumentTableColumn[], values: SheetValues['values']): DocumentTableRow[] {
-  return values
-    .map((value, index) => {
-      const workDocument = makeWorkDocument();
-
-      value.forEach((item, index) => {
-        const mapped_key = columns[index].meta.mapped_key;
-        if (mapped_key) overrideValues(workDocument, mapped_key, item.trim());
-      });
-
-      const [startDay, startMonth, startYear] = workDocument.detailsDateStart.split('/');
-      const [endDay, endMonth, endYear] = workDocument.detailsDateEnd.split('/');
-      const dateStart = new Date(Number(startYear), Number(startMonth) - 1, Number(startDay));
-      const dateEnd = new Date(Number(endYear), Number(endMonth) - 1, Number(endDay));
-      workDocument.detailsDateTsStart = dateStart.getTime();
-      workDocument.detailsDateTsEnd = dateEnd.getTime();
-      workDocument.detailsDateStart = dateStart.toISOString(); // Reformat
-      workDocument.detailsDateEnd = dateEnd.toISOString(); // Reformat
-
-      const [bappDay, bappMonth, bappYear] = workDocument.bappDate.split('/');
-      const [invoiceDay, invoiceMonth, invoiceYear] = workDocument.invoiceDate.split('/');
-      workDocument.bappDateTs = new Date(Number(bappYear), Number(bappMonth) - 1, Number(bappDay)).getTime();
-      workDocument.invoiceDateTs = new Date(Number(invoiceYear), Number(invoiceMonth) - 1, Number(invoiceDay)).getTime();
-
-      workDocument.supervisorRole = 'Project Manager';
-
-      const isDraft = workDocument.poNumber.toLowerCase() === 'draft';
-      const workKey = `${workDocument.poNumber}${workDocument.detailsDateTsEnd}${isDraft ? index : ''}`;
-      return {
-        key: workKey,
-        value,
-        meta: {
-          mapped_work: { original: workDocument, value: workDocument },
-          key: workKey,
-          status: isDraft ? STATUSES.draft : STATUSES.initiated,
-        },
-      };
-    })
-    .filter(value => value.meta.mapped_work.original.poNumber)
-    .sort((prev, curr) => curr.meta.mapped_work.original.bappDateTs - prev.meta.mapped_work.original.bappDateTs);
 }
 
 // --- Core Data Fetching Functions ---
@@ -204,6 +171,12 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
     const original = meta.mapped_work.original;
     const workDocument = workDocumentsMap.get(key);
     const mapped_work: MappedWork = workDocument ? { original, ...workDocument } : { original, value: original };
+    const value = workDocument
+      ? datatables.columns.map((column) => {
+        if (column.meta.mapped_key) return String(workDocument.value[column.meta.mapped_key as keyof WorkDocument]);
+        return '';
+      })
+      : row.value;
 
     const finalStatus = statusesMap.has(key) && statusesMap.get(key) !== STATUSES.nil
       ? statusesMap.get(key)!
@@ -211,6 +184,7 @@ export const fetchWorkDocumentTableWithStatus = defineCachedFunction<DocumentTab
 
     return {
       ...rest,
+      value,
       meta: {
         mapped_work,
         key,

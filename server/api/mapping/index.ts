@@ -1,6 +1,5 @@
-import { WORK_DOCUMENT } from '~~/types/document';
-import type { WorkDocumentKeys } from '~~/types/schema/document';
-import { dataFormatSchema } from '~~/types/schema/format';
+import type { WorkDocumentKeys } from '~~/shared/types/schema/document';
+import { dataFormatSchema } from '~~/shared/types/schema/format';
 
 const payloadSchema = dataFormatSchema.extend({});
 

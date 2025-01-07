@@ -1,5 +1,5 @@
 import type { TableColumn, TableRow } from './table';
-import type { WorkDocument, WorkDocumentKeys } from './schema/document';
+import type { WorkDocument, WorkDocumentKeys } from '~~/shared/types/schema/document';
 
 // META
 export type MappedWork = {
@@ -15,6 +15,7 @@ export type MappedWork = {
 export interface DocumentTableColumn extends TableColumn {
   meta: {
     mapped_key?: string;
+    type: 'default' | 'date';
   };
 }
 export interface DocumentTableRow extends TableRow {
@@ -42,17 +43,13 @@ export const WORK_DOCUMENT: Partial<Record<WorkDocumentKeys, string | null>> = {
   detailsTitle: 'Project Title',
   detailsDateStart: 'Start Date',
   detailsDateEnd: 'End Date',
-  detailsDateTsStart: 'Start Date (TS)',
-  detailsDateTsEnd: 'End Date (TS)',
 
   poNumber: 'PO',
   bappNumber: 'BAPP',
   bappDate: 'BAPP Date',
-  bappDateTs: 'BAPP Date (TS)',
   invoiceNumber: 'Invoice',
   invoiceNominal: 'Invoice Nominal',
   invoiceDate: 'Invoice Date',
-  invoiceDateTs: 'Invoice Date (TS)',
   bastNumber: 'BAST',
 };
 

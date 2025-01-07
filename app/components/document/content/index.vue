@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { BAPPOrBAST } from '~~/types/document';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 defineProps<{ type: BAPPOrBAST; data: WorkDocument }>();
 </script>

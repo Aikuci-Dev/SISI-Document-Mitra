@@ -2,8 +2,7 @@
 import { formatDate } from '@vueuse/core';
 import { highlightLevel } from '~/components/base/field/const';
 import { formatCurrency } from '~/lib/utils';
-import type { BAPPOrBAST } from '~~/types/document';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
 </script>
@@ -22,7 +21,7 @@ defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
     <template #details-date-start="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.detailsDateTsStart, data.detailsDateTsStart)]"
+        :class="[highlightLevel(original.detailsDateStart, data.detailsDateStart)]"
       >
         {{ formatDate(new Date(value), 'DD MMMM YYYY', { locales: 'id-ID' }) }}
       </BaseFieldHighlight>
@@ -30,7 +29,7 @@ defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
     <template #details-date-end="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.detailsDateTsEnd, data.detailsDateTsEnd)]"
+        :class="[highlightLevel(original.detailsDateEnd, data.detailsDateEnd)]"
       >
         {{ formatDate(new Date(value), 'DD MMMM YYYY', { locales: 'id-ID' }) }}
       </BaseFieldHighlight>
@@ -38,7 +37,7 @@ defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
     <template #details-day-end="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.detailsDateTsEnd, data.detailsDateTsEnd)]"
+        :class="[highlightLevel(original.detailsDateEnd, data.detailsDateEnd)]"
       >
         {{ formatDate(new Date(value), 'dddd', { locales: 'id-ID' }) }}
       </BaseFieldHighlight>
@@ -98,7 +97,7 @@ defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
     <template #details-date-end="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.detailsDateTsEnd, data.detailsDateTsEnd)]"
+        :class="[highlightLevel(original.detailsDateEnd, data.detailsDateEnd)]"
       >
         {{ formatDate(new Date(value), 'DD MMMM YYYY', { locales: 'id-ID' }) }}
       </BaseFieldHighlight>
@@ -106,7 +105,7 @@ defineProps<{ type: BAPPOrBAST; original: WorkDocument; data: WorkDocument }>();
     <template #details-day-end="{ value }">
       <BaseFieldHighlight
         :value
-        :class="[highlightLevel(original.detailsDateTsEnd, data.detailsDateTsEnd)]"
+        :class="[highlightLevel(original.detailsDateEnd, data.detailsDateEnd)]"
       >
         {{ formatDate(new Date(value), 'dddd', { locales: 'id-ID' }) }}
       </BaseFieldHighlight>

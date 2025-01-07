@@ -21,6 +21,27 @@ export function snakeCase(string: string): string {
     .join('_');
 }
 
+// --- Object Manipulation Functions ---
+
+// Inverts key-value pairs in an object.
+export function invertKeyValue<T extends object>(obj: T): InvertedObject<T> {
+  const valuableObj = removeNullUndefined(obj);
+
+  const inverted: Record<string, string> = {};
+  for (const [originalKey, value] of Object.entries(valuableObj)) inverted[String(value)] = originalKey;
+
+  return inverted as InvertedObject<T>;
+}
+
+// Removes null and undefined values from an object.
+export function removeNullUndefined<T extends object>(obj: T): WithoutNullableKeys<T> {
+  return Object.fromEntries(
+    Object.entries(obj)
+      .filter(([_, value]) => value !== null && value !== undefined)
+      .map(([key, value]) => [key, typeof value === 'object' ? removeNullUndefined(value) : value]),
+  ) as WithoutNullableKeys<T>;
+}
+
 // Retrieves a value from an object using a dot-separated key path.
 export function getValueByKey(data: Record<string, unknown>, key: string): unknown {
   const keys = key.split('.');
@@ -31,7 +52,7 @@ export function getValueByKey(data: Record<string, unknown>, key: string): unkno
     const baseKey = arrayMatch ? part.replace(/\[\d+\]$/, '') : part;
 
     if (arrayMatch) {
-      const index = parseInt(arrayMatch[1], 10);
+      const index = parseInt(String(arrayMatch[1]), 10);
       result = isKeyExistOnObject(result, baseKey)
         ? (result as Record<string, unknown>)[baseKey]
         : undefined;
@@ -62,25 +83,11 @@ export function overrideValues(obj: Record<string, unknown>, mapped_key: string,
   }, obj);
 }
 
-// --- Object Manipulation Functions ---
+// --- Helper Functions ---
 
-// Inverts key-value pairs in an object.
-export function invertKeyValue<T extends object>(obj: T): InvertedObject<T> {
-  const valuableObj = removeNullUndefined(obj);
-
-  const inverted: Record<string, string> = {};
-  for (const [originalKey, value] of Object.entries(valuableObj)) inverted[String(value)] = originalKey;
-
-  return inverted as InvertedObject<T>;
-}
-
-// Removes null and undefined values from an object.
-export function removeNullUndefined<T extends object>(obj: T): WithoutNullableKeys<T> {
-  return Object.fromEntries(
-    Object.entries(obj)
-      .filter(([_, value]) => value !== null && value !== undefined)
-      .map(([key, value]) => [key, typeof value === 'object' ? removeNullUndefined(value) : value]),
-  ) as WithoutNullableKeys<T>;
+// Check if a key exists in an object.
+function isKeyExistOnObject(data: unknown, key: string | number): boolean {
+  return typeof data === 'object' && data !== null && key in data;
 }
 
 // Checks if a value is not undefined.
@@ -88,9 +95,14 @@ export function isNotUndefined<T>(data: T | undefined): data is T {
   return typeof data !== 'undefined';
 }
 
-// --- Helper Functions ---
+// Checks if a value is String.
+export function isString(data: unknown): data is string {
+  return typeof data === 'string';
+}
 
-// Check if a key exists in an object.
-function isKeyExistOnObject(data: unknown, key: string | number): boolean {
-  return typeof data === 'object' && data !== null && key in data;
+// Checks if a value is DataTable.
+export function isDatatable(data: unknown): data is DataTable {
+  return typeof data === 'object' && data !== null
+    && ('columns' in data && Array.isArray(data.columns))
+    && ('rows' in data && Array.isArray(data.rows));
 }

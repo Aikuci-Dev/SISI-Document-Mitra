@@ -2,7 +2,6 @@ import type { H3Event } from 'h3';
 import { useSession } from 'h3';
 import { defu } from 'defu';
 import { z } from 'zod';
-import type { UserSession, UserSessionRequired } from '~~/types/session';
 
 const config = useRuntimeConfig();
 const sessionConfig = config.session;

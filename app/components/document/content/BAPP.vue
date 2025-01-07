@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { useDateFormat } from '@vueuse/core';
 import { formatCurrency } from '~/lib/utils';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 const props = defineProps<{ data: WorkDocument }>();
 
-const dataDateStart = computed(() => new Date(props.data.detailsDateTsStart));
-const dataDateEnd = computed(() => new Date(props.data.detailsDateTsEnd));
+const dataDateStart = computed(() => new Date(props.data.detailsDateStart));
+const dataDateEnd = computed(() => new Date(props.data.detailsDateEnd));
 
 const dateStart = useDateFormat(dataDateStart, 'DD MMMM YYYY', { locales: 'id-ID' });
 const dateEnd = useDateFormat(dataDateEnd, 'DD MMMM YYYY', { locales: 'id-ID' });
@@ -42,14 +42,14 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
           Pada hari ini,
           <slot
             name="details-day-end"
-            :value="data.detailsDateTsEnd"
+            :value="data.detailsDateEnd"
           >
             {{ dayEnd }}
           </slot>
           tanggal
           <slot
             name="details-date-end"
-            :value="data.detailsDateTsEnd"
+            :value="data.detailsDateEnd"
           >
             {{ dateEnd }}
           </slot>
@@ -102,14 +102,14 @@ const dayEnd = useDateFormat(dataDateEnd, 'dddd', { locales: 'id-ID' });
             dari tanggal
             <slot
               name="details-date-start"
-              :value="data.detailsDateTsStart"
+              :value="data.detailsDateStart"
             >
               {{ dateStart }}
             </slot>
             -
             <slot
               name="details-date-end"
-              :value="data.detailsDateTsEnd"
+              :value="data.detailsDateEnd"
             >
               {{ dateEnd }}
             </slot>

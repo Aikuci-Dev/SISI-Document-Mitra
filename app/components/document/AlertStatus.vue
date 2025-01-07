@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { AlertVariants } from '@/components/shadcn/ui/alert';
-import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
 
 const props = defineProps<{ status: STATUSES_TYPE }>();
 

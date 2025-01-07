@@ -1,6 +1,3 @@
-import { redirectKey } from '~/lib/const';
-import { isString } from '~/lib/utils';
-
 export default defineNuxtRouteMiddleware((to) => {
   const { loggedIn, user } = useUserSession();
 

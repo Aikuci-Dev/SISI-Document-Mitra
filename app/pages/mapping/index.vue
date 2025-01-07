@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { isDatatable } from '~/lib/utils';
-
 const page = 'Mapping';
 
 const { data } = useFetch('/api/mapping', { params: { format: 'datatable' } });

@@ -1,7 +1,7 @@
 <script setup lang="ts"  generic="T extends ZodRawShape">
 import type { ZodObject, ZodRawShape } from 'zod';
 import type { Shape } from '@/components/shadcn/ui/auto-form/interface';
-import type { WorkDocument } from '~~/types/schema/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
 
 const props = withDefaults(defineProps<{

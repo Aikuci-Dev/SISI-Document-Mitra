@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useVueToPrint } from 'vue-to-print';
-import { isStatusInitiatedOrRejected } from '~/lib/documents';
 import { catchFetchError, handleResponseError } from '~/lib/exceptions';
-import { STATUSES, type BAPPOrBAST, type DOCUMENTS_TABLE_TYPE, type DocumentTable } from '~~/types/document';
 
 definePageMeta({
   layout: false,
@@ -25,7 +23,7 @@ function getWorkAndStatus() {
 
   return { work: row.meta.mapped_work.value, status: row.meta.status };
 };
-const form = ref(getWorkAndStatus()?.work);
+const form = ref(getWorkAndStatus()?.work || makeWorkDocument());
 const formStatus = getWorkAndStatus()?.status || STATUSES.initiated;
 const documentFormRef = ref();
 const isDocumentFormValid = computed(() => documentFormRef.value?.form.meta.value.valid);
@@ -49,7 +47,7 @@ const formItems = computed(() => {
 
 const tabs = computed<{ key: BAPPOrBAST }[]>(() => [
   { key: 'BAPP' },
-  form.value?.bastNumber?.length ? { key: 'BAST' } : undefined,
+  form.value.bastNumber?.length ? { key: 'BAST' } : undefined,
 ].filter(Boolean) as { key: BAPPOrBAST }[]);
 const documentType = ref<BAPPOrBAST>('BAPP');
 
@@ -58,13 +56,13 @@ const documentComponentRef = ref();
 const { handlePrint } = useVueToPrint({
   content: computed(() => documentComponentRef.value[0]),
   documentTitle: documentType.value === 'BAPP'
-    ? `BAPP_${form.value?.bappNumber}`
-    : `BAST_${form.value?.bastNumber}`,
+    ? `BAPP_${form.value.bappNumber}`
+    : `BAST_${form.value.bastNumber}`,
   removeAfterPrint: true,
 });
 
 // SIGN by User
-const formSign = ref(form.value?.employeeSignUrl || '');
+const formSign = ref('');
 const showDialogSign = ref(false);
 const isLoading = ref(false);
 const isDisabledAction = computed(() => isLoading.value && showDialogSign.value);
@@ -72,7 +70,7 @@ const showAlertDialog = ref(false);
 const skipStore = ref(false);
 
 function handleSign() {
-  form.value!.employeeSignUrl = formSign.value;
+  form.value.employeeSignUrl = formSign.value;
   handleGenerate();
 }
 
@@ -102,7 +100,7 @@ async function handleGenerate() {
   if (!skipStore.value)
     await $fetch(`/api/documents/${id}`, {
       method: 'PUT',
-      params: { name: form.value!.employeeName },
+      params: { name: form.value.employeeName },
       body: form.value,
       onResponseError: ({ response }) => {
         handleResponseError(response);
@@ -128,10 +126,7 @@ async function handleGenerate() {
           page="Document"
         />
       </template>
-      <template
-        v-if="form"
-        #bodyLeft
-      >
+      <template #bodyLeft>
         <DocumentFormWrapper v-model:show-non-editable-fields="showNonEditableFields">
           <DocumentForm
             ref="documentFormRef"
@@ -144,10 +139,7 @@ async function handleGenerate() {
           />
         </DocumentFormWrapper>
       </template>
-      <template
-        v-if="form"
-        #bodyContent
-      >
+      <template #bodyContent>
         <div>
           <ShadcnAlertDialog v-model:open="showAlertDialog">
             <ShadcnAlertDialogContent>
@@ -197,10 +189,7 @@ async function handleGenerate() {
           </ShadcnTabsContent>
         </ShadcnTabs>
       </template>
-      <template
-        v-if="form"
-        #bodyRight
-      >
+      <template #bodyRight>
         <DocumentAction>
           <ShadcnButton
             :disabled="!isDocumentFormValid"

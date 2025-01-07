@@ -1,5 +1,5 @@
 import { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';
-import type { WorkDocument, WorkDocumentKeys } from '~~/types/schema/document';
+import type { WorkDocument, WorkDocumentKeys } from '~~/shared/types/schema/document';
 
 export const userGoogle = sqliteTable('user_google', {
   id: integer().primaryKey({ autoIncrement: true }),

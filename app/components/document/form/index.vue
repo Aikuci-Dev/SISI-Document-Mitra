@@ -2,11 +2,9 @@
 import { z } from 'zod';
 import { useForm } from 'vee-validate';
 import { toTypedSchema } from '@vee-validate/zod';
-import { getLocalTimeZone, parseAbsolute, type CalendarDate } from '@internationalized/date';
-import { isStatusNotInitiated } from '~/lib/documents';
+import { getLocalTimeZone, fromAbsolute } from '@internationalized/date';
 import type { Item } from '~/components/base/input/InputCombobox.vue';
-import type { WorkDocument } from '~~/types/schema/document';
-import { STATUSES, type STATUSES_TYPE } from '~~/types/document';
+import type { WorkDocument } from '~~/shared/types/schema/document';
 
 export type FormEmits = {
   generate: [];
@@ -22,11 +20,8 @@ export type FormProps = {
 };
 const props = withDefaults(defineProps<FormProps>(), { status: STATUSES.initiated, removedItems: () => ({ title: [], nominal: ['0'] }) });
 
-const formValue = defineModel<WorkDocument>();
+const formValue = defineModel<WorkDocument>({ default: makeWorkDocument() });
 const showNonEditableFields = defineModel<boolean>('showNonEditableFields', { default: true });
-
-const dateStartTS = formValue.value?.detailsDateTsStart || new Date().getTime();
-const dateEndTS = formValue.value?.detailsDateTsEnd || new Date().getTime();
 
 const schema = z.object({
   number: z.string().min(1, 'Project number is required.'),
@@ -51,8 +46,8 @@ const schema = z.object({
 const form = useForm({
   validationSchema: toTypedSchema(schema),
   initialValues: {
-    dateStart: parseAbsolute(new Date(dateStartTS).toISOString(), getLocalTimeZone()),
-    dateEnd: parseAbsolute(new Date(dateEndTS).toISOString(), getLocalTimeZone()),
+    dateStart: fromAbsolute(formValue.value.detailsDateStart, getLocalTimeZone()),
+    dateEnd: fromAbsolute(formValue.value.detailsDateEnd, getLocalTimeZone()),
   },
   validateOnMount: true,
 });
@@ -60,33 +55,18 @@ const isFormValid = computed(() => form.meta.value.valid);
 
 const isFieldTitleDirty = computed(() => form.isFieldDirty('title'));
 function getInitiateTitle() {
-  return isStatusNotInitiated(props.status) || isFieldTitleDirty.value ? formValue.value!.detailsTitle : props.items.title[0]?.value || '';
+  return isStatusNotInitiated(props.status) || isFieldTitleDirty.value ? formValue.value.detailsTitle : props.items.title[0]?.value || '';
 }
 watch(() => form.values.title, (value) => {
-  if (value) formValue.value!.detailsTitle = value;
+  if (value) formValue.value.detailsTitle = value;
 });
 
 const isFieldInvoiceNominalDirty = computed(() => form.isFieldDirty('detail.invoiceNominal'));
 function getInitiateInvoiceNominal() {
-  return isStatusNotInitiated(props.status) || isFieldInvoiceNominalDirty.value ? formValue.value!.invoiceNominal : props.items.nominal[0]?.value;
+  return isStatusNotInitiated(props.status) || isFieldInvoiceNominalDirty.value ? formValue.value.invoiceNominal : props.items.nominal[0]?.value;
 }
 watch(() => form.values.detail?.invoiceNominal, (value) => {
-  formValue.value!.invoiceNominal = +String(value).replace(/\D+/g, '');
-});
-
-watch(() => form.values.dateStart, (date: CalendarDate | undefined) => {
-  if (date) {
-    const dateValue = date.toDate(getLocalTimeZone());
-    formValue.value!.detailsDateTsStart = dateValue.getTime();
-    formValue.value!.detailsDateStart = dateValue.toISOString();
-  }
-});
-watch(() => form.values.dateEnd, (date: CalendarDate | undefined) => {
-  if (date) {
-    const dateValue = date.toDate(getLocalTimeZone());
-    formValue.value!.detailsDateTsEnd = dateValue.getTime();
-    formValue.value!.detailsDateEnd = dateValue.toISOString();
-  }
+  formValue.value.invoiceNominal = +String(value).replace(/\D+/g, '');
 });
 
 function resetForm() {
@@ -115,7 +95,6 @@ defineExpose({ form });
 
 <template>
   <ShadcnAutoForm
-    v-if="formValue"
     :schema
     :form
     class="grid grid-cols-2 gap-x-4"
